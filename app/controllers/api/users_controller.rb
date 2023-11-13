@@ -5,7 +5,7 @@ class Api::UsersController < Api::BaseController
     @total_pages = @users.total_pages
   end
   def show
-    @user = User.find_by!('users.id = ?', params[:id])
+    @user = User.find_by!('users.id = ?', params[:id]) # comment
     authorize @user, policy_class: Api::UsersPolicy
   end
   def social_login
