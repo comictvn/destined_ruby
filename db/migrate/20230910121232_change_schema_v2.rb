@@ -60,9 +60,17 @@ class ChangeSchemaV2 < ActiveRecord::Migration[6.0]
       t.integer :sender_id, index: true
       t.timestamps null: false
     end
+    create_table :social_media do |t|
+      t.string :platform
+      t.string :email
+      t.text :title
+      t.text :content
+      t.timestamps null: false
+    end
     add_reference :messages, :chanel, foreign_key: true
     add_reference :user_chanels, :chanel, foreign_key: true
     add_reference :user_chanels, :user, foreign_key: true
+    add_reference :social_media, :user, foreign_key: true
     add_index :users, :unlock_token, unique: true
     add_index :users, :email, unique: true
     add_index :users, :phone_number, unique: true
