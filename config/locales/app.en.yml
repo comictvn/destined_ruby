@@ -1,0 +1,27 @@
+---
+en:
+  common:
+    errors:
+      unauthorized_error: Unauthorized
+      record_not_uniq_error: Record not uniq
+      token:
+        inactive: Your account is not activated yet
+        locked: Your account is locked
+    400: Bad Request
+  phone_login:
+    otp:
+      send_otp_success: Send the verification code successfully
+      verification_declined: There is an error in the verification code
+      notp_expired: The verification code has expired. Send the verification code
+        again
+      exceed_amount_sent_otp: You have reached the limit of otp sms per day
+      recaptcha_invalid: An unusual request pattern occurred.
+  email_login:
+    reset_password:
+      invalid_token: The access token is invalid
+      expired: The access token expired
+    registrations:
+      failed_to_sign_up: Failed to sign up
+    passwords:
+      old_password_mismatch: Incorrect current password
+      not_found_in_database: Invalid email or password

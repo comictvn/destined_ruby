@@ -1,0 +1,82 @@
+---
+en:
+  activerecord:
+    models:
+      user: User
+      user_chanel: User chanel
+      chanel: Chanel
+      message: Message
+      match: Match
+      reaction: Reaction
+      force_update_app_version: Force update app version
+    attributes:
+      user:
+        id: ID
+        created_at: Created at
+        updated_at: Updated at
+        phone_number: Phone number
+        thumbnail: Thumbnail
+        firstname: Firstname
+        lastname: Lastname
+        dob: Dob
+        gender: Gender
+        interests: Interests
+        last_sign_in_at: Last sign in at
+        sign_in_count: Sign in count
+        unlock_token: Unlock token
+        reset_password_sent_at: Reset password sent at
+        password: Password
+        email: Email
+        encrypted_password: Encrypted password
+        last_sign_in_ip: Last sign in ip
+        locked_at: Locked at
+        location: Location
+        current_sign_in_ip: Current sign in ip
+        current_sign_in_at: Current sign in at
+        remember_created_at: Remember created at
+        reset_password_token: Reset password token
+        password_confirmation: Password confirmation
+        confirmation_token: Confirmation token
+        failed_attempts: Failed attempts
+        confirmed_at: Confirmed at
+        confirmation_sent_at: Confirmation sent at
+        unconfirmed_email: Unconfirmed email
+      match:
+        matcher2_id: Matcher2 ID
+        updated_at: Updated at
+        created_at: Created at
+        id: ID
+        matcher1_id: Matcher1 ID
+      chanel:
+        id: ID
+        created_at: Created at
+        updated_at: Updated at
+      message:
+        content: Content
+        id: ID
+        created_at: Created at
+        images: Images
+        updated_at: Updated at
+        sender_id: Sender ID
+        chanel_id: Chanel ID
+      user_chanel:
+        created_at: Created at
+        id: ID
+        updated_at: Updated at
+        user_id: User ID
+        chanel_id: Chanel ID
+      reaction:
+        created_at: Created at
+        updated_at: Updated at
+        id: ID
+        reacter_id: Reacter ID
+        react_type: React type
+        reacted_id: Reacted ID
+      force_update_app_version:
+        id: ID
+        created_at: Created at
+        platform: Platform
+        updated_at: Updated at
+        version: Version
+        force_update: Force update
+        reason: Reason

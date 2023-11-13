@@ -1,0 +1,82 @@
+---
+ja:
+  activerecord:
+    models:
+      user: User
+      user_chanel: User chanel
+      chanel: Chanel
+      message: Message
+      match: Match
+      reaction: Reaction
+      force_update_app_version: Force update app version
+    attributes:
+      user:
+        id: ID
+        created_at: 作成日
+        updated_at: 更新日
+        phone_number: Phone number
+        thumbnail: Thumbnail
+        firstname: Firstname
+        lastname: Lastname
+        dob: Dob
+        gender: Gender
+        interests: Interests
+        last_sign_in_at: 最終ログイン時刻
+        sign_in_count: ログイン回数
+        unlock_token: ロック解除用トークン
+        reset_password_sent_at: パスワードリセット送信時刻
+        password: パスワード
+        encrypted_password: 暗号化パスワード
+        email: Eメール
+        last_sign_in_ip: 最終ログインIPアドレス
+        locked_at: ロック時刻
+        location: Location
+        current_sign_in_ip: 現在のログインIPアドレス
+        remember_created_at: ログイン記憶時刻
+        current_sign_in_at: 現在のログイン時刻
+        reset_password_token: パスワードリセット用トークン
+        password_confirmation: パスワード（確認用）
+        confirmation_token: パスワード確認用トークン
+        failed_attempts: 失敗したログイン試行回数
+        confirmed_at: パスワード確認時刻
+        unconfirmed_email: 未確認Eメール
+        confirmation_sent_at: パスワード確認送信時刻
+      match:
+        matcher2_id: Matcher2 ID
+        updated_at: 更新日
+        created_at: 作成日
+        id: ID
+        matcher1_id: Matcher1 ID
+      chanel:
+        id: ID
+        created_at: 作成日
+        updated_at: 更新日
+      message:
+        content: Content
+        id: ID
+        created_at: 作成日
+        images: Images
+        updated_at: 更新日
+        sender_id: Sender ID
+        chanel_id: Chanel ID
+      user_chanel:
+        created_at: 作成日
+        id: ID
+        updated_at: 更新日
+        user_id: User ID
+        chanel_id: Chanel ID
+      reaction:
+        created_at: 作成日
+        updated_at: 更新日
+        id: ID
+        reacter_id: Reacter ID
+        react_type: React type
+        reacted_id: Reacted ID
+      force_update_app_version:
+        id: ID
+        created_at: 作成日
+        platform: Platform
+        updated_at: 更新日
+        version: Version
+        force_update: Force update
+        reason: Reason

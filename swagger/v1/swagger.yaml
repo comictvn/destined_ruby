@@ -1,0 +1,505 @@
+---
+openapi: 3.0.1
+info:
+  title: API V1
+  version: v1
+paths:
+  "/api/chanels/{chanel_id}/messages/{id}":
+    delete:
+      summary: Destroy messages
+      tags:
+      - messages
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: chanel_id
+        in: path
+        description: Url Params
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: Url Params
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: delete
+          content:
+            application/json:
+              example:
+                message: {}
+  "/api/chanels/{chanel_id}/messages":
+    get:
+      summary: List messages
+      tags:
+      - messages
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: params
+        in: url
+        schema:
+          type: object
+          properties:
+            pagination_page:
+              type: page_number
+            pagination_limit:
+              type: page_size
+            messages:
+              type: object
+              properties:
+                content:
+                  type: text
+                sender_id:
+                  type: integer
+                chanel_id:
+                  type: integer
+      responses:
+        '200':
+          description: filter
+          content:
+            application/json:
+              example:
+                total_pages: INTEGER
+                messages: ARRAY
+                message: {}
+  "/api/chanels/{id}":
+    delete:
+      summary: Destroy chanels
+      tags:
+      - chanels
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        description: Url Params
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: delete
+          content:
+            application/json:
+              example:
+                message: {}
+    get:
+      summary: Show chanels
+      tags:
+      - chanels
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        description: Url Params
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: show
+          content:
+            application/json:
+              example:
+                chanel:
+                  id: INTEGER
+                  created_at: DATETIME
+                  updated_at: DATETIME
+                  messages: ARRAY
+                  user_chanels: ARRAY
+                message: {}
+  "/api/chanels":
+    get:
+      summary: List chanels
+      tags:
+      - chanels
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: params
+        in: url
+        schema:
+          type: object
+          properties:
+            pagination_limit:
+              type: page_size
+            pagination_page:
+              type: page_number
+      responses:
+        '200':
+          description: filter
+          content:
+            application/json:
+              example:
+                message: {}
+                total_pages: INTEGER
+                chanels: ARRAY
+  "/api/force_update_app_versions":
+    get:
+      summary: List force_update_app_versions
+      tags:
+      - force_update_app_versions
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: params
+        in: url
+        schema:
+          type: object
+          properties:
+            force_update_app_versions:
+              type: object
+              properties:
+                platform:
+                  type: string
+                  enum:
+                  - ios
+                  - android
+                reason:
+                  type: text
+                version:
+                  type: string
+                force_update:
+                  type: boolean
+            pagination_page:
+              type: page_number
+            pagination_limit:
+              type: page_size
+      responses:
+        '200':
+          description: filter
+          content:
+            application/json:
+              example:
+                total_pages: INTEGER
+                force_update_app_versions: ARRAY
+                message: {}
+  "/api/messages":
+    post:
+      summary: Create messages
+      tags:
+      - messages
+      security:
+      - bearerAuth: []
+      parameters: []
+      responses:
+        '200':
+          description: create
+          content:
+            application/json:
+              example:
+                message:
+                  id: INTEGER
+                  created_at: DATETIME
+                  updated_at: DATETIME
+                  sender:
+                    id: INTEGER
+                    created_at: DATETIME
+                    updated_at: DATETIME
+                    phone_number: STRING
+                    thumbnail: FILE
+                    firstname: STRING
+                    lastname: STRING
+                    dob: DATE
+                    gender: STRING
+                    interests: TEXT
+                    location: TEXT
+                  sender_id: INTEGER
+                  chanel:
+                    id: INTEGER
+                    created_at: DATETIME
+                    updated_at: DATETIME
+                  chanel_id: INTEGER
+                  content: TEXT
+                  images: FILE
+                error_object: {}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messages:
+                  type: object
+                  properties:
+                    content:
+                      type: text
+                    sender_id:
+                      type: integer
+                    chanel_id:
+                      type: integer
+                    images:
+                      type: file
+  "/oauth/token":
+    post:
+      summary: Oauth Token
+      tags:
+      - Login - Oauth Token(Common Login)
+      parameters: []
+      responses:
+        '200':
+          description: request sent
+          content:
+            application/json:
+              example:
+                access_token: STRING
+                token_type: STRING
+                expires_in: STRING
+                refresh_token: STRING
+                scope: STRING
+                created_at: STRING
+                resource_owner: STRING
+                resource_id: STRING
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                client_id:
+                  type: string
+                  example: 2SjSMParM28gpANcXurq1BfqjRUBZctnxtyyj88xxwc
+                client_secret:
+                  type: string
+                  example: C0xA8Jnu4FImlnfrPRc241uISaMlW9r1mKGZx-LdY7c
+                password:
+                  type: string
+                  example: password
+                email:
+                  type: string
+                  example: email@domaiin.com
+                scope:
+                  type: string
+                  example: usersusers any one based on login needed
+                grant_type:
+                  type: string
+                  example: password refresh_token anyone
+                refresh_token:
+                  type: string
+                  example: token if grant type refresh
+  "/api/users_registrations":
+    post:
+      summary: Sign up by email
+      tags:
+      - Email Login - users
+      parameters: []
+      responses:
+        '200':
+          description: auth_registration
+          content:
+            application/json:
+              example:
+                id: STRING
+        '422':
+          description: Cannot register
+          content:
+            application/json:
+              example:
+                error_message: Failed to sign up
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: object
+                  properties:
+                    password:
+                      type: string
+                    password_confirmation:
+                      type: string
+                    phone_number:
+                      type: string
+                    firstname:
+                      type: string
+                    lastname:
+                      type: string
+                    dob:
+                      type: date
+                    gender:
+                      type: string
+                      enum:
+                      - male
+                      - female
+                      - other
+                    email:
+                      type: string
+  "/api/users/{id}":
+    get:
+      summary: Show users
+      tags:
+      - users
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        description: Url Params
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: show
+          content:
+            application/json:
+              example:
+                user:
+                  id: INTEGER
+                  created_at: DATETIME
+                  updated_at: DATETIME
+                  phone_number: STRING
+                  thumbnail: FILE
+                  firstname: STRING
+                  lastname: STRING
+                  dob: DATE
+                  gender: STRING
+                  interests: TEXT
+                  location: TEXT
+                  matcher2_matchs: ARRAY
+                  sender_messages: ARRAY
+                  user_chanels: ARRAY
+                  matcher1_matchs: ARRAY
+                  email: STRING
+                  reacter_reactions: ARRAY
+                  reacted_reactions: ARRAY
+                message: {}
+  "/api/users":
+    get:
+      summary: List users
+      tags:
+      - users
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: params
+        in: url
+        schema:
+          type: object
+          properties:
+            pagination_page:
+              type: page_number
+            pagination_limit:
+              type: page_size
+            users:
+              type: object
+              properties:
+                phone_number:
+                  type: string
+                firstname:
+                  type: string
+                lastname:
+                  type: string
+                dob:
+                  type: date
+                gender:
+                  type: string
+                  enum:
+                  - male
+                  - female
+                  - other
+                interests:
+                  type: text
+                location:
+                  type: text
+                email:
+                  type: string
+      responses:
+        '200':
+          description: filter
+          content:
+            application/json:
+              example:
+                total_pages: INTEGER
+                users: ARRAY
+                message: {}
+  "/api/users_verify_confirmation_token":
+    post:
+      summary: Verify confirmation token
+      tags:
+      - Email Login - users
+      parameters: []
+      responses:
+        '200':
+          description: request sent
+          content:
+            application/json:
+              example:
+                access_token: STRING
+                token_type: STRING
+                expires_in: STRING
+                refresh_token: STRING
+                scope: STRING
+                created_at: STRING
+                resource_owner: STRING
+                resource_id: STRING
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                confirmation_token:
+                  type: string
+                  example: token
+                client_id:
+                  type: string
+                  example: 2SjSMParM28gpANcXurq1BfqjRUBZctnxtyyj88xxwc
+                client_secret:
+                  type: string
+                  example: C0xA8Jnu4FImlnfrPRc241uISaMlW9r1mKGZx-LdY7c
+  "/v1/me":
+    get:
+      summary: List users
+      tags:
+      - users
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: params
+        in: url
+        schema:
+          type: object
+          properties: {}
+      responses:
+        '200':
+          description: show
+          content:
+            application/json:
+              example:
+                user:
+                  id: INTEGER
+                  created_at: DATETIME
+                  updated_at: DATETIME
+                  phone_number: STRING
+                  thumbnail: FILE
+                  firstname: STRING
+                  lastname: STRING
+                  dob: DATE
+                  gender: STRING
+                  interests: TEXT
+                  location: TEXT
+                message: {}
+servers:
+- url: http://localhost:3000
+  variables:
+    defaultHost:
+      default: localhost:3000
+    client_id:
+      default: 2SjSMParM28gpANcXurq1BfqjRUBZctnxtyyj88xxwc
+    client_secret:
+      default: C0xA8Jnu4FImlnfrPRc241uISaMlW9r1mKGZx-LdY7c
+components:
+  securitySchemes:
+    bearerAuth:
+      name: Authorization
+      type: http
+      description: JWT Authorization header using the Bearer scheme.
+      scheme: bearer
+      bearerFormat: JWT

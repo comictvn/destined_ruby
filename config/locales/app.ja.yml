@@ -1,0 +1,25 @@
+---
+ja:
+  common:
+    errors:
+      unauthorized_error: 操作する権限がありません
+      record_not_uniq_error: 既に同様のデータが登録されています
+      token:
+        inactive: アカウントが有効化されていません
+        locked: アカウントはロックされています
+  phone_login:
+    otp:
+      send_otp_success: 認証コードを送信しました
+      verification_declined: 認証コードに誤りがあります
+      notp_expired: 認証コードの有効期限が切れています。認証コードを再度送信します。
+      exceed_amount_sent_otp: You have reached the limit of otp sms per day
+      recaptcha_invalid: 異常なリクエストパターンが発生しました。
+  email_login:
+    reset_password:
+      invalid_token: アクセストークンが無効です
+      expired: アクセストークンの有効期限が切れました
+    registrations:
+      failed_to_sign_up: 操作する権限がありません
+    passwords:
+      old_password_mismatch: 現在のパスワードが正しくありません
+      not_found_in_database: Eメールまたはパスワードが違います
