@@ -1,8 +1,6 @@
-class UserRegistrationService
-  def initialize(email, password, password_confirmation)
-    @email = email
-    @password = password
-    @password_confirmation = password_confirmation
+class UserRegistrationService < BaseService
+  def initialize(user_params)
+    @user_params = user_params
   end
   def register
     validate_input
@@ -13,17 +11,18 @@ class UserRegistrationService
   end
   private
   def validate_input
-    validator = UserValidator.new(@email, @password, @password_confirmation)
+    validator = UserRegistrationValidator.new(@user_params)
     errors = validator.validate
-    raise CustomException.new(errors) unless errors.empty?
+    raise ActiveRecord::RecordInvalid, errors.full_messages.join(", ") unless errors.empty?
   end
   def check_email
-    user = User.find_by(email: @email)
-    raise CustomException.new("Email is already in use") if user
+    user = User.find_by(email: @user_params[:email])
+    raise ActiveRecord::RecordNotUnique, "Email already registered" if user
   end
   def create_user
-    encrypted_password = Devise::Encryptor.digest(User, @password)
-    User.create!(email: @email, encrypted_password: encrypted_password)
+    user = User.new(@user_params)
+    user.save!
+    user
   end
   def send_confirmation_email(user)
     UserMailer.confirmation_email(user).deliver_now
