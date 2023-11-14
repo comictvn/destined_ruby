@@ -9,3 +9,7 @@ en:
     '201': created
     '200': success
     '302': deleted
+  validation:
+    name:
+      blank: "Name can't be blank"
+      invalid: "Name is invalid"

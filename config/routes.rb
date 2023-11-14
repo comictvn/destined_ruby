@@ -3,6 +3,7 @@ Rails.application.routes.draw do
     namespace :v1 do
       resources :users, only: [:show, :update]
       resources :tests, only: [:update, :create]
+      resources :tables, only: [:create]
     end
   end
 end
