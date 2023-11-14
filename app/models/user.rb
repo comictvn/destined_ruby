@@ -42,10 +42,14 @@ class User < ApplicationRecord
     raw
   end
   def encrypt_password
-    self.password = BCrypt::Password.create(self.password)
+    self.password = BCrypt::Password.create(password)
   end
   def send_confirmation_email
     UserMailer.confirmation_email(self).deliver_now
+  end
+  def self.create_user(email, password, password_confirmation)
+    user = User.create(email: email, password: password, password_confirmation: password_confirmation)
+    user.id
   end
   class << self
     def authenticate?(email, password)
