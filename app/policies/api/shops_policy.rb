@@ -1,7 +1,11 @@
 class Api::ShopsPolicy < ApplicationPolicy
   def update?
     # Assuming that only the shop owner can update the shop information
-    user.is_a?(User) && record.user_id == user.id
+    if user.is_a?(User) && record.user_id == user.id
+      true
+    else
+      raise Pundit::NotAuthorizedError, "You do not have permission to update this shop."
+    end
   end
   class Scope < Scope
     def resolve
