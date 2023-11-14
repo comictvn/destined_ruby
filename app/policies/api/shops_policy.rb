@@ -4,7 +4,7 @@ class Api::ShopsPolicy < ApplicationPolicy
     if user.is_a?(User) && record.user_id == user.id
       true
     else
-      raise Pundit::NotAuthorizedError, "You do not have permission to update this shop."
+      false
     end
   end
   class Scope < Scope
