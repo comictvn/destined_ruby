@@ -1,23 +1,24 @@
 class Api::UsersRegistrationsController < Api::BaseController
-  def create
-    @user = User.new(create_params)
-    if @user.save
-      if Rails.env.staging?
-        # to show token in staging
-        token = @user.respond_to?(:confirmation_token) ? @user.confirmation_token : ''
-        render json: { message: I18n.t('common.200'), token: token }, status: :ok and return
-      else
-        head :ok, message: I18n.t('common.200') and return
-      end
+  def register
+    user_params = params.require(:user).permit(:email, :password, :password_confirmation)
+    validation_result = UserService.validate(user_params)
+    if validation_result[:status] == :error
+      render json: { error_messages: validation_result[:errors], message: I18n.t('email_login.registrations.failed_to_sign_up') },
+             status: :unprocessable_entity and return
+    end
+    if UserService.email_exists?(user_params[:email])
+      render json: { message: I18n.t('email_login.registrations.email_already_registered') },
+             status: :unprocessable_entity and return
+    end
+    encrypted_password = UserService.encrypt_password(user_params[:password])
+    user = UserService.create_user(user_params[:email], encrypted_password)
+    if user
+      TwilioGateway.send_confirmation_email(user_params[:email])
+      render json: { message: I18n.t('email_login.registrations.successful_registration'), user_id: user.id, confirmation_status: user.confirmation_status },
+             status: :ok and return
     else
-      error_messages = @user.errors.messages
-      render json: { error_messages: error_messages, message: I18n.t('email_login.registrations.failed_to_sign_up') },
+      render json: { message: I18n.t('email_login.registrations.failed_to_sign_up') },
              status: :unprocessable_entity
     end
-  end
-
-  def create_params
-    params.require(:user).permit(:password, :password_confirmation, :phone_number, :firstname, :lastname, :dob,
-                                 :gender, :email)
   end
 end
