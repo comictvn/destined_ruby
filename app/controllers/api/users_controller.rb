@@ -17,16 +17,16 @@ class Api::UsersController < ApplicationController
   end
   def confirm_email
     begin
-      user = User.find(params[:user_id])
-      if user.confirmation_code == params[:confirmation_code]
-        user.status = "confirmed"
-        user.save!
-        render json: { message: 'Email confirmed successfully' }, status: :ok
+      email = params[:email]
+      confirmation_code = params[:confirmation_code]
+      UserValidator.new(email, confirmation_code).validate
+      if UserRegistrationService.new.confirm_email(email, confirmation_code)
+        render json: { status: 200, message: 'Email confirmed successfully' }, status: :ok
       else
-        render json: { error: 'Invalid confirmation code' }, status: :bad_request
+        render json: { error: 'An unexpected error occurred on the server' }, status: :internal_server_error
       end
-    rescue ActiveRecord::RecordNotFound
-      render json: { error: 'User not found' }, status: :not_found
+    rescue UserValidator::ValidationError => e
+      render json: { error: e.message }, status: :bad_request
     rescue => e
       render json: { error: 'Unexpected error occurred' }, status: :internal_server_error
     end
