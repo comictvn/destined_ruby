@@ -1,16 +1,20 @@
 # PATH: /app/services/shop_service/update.rb
 # rubocop:disable Style/ClassAndModuleChildren
 class ShopService::Update
-  attr_accessor :id, :name, :address
-  def initialize(id, name, address)
+  attr_accessor :id, :name, :address, :current_user
+  def initialize(id, name, address, current_user)
     @id = id
     @name = name
     @address = address
+    @current_user = current_user
   end
   def call
     validate_input
     shop = Shop.find_by(id: @id)
     return { error: 'This shop is not found' } unless shop
+    unless ShopsPolicy.new(@current_user, shop).update?
+      return { error: 'You do not have permission to update this shop' }
+    end
     begin
       shop.update!(name: @name, address: @address)
       { success: 'Shop updated successfully', id: shop.id, shop: shop }

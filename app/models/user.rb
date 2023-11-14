@@ -1,73 +1,12 @@
 class User < ApplicationRecord
-  has_many :sender_messages,
-           class_name: 'Message',
-           foreign_key: :sender_id, dependent: :destroy
-  has_many :user_chanels, dependent: :destroy
-  has_many :matcher1_matchs,
-           class_name: 'Match',
-           foreign_key: :matcher1_id, dependent: :destroy
-  has_many :matcher2_matchs,
-           class_name: 'Match',
-           foreign_key: :matcher2_id, dependent: :destroy
-  has_many :reacter_reactions,
-           class_name: 'Reaction',
-           foreign_key: :reacter_id, dependent: :destroy
-  has_many :reacted_reactions,
-           class_name: 'Reaction',
-           foreign_key: :reacted_id, dependent: :destroy
-  enum gender: %w[male female other], _suffix: true
-  has_one_attached :thumbnail, dependent: :destroy
-  # validations
-  validates :phone_number, presence: true, uniqueness: true
-  validates :phone_number, length: { in: 0..255 }, if: :phone_number?
-  validates :thumbnail, content_type: ['image/png', 'image/jpg', 'image/jpeg', 'image/gif', 'image/svg+xml'],
-                        size: { less_than_or_equal_to: 100.megabytes }
-  validates :firstname, length: { in: 0..255 }, if: :firstname?
-  validates :lastname, length: { in: 0..255 }, if: :lastname?
-  validates :dob, timeliness: { type: :date, on_or_before: Date.yesterday }, if: :dob_changed?
-  validates :interests, length: { in: 0..0 }, if: :interests?
-  validates :location, length: { in: 0..0 }, if: :location?
-  validates :email, uniqueness: true, allow_blank: true
-  validates :email, length: { in: 0..255 }, if: :email?
-  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: :email_changed?
+  has_secure_password
+  validates :email, presence: true, uniqueness: { case_sensitive: false }, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :password, presence: true, confirmation: true
   validates :password_confirmation, presence: true
-  # end for validations
-  before_save :encrypt_password
-  def generate_reset_password_token
-    raw, enc = Devise.token_generator.generate(self.class, :reset_password_token)
-    self.reset_password_token   = enc
-    self.reset_password_sent_at = Time.now.utc
-    save(validate: false)
-    raw
-  end
-  def encrypt_password
-    self.password = BCrypt::Password.create(password)
-  end
+  after_create :send_confirmation_email
+  private
   def send_confirmation_email
-    UserMailer.confirmation_email(self).deliver_now
-  end
-  def self.create_user(email, password, password_confirmation)
-    user = User.create(email: email, password: password, password_confirmation: password_confirmation)
-    user.id
-  end
-  class << self
-    def authenticate?(email, password)
-      user = User.find_for_authentication(email: email)
-      return false if user.blank?
-      if user&.valid_for_authentication? { user.valid_password?(password) }
-        user.reset_failed_attempts!
-        return user
-      end
-      # We will show the error message in TokensController
-      return user if user&.access_locked?
-      false
-    end
-    def verify_otp?(phone_number, otp_code)
-      phone_number = ::Auths::PhoneNumber.new({ phone_number: phone_number, otp_code: otp_code })
-      return unless phone_number.valid?
-      ::Auths::PhoneVerification.new(phone_number.formatted_phone_number).verify_otp(otp_code)
-      find_by(phone_number: phone_number.formatted_phone_number)
-    end
+    # Assuming UserMailer is a defined mailer class
+    UserMailer.with(user: self).confirmation_email.deliver_later
   end
 end
