@@ -1,40 +1,31 @@
-class UserRegistrationService < BaseService
-  attr_reader :user_id, :confirmation_code, :password, :email, :password_confirmation
-  def initialize(user_id: nil, confirmation_code: nil, password: nil, email: nil, password_confirmation: nil)
-    @user_id = user_id
-    @confirmation_code = confirmation_code
-    @password = password
+class UserRegistrationService
+  def initialize(email, password, password_confirmation)
     @email = email
+    @password = password
     @password_confirmation = password_confirmation
   end
-  def call
-    if user_id && confirmation_code
-      validate_user(user_id, confirmation_code)
-    else
-      register
-    end
+  def register
+    validate_input
+    check_email
+    user = create_user
+    send_confirmation_email(user)
+    user.id
   end
   private
-  def validate_user(user_id, confirmation_code)
-    user = User.find_by(id: user_id)
-    return add_errors(["User not found"]) unless user
-    return add_errors(["Confirmation code does not match"]) unless user.confirmation_code == confirmation_code
-    user.update_status("confirmed")
-    user
+  def validate_input
+    validator = UserValidator.new(@email, @password, @password_confirmation)
+    errors = validator.validate
+    raise CustomException.new(errors) unless errors.empty?
   end
-  def register
-    validator = UserValidator.new(password: password, email: email, password_confirmation: password_confirmation)
-    return add_errors(validator.errors) unless validator.valid?
-    existing_user = User.find_by(email: email)
-    return add_errors(["Email is already in use"]) if existing_user
-    encrypted_password = BCrypt::Password.create(password)
-    user = User.create(password: encrypted_password, email: email)
-    return add_errors(user.errors) unless user.persisted?
-    UserMailer.send_confirmation_email(email)
-    user
+  def check_email
+    user = User.find_by(email: @email)
+    raise CustomException.new("Email is already in use") if user
   end
-  def add_errors(errors)
-    errors.each { |error| self.errors.add(error) }
-    nil
+  def create_user
+    encrypted_password = Devise::Encryptor.digest(User, @password)
+    User.create!(email: @email, encrypted_password: encrypted_password)
+  end
+  def send_confirmation_email(user)
+    UserMailer.confirmation_email(user).deliver_now
   end
 end

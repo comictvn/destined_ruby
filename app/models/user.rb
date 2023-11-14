@@ -7,13 +7,12 @@ class User < ApplicationRecord
   def send_confirmation_instructions
     UserMailer.confirmation_email(self).deliver_now
   end
-  def confirm_registration(user_id, confirmation_code)
-    user = User.find(user_id)
-    if user.confirmation_token != confirmation_code
-      return "Invalid confirmation code"
-    end
+  def confirm_email(user_id, confirmation_code)
+    user = User.find_by(id: user_id)
+    return "User not found" unless user
+    return "Invalid confirmation code" unless user.confirmation_token == confirmation_code
     user.update(status: 'confirmed')
-    "Registration process completed successfully"
+    "Email confirmed successfully"
   end
   private
   def generate_confirmation_token
