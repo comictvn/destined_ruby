@@ -1,5 +1,5 @@
 class Api::TestsController < Api::BaseController
-  before_action :doorkeeper_authorize!, only: %i[update]
+  before_action :doorkeeper_authorize!, only: %i[update create]
   def update
     begin
       params.require(:id)
@@ -24,6 +24,25 @@ class Api::TestsController < Api::BaseController
       render json: { error: 'You are not authorized to perform this action' }, status: :forbidden
     rescue => e
       render json: { error: 'Something went wrong' }, status: :internal_server_error
+    end
+  end
+  def create
+    begin
+      params.require(:name)
+      params.require(:status)
+      raise ActionController::BadRequest.new("The name is required.") if params[:name].blank?
+      raise ActionController::BadRequest.new("You cannot input more 200 characters.") if params[:name].length > 200
+      raise ActionController::BadRequest.new("Invalid status.") unless Test.statuses.include?(params[:status])
+      result = TestService::Create.new(params[:name], params[:status], current_user).call
+      if result.success?
+        render json: result.data, status: :ok
+      else
+        render json: { error: result.errors.full_messages.join(', ') }, status: :unprocessable_entity
+      end
+    rescue ActionController::ParameterMissing => e
+      render json: { error: e.message }, status: :bad_request
+    rescue => e
+      render json: { error: e.message }, status: :bad_request
     end
   end
 end

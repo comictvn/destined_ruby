@@ -6,6 +6,14 @@ class Api::TestsPolicy < ApplicationPolicy
       raise Pundit::NotAuthorizedError, "User does not have permission to access the resource."
     end
   end
+  def create?
+    # Assuming that only the authorized user can create a new test
+    if user.is_a?(User)
+      true
+    else
+      raise Pundit::NotAuthorizedError, "You are not authorized to perform this action."
+    end
+  end
   class Scope < Scope
     def resolve
       if user.is_a?(User)
