@@ -11,15 +11,15 @@ class ShopService::Update
   def call
     validate_input
     shop = Shop.find_by(id: @id)
-    return { error: 'This shop is not found' } unless shop
+    raise StandardError, 'This shop is not found' unless shop
     unless ShopsPolicy.new(@current_user, shop).update?
-      return { error: 'You do not have permission to update this shop' }
+      raise StandardError, 'You do not have permission to update this shop'
     end
     begin
       shop.update!(name: @name, address: @address)
-      { success: 'Shop updated successfully', id: shop.id, shop: shop }
+      shop
     rescue StandardError => e
-      { error: 'An unexpected error occurred', message: e.message }
+      raise StandardError, 'An unexpected error occurred', message: e.message
     end
   end
   private

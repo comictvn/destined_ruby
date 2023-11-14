@@ -1,12 +1,14 @@
 class User < ApplicationRecord
   has_secure_password
-  validates :email, presence: true, uniqueness: { case_sensitive: false }, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :password, presence: true, confirmation: true
   validates :password_confirmation, presence: true
-  after_create :send_confirmation_email
+  before_create :generate_confirmation_token
+  def send_confirmation_instructions
+    UserMailer.confirmation_email(self).deliver_now
+  end
   private
-  def send_confirmation_email
-    # Assuming UserMailer is a defined mailer class
-    UserMailer.with(user: self).confirmation_email.deliver_later
+  def generate_confirmation_token
+    self.confirmation_token = SecureRandom.urlsafe_base64
   end
 end
