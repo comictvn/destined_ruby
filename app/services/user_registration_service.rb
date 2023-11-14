@@ -1,21 +1,31 @@
-class UserRegistrationService < BaseService
-  attr_reader :user_id, :confirmation_code
-  def initialize(user_id: nil, confirmation_code: nil)
-    @user_id = user_id
-    @confirmation_code = confirmation_code
+class UserRegistrationService
+  def initialize(email, password, password_confirmation)
+    @email = email
+    @password = password
+    @password_confirmation = password_confirmation
   end
-  def call
-    if user_id && confirmation_code
-      confirm_email(user_id, confirmation_code)
-    else
-      { error: "Invalid parameters" }
-    end
+  def register
+    validate_input
+    check_email
+    user = create_user
+    send_confirmation_email(user)
+    user.id
   end
-  def confirm_email(user_id, confirmation_code)
-    user = User.find_by(id: user_id)
-    return { error: "User not found" } unless user
-    return { error: "Confirmation code does not match" } unless user.confirmation_code == confirmation_code
-    user.update(status: "confirmed")
-    { success: "User's email has been confirmed" }
+  private
+  def validate_input
+    validator = UserValidator.new(@email, @password, @password_confirmation)
+    errors = validator.validate
+    raise CustomException.new(errors) unless errors.empty?
+  end
+  def check_email
+    user = User.find_by(email: @email)
+    raise CustomException.new("Email is already in use") if user
+  end
+  def create_user
+    encrypted_password = Devise::Encryptor.digest(User, @password)
+    User.create!(email: @email, encrypted_password: encrypted_password)
+  end
+  def send_confirmation_email(user)
+    UserMailer.confirmation_email(user).deliver_now
   end
 end
