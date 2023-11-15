@@ -13,3 +13,6 @@ en:
     name:
       blank: "Name can't be blank"
       invalid: "Name is invalid"
+    status:
+      blank: "Status can't be blank"
+      invalid: "Status is invalid"
