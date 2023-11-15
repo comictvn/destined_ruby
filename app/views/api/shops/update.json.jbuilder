@@ -2,6 +2,7 @@ json.shop do
   json.id @shop.id
   json.name @shop.name
   json.address @shop.address
+  json.phone @shop.phone
   json.updated_at @shop.updated_at
 end
 if @shop.errors.any?
@@ -17,6 +18,7 @@ else
     json.id @shop.id
     json.name @shop.name
     json.address @shop.address
+    json.phone @shop.phone
     json.updated_at @shop.updated_at
   end
 end
