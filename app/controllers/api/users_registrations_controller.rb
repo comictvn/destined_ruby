@@ -15,7 +15,7 @@ class Api::UsersRegistrationsController < Api::BaseController
         render json: { message: user.errors.full_messages }, status: :unprocessable_entity
       end
     rescue StandardError => e
-      render json: { message: e.message }, status: :unprocessable_entity
+      render json: { message: e.message }, status: :internal_server_error
     end
   end
 end
