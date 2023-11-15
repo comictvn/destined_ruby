@@ -7,7 +7,11 @@ class UserRegistrationService < BaseService
     check_email
     user = create_user
     send_confirmation_email(user)
-    user.id
+    user
+  rescue ActiveRecord::RecordNotUnique => e
+    raise ActiveRecord::RecordNotUnique, "Email already registered"
+  rescue => e
+    raise "An error occurred while creating the user: #{e.message}"
   end
   private
   def validate_input
