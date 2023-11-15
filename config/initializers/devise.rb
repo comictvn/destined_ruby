@@ -12,12 +12,14 @@ Devise.setup do |config|
   config.reset_password_within = 1.hour
   config.maximum_attempts = 10
   config.unlock_strategy = :time
-
   config.unlock_in = 6.hours
-
   config.lock_strategy = :failed_attempts
   config.sign_out_via = :delete
   config.sign_in_after_reset_password = false
   config.confirm_within = 2.days
   config.scoped_views = true
+  # Configure the Devise mailer to send confirmation emails to users after they register.
+  config.mailer = 'Devise::Mailer'
+  # Set the `config.mailer_sender` to the email address that will be used to send the confirmation emails.
+  config.mailer_sender = 'noreply@example.com'
 end
