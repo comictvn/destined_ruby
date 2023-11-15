@@ -13,4 +13,10 @@ else
   json.status 'success'
   json.code 200
   json.message 'Update operation successful'
+  json.updated_shop do
+    json.id @shop.id
+    json.name @shop.name
+    json.address @shop.address
+    json.updated_at @shop.updated_at
+  end
 end
