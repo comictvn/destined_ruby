@@ -17,6 +17,7 @@ class ShopService::Update
     end
     begin
       shop.update!(name: @name, address: @address)
+      send_confirmation_email(shop)
       { message: 'Shop updated successfully', shop: shop }
     rescue StandardError => e
       raise StandardError, 'An unexpected error occurred', message: e.message
@@ -32,6 +33,10 @@ class ShopService::Update
     errors << 'Address is required' if @address.blank?
     errors << 'You cannot input more 200 characters.' if @address.length > 200
     raise StandardError, errors.join(', ') unless errors.empty?
+  end
+  def send_confirmation_email(shop)
+    # Assuming we have a mailer class to send emails
+    ShopMailer.with(shop: shop).confirmation_email.deliver_later
   end
 end
 # rubocop:enable Style/ClassAndModuleChildren
