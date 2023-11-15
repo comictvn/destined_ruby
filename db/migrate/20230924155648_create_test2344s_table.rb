@@ -1,0 +1,7 @@
+class CreateTest2344sTable < ActiveRecord::Migration[5.2]
+  def change
+    create_table :test2344s do |t|
+      t.timestamps
+    end
+  end
+end
