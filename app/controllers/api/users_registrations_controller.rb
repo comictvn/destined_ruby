@@ -6,18 +6,11 @@ class Api::UsersRegistrationsController < ApplicationController
     if result[:status] == :error
       render json: { error: result[:message] }, status: :bad_request
     else
-      user = User.find_by_email(user_params[:email])
-      if user
-        render json: { error: 'Email is already in use' }, status: :bad_request
+      user = UserRegistrationService.new(user_params).register
+      if user[:status] == :error
+        render json: { error: user[:message] }, status: :bad_request
       else
-        user = User.new(user_params)
-        user.password = Devise::Encryptor.digest(User, user_params[:password])
-        if user.save
-          UserMailer.confirmation_email(user).deliver_now
-          render json: { status: 200, message: 'Registration successful. Please confirm your email address.', user_id: user.id }, status: :ok
-        else
-          render json: { error: 'Registration failed' }, status: :bad_request
-        end
+        render json: { status: 200, message: 'Registration successful. Please confirm your email address.', user_id: user[:data].id, email: user[:data].email, status: 'unconfirmed' }, status: :ok
       end
     end
   end
