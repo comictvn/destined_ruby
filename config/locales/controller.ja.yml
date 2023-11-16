@@ -13,3 +13,5 @@ ja:
     name:
       blank: 名前は必須です
       too_long: 名前は最大50文字までです
+  matches:
+    not_found: マッチが存在しません

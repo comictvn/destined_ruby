@@ -1,4 +1,16 @@
 class V1::MatchesController < ApplicationController
+  def show
+    begin
+      match = Match.find(params[:id])
+      if match
+        render json: { match_id: match.id, team1: match.team1, team2: match.team2, date: match.date, result: match.result }
+      else
+        render json: { errors: 'Match not found.' }, status: :not_found
+      end
+    rescue ActiveRecord::RecordNotFound => e
+      render json: { errors: 'Match not found.' }, status: :not_found
+    end
+  end
   def create
     team1 = params[:team1]
     team2 = params[:team2]

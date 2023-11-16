@@ -9,6 +9,7 @@ Rails.application.routes.draw do
       end
       resources :tests, only: [:update, :create]
       resources :tables, only: [:create]
+      resources :matches, only: [:show]
     end
   end
 end
