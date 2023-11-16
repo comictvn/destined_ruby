@@ -14,4 +14,23 @@ class V1::MatchesController < ApplicationController
       end
     end
   end
+  def update
+    begin
+      match_params = params.require(:match).permit(:id, :result)
+      validate_match_params(match_params)
+      match = UpdateMatchService.new(match_params).update
+      render json: { match: match }, status: :ok
+    rescue MatchValidator::ValidationError => e
+      render json: { error: e.message }, status: :bad_request
+    rescue ActiveRecord::RecordNotUnique => e
+      render json: { error: 'Match is already updated.' }, status: :conflict
+    rescue => e
+      render json: { error: 'Unexpected error occurred' }, status: :internal_server_error
+    end
+  end
+  private
+  def validate_match_params(match_params)
+    raise MatchValidator::ValidationError, 'The match id is required.' if match_params[:id].blank?
+    raise MatchValidator::ValidationError, 'The result is required.' if match_params[:result].blank?
+  end
 end
