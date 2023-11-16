@@ -9,7 +9,11 @@ Rails.application.routes.draw do
       end
       resources :tests, only: [:update, :create]
       resources :tables, only: [:create]
-      resources :matches, only: [:show]
+      resources :matches, only: [:show, :update] do
+        member do
+          put 'update_result'
+        end
+      end
     end
   end
 end
