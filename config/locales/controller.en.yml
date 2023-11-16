@@ -13,3 +13,10 @@ en:
     name:
       blank: "Name can't be blank"
       invalid: "Name is invalid"
+  match:
+    not_found: "Match not found"
+    error: "An error occurred while retrieving match information"
+  matches:
+    update:
+      success: "Match updated successfully"
+      error: "Failed to update match"

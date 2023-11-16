@@ -42,10 +42,14 @@ en:
         confirmation_sent_at: Confirmation sent at
         unconfirmed_email: Unconfirmed email
       match:
-        matcher2_id: Matcher2 ID
-        updated_at: Updated at
-        created_at: Created at
         id: ID
+        created_at: Created at
+        updated_at: Updated at
+        team1: Team 1
+        team2: Team 2
+        date: Date
+        result: Result
+        matcher2_id: Matcher2 ID
         matcher1_id: Matcher1 ID
       chanel:
         id: ID
@@ -80,3 +84,10 @@ en:
         version: Version
         force_update: Force update
         reason: Reason
+    errors:
+      models:
+        match:
+          attributes:
+            result:
+              blank: "Result can't be blank"
+              invalid: "Result is invalid"
