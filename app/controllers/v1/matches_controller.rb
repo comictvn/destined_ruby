@@ -1,5 +1,24 @@
 class V1::MatchesController < ApplicationController
   # Other methods...
+  def update_status
+    begin
+      user = User.find(params[:id])
+      matched_user = User.find(params[:matched_user_id])
+      status = params[:status]
+      new_status = MatchesService.new.update_status(user, matched_user, status)
+      if new_status == 'liked'
+        render json: { status: 200, message: 'Match status updated successfully', match_status: new_status }, status: :ok
+      elsif new_status == 'matched'
+        render json: { status: 200, message: 'Congratulations! You have a new match.', match_status: new_status }, status: :ok
+      else
+        render json: { error: 'An unexpected error occurred on the server' }, status: :internal_server_error
+      end
+    rescue ActiveRecord::RecordNotFound => e
+      render json: { error: 'User not found.' }, status: :not_found
+    rescue => e
+      render json: { error: 'Unexpected error occurred' }, status: :internal_server_error
+    end
+  end
   def potential_matches
     begin
       user_id = params[:id]
