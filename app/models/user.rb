@@ -1,9 +1,15 @@
 class User < ApplicationRecord
-  has_secure_password
+  # Associations
+  belongs_to :match, foreign_key: 'match_id'
+  has_many :user_chanels
+  has_many :matches
+  # Validations
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :password, presence: true, confirmation: true
   validates :password_confirmation, presence: true
+  # Callbacks
   before_create :generate_confirmation_token
+  # Instance methods
   def send_confirmation_instructions
     UserMailer.confirmation_email(self).deliver_now
   end
