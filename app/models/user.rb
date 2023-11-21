@@ -1,8 +1,7 @@
 class User < ApplicationRecord
   # Associations
   belongs_to :match, foreign_key: 'match_id'
-  has_many :user_chanels
-  has_many :matches
+  has_many :matches, foreign_key: 'user_id'
   # Validations
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :password, presence: true, confirmation: true
