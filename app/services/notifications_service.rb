@@ -12,7 +12,21 @@ class NotificationsService
     total_pages = notifications.total_pages
     { notifications: notifications, total_notifications: total_notifications, total_pages: total_pages }
   end
+  def like_or_dislike_match(match_id, status)
+    validate_user
+    match = Match.find_by(id: match_id)
+    raise 'Match not found' unless match
+    match.update(status: status)
+    if status == 'like' && match.liked_by?(@user_id)
+      create_notification(@user_id, match_id)
+      create_notification(match.user_id, match_id)
+    end
+    'Success'
+  end
   private
+  def create_notification(user_id, match_id)
+    Notification.create(user_id: user_id, match_id: match_id)
+  end
   def validate_user
     user = User.find_by(id: @user_id)
     raise 'User not found' unless user
