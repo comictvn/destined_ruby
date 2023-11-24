@@ -4,6 +4,12 @@ class UserMailer < ApplicationMailer
     @confirmation_link = confirmation_link(@user)
     mail(to: @user.email, subject: 'Registration Confirmation', body: "Please click on the link below to confirm your registration.\n#{@confirmation_link}")
   end
+  def match_notification(user1, user2)
+    @user1 = user1
+    @user2 = user2
+    @match_status = user1.match.status
+    mail(to: [@user1.email, @user2.email], subject: 'Match Notification', body: "The status of your match is #{@match_status}")
+  end
   def match_status_update_email(user, match)
     @user = user
     @match = match
