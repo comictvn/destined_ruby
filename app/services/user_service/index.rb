@@ -2,22 +2,35 @@
 # rubocop:disable Style/ClassAndModuleChildren
 class UserService::Index
   include Pundit::Authorization
-  attr_accessor :params, :records, :query
+  include ActiveModel::Validations
+  attr_accessor :params, :records, :query, :name, :age, :gender, :location, :interests, :preferences
+  validates :name, presence: true
+  validates :age, numericality: { only_integer: true, greater_than: 0 }
+  validates :gender, inclusion: { in: %w[male female other] }
+  validates :location, presence: true
+  validates :interests, presence: true
+  validates :preferences, presence: true
   def initialize(params, current_user = nil)
     @params = params
     @records = Api::UsersPolicy::Scope.new(current_user, User).resolve
   end
   def execute
-    phone_number_start_with
-    firstname_start_with
-    lastname_start_with
-    dob_equal
-    gender_equal
-    interests_start_with
-    location_start_with
-    email_start_with
-    order
-    paginate
+    validate_user(params[:name], params[:age], params[:gender], params[:location], params[:interests], params[:preferences])
+    if valid?
+      user = User.create!(name: @name, age: @age, gender: @gender, location: @location, interests: @interests, preferences: @preferences)
+      generate_matches(user.id)
+    else
+      errors.full_messages
+    end
+  end
+  def validate_user(name, age, gender, location, interests, preferences)
+    @name = name
+    @age = age
+    @gender = gender
+    @location = location
+    @interests = interests
+    @preferences = preferences
+    valid?
   end
   def generate_matches(user_id)
     user = User.find(user_id)
@@ -39,7 +52,6 @@ class UserService::Index
     score = 0
     score
   end
-  # Rest of the code remains the same
-  ...
+  # ... rest of the code ...
 end
 # rubocop:enable Style/ClassAndModuleChildren

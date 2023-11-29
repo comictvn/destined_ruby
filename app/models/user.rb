@@ -17,6 +17,9 @@ class User < ApplicationRecord
            foreign_key: :reacted_id, dependent: :destroy
   enum gender: %w[male female other], _suffix: true
   has_one_attached :thumbnail, dependent: :destroy
+  # Added fields
+  attr_accessor :name, :age, :gender, :location, :interests, :preferences
+  has_secure_password
   # validations
   validates :phone_number, presence: true, uniqueness: true
   validates :phone_number, length: { in: 0..255 }, if: :phone_number?
@@ -30,6 +33,8 @@ class User < ApplicationRecord
   validates :email, uniqueness: true, allow_blank: true
   validates :email, length: { in: 0..255 }, if: :email?
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: :email_changed?
+  # Added validations
+  validates :name, :age, :gender, :location, :interests, :preferences, presence: true
   # end for validations
   def generate_reset_password_token
     raw, enc = Devise.token_generator.generate(self.class, :reset_password_token)
