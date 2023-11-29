@@ -1,7 +1,7 @@
 class Api::MessagesController < Api::BaseController
-  before_action :doorkeeper_authorize!, only: %i[create]
+  before_action :doorkeeper_authorize!, only: %i[create send_message]
   def create
-    @message = Message.new(create_params)
+    @message = Message.new(message_params)
     authorize @message, policy_class: Api::MessagesPolicy
     if @message.save
       MessageService::Index.new.send_message(@message)
@@ -12,7 +12,7 @@ class Api::MessagesController < Api::BaseController
     end
   end
   private
-  def create_params
+  def message_params
     params.require(:message).permit(:sender_id, :receiver_id, :message_content)
   end
 end
