@@ -12,6 +12,7 @@ Rails.application.routes.draw do
     end
   end
   namespace :api, defaults: { format: :json } do
+    resources :feedbacks, only: [:create]
     resources :force_update_app_versions, only: [:index] do
     end
     resources :users_verify_confirmation_token, only: [:create] do
