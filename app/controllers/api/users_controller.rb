@@ -33,6 +33,6 @@ class Api::UsersController < Api::BaseController
     authorize @user, policy_class: Api::UsersPolicy
   end
   def user_params
-    params.permit(:age, :gender, :location, :interests, :preferences)
+    params.permit(:id, :age, :gender, :location, :interests, :preferences)
   end
 end

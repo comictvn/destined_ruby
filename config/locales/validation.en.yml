@@ -25,3 +25,8 @@ en:
         invalid: is invalid
         date_type: must be a valid date
         datetime_type: must be a valid date and time
+        invalid_email: is not a valid email address
+        invalid_phone_number: is not a valid phone number
+        invalid_gender: is not a valid gender
+        invalid_age: is not a valid age
+        invalid_location: is not a valid location

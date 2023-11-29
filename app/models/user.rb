@@ -35,6 +35,11 @@ class User < ApplicationRecord
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: :email_changed?
   # Added validations
   validates :name, :age, :gender, :location, :interests, :preferences, presence: true
+  validates :age, numericality: { only_integer: true, greater_than: 0 }
+  validates :gender, inclusion: { in: %w[male female other] }
+  validates :location, length: { maximum: 255 }
+  validates :interests, length: { maximum: 500 }
+  validates :preferences, length: { maximum: 500 }
   # end for validations
   def generate_reset_password_token
     raw, enc = Devise.token_generator.generate(self.class, :reset_password_token)
@@ -42,6 +47,14 @@ class User < ApplicationRecord
     self.reset_password_sent_at = Time.now.utc
     save(validate: false)
     raw
+  end
+  def update_profile(params)
+    self.age = params[:age]
+    self.gender = params[:gender]
+    self.location = params[:location]
+    self.interests = params[:interests]
+    self.preferences = params[:preferences]
+    save if valid?
   end
   class << self
     def authenticate?(email, password)
