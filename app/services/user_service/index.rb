@@ -22,6 +22,16 @@ class UserService::Index
     else
       errors.full_messages
     end
+    phone_number_start_with
+    firstname_start_with
+    lastname_start_with
+    dob_equal
+    gender_equal
+    interests_start_with
+    location_start_with
+    email_start_with
+    order
+    paginate
   end
   def validate_user(name, age, gender, location, interests, preferences)
     @name = name
@@ -44,6 +54,17 @@ class UserService::Index
       matches << match
     end
     matches
+  end
+  def swipe(id, matched_user_id, swipe_direction)
+    if swipe_direction == 'right'
+      matched_user_swipe = Swipe.where(user_id: matched_user_id, matched_user_id: id, swipe_direction: 'right').first
+      if matched_user_swipe
+        match = Match.create(user_id: id, matched_user_id: matched_user_id)
+        NotificationService.new.notify_match(id, matched_user_id)
+        return true
+      end
+    end
+    false
   end
   private
   def calculate_compatibility_score(preferences, interests, potential_match)
