@@ -1,7 +1,7 @@
 class Api::UsersController < Api::BaseController
-  before_action :doorkeeper_authorize!, only: %i[index show update_profile]
-  before_action :set_user, only: %i[show update_profile]
-  before_action :authorize_user, only: %i[show update_profile]
+  before_action :doorkeeper_authorize!, only: %i[index show update_profile generate_matches]
+  before_action :set_user, only: %i[show update_profile generate_matches]
+  before_action :authorize_user, only: %i[show update_profile generate_matches]
   def index
     @users = UserService::Index.new(params.permit!, current_resource_owner).execute
     @total_pages = @users.total_pages
@@ -14,6 +14,10 @@ class Api::UsersController < Api::BaseController
     else
       render json: {success: false, message: @user.errors.full_messages.join(', ')}
     end
+  end
+  def generate_matches
+    @matches = UserService::GenerateMatches.new(params[:id]).execute
+    render json: { matches: @matches }, status: :ok
   end
   private
   def set_user
