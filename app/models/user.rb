@@ -4,6 +4,8 @@ class User < ApplicationRecord
   validates :password, presence: true, confirmation: true
   validates :password_confirmation, presence: true
   before_create :generate_confirmation_token
+  has_many :user_chanels, foreign_key: :user_id
+  has_many :matches, foreign_key: :user_id
   def send_confirmation_instructions
     UserMailer.confirmation_email(self).deliver_now
   end
