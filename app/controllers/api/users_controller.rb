@@ -22,18 +22,8 @@ class Api::UsersController < Api::BaseController
   def swipe
     swipe_direction = params[:swipe_direction]
     return render json: { error: 'Invalid swipe direction' }, status: :bad_request unless ['right', 'left'].include?(swipe_direction)
-    if swipe_direction == 'right'
-      is_matched = UserService::CheckMatch.new(params[:id], params[:matched_user_id]).execute
-      if is_matched
-        Match.create_match(params[:id], params[:matched_user_id])
-        TwilioGateway.send_notification(params[:id], params[:matched_user_id])
-        render json: { status: 'Matched' }, status: :ok
-      else
-        render json: { status: 'Not Matched' }, status: :ok
-      end
-    else
-      render json: { status: 'Not Matched' }, status: :ok
-    end
+    matched_status = UserService::Swipe.new(params[:id], params[:matched_user_id], swipe_direction).execute
+    render json: { status: matched_status }, status: :ok
   end
   private
   def set_user
