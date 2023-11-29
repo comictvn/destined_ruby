@@ -1,7 +1,7 @@
 class Api::UsersRegistrationsController < Api::BaseController
   def create
     begin
-      user_params = create_params
+      user_params = register_params
       UserService::Index.new(user_params).validate!
       @user = User.new(user_params)
       @user.id = SecureRandom.uuid
@@ -16,7 +16,7 @@ class Api::UsersRegistrationsController < Api::BaseController
       render json: { error: e.message }, status: :unprocessable_entity
     end
   end
-  def create_params
+  def register_params
     params.require(:user).permit(:name, :age, :gender, :location, :interests, :preferences)
   end
 end
