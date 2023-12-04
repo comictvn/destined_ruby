@@ -2,9 +2,7 @@ if @message.present?
   json.message @message
 else
   json.chanel do
-    json.id @chanel.id
-    json.created_at @chanel.created_at
-    json.updated_at @chanel.updated_at
+    json.extract! @chanel, :id, :name, :description, :created_at, :updated_at
     json.messages @chanel.messages do |message|
       json.id message.id
       json.created_at message.created_at
