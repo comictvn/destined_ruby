@@ -40,6 +40,7 @@ Rails.application.routes.draw do
       patch 'password', to: 'users_passwords#update_password'
     end
     post 'users_verify_reset_password_requests', to: 'users_verify_reset_password_requests#verify'
+    resources :shops, only: [:update]
   end
   get '/health' => 'pages#health_check'
   get 'api-docs/v1/swagger.yaml' => 'swagger#yaml'
