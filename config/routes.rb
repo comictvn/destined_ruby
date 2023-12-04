@@ -12,6 +12,11 @@ Rails.application.routes.draw do
     end
   end
   namespace :api, defaults: { format: :json } do
+    resources :base_services, only: [] do
+      member do
+        get 'health_check'
+      end
+    end
     resources :force_update_app_versions, only: [:index] do
     end
     resources :users_verify_confirmation_token, only: [:create] do
@@ -44,5 +49,4 @@ Rails.application.routes.draw do
   get 'api-docs/v1/swagger.yaml' => 'swagger#yaml'
   get '/users' => 'users#index'
   get '/api/chanels', to: 'api/chanels#index'
-  delete '/api/chanels/:chanel_id/messages/:id', to: 'messages#destroy'
 end
