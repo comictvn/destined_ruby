@@ -14,3 +14,5 @@ en:
     phone_number_already_registered: 'Phone number already registered'
     unable_to_send_otp: 'Unable to send OTP'
     otp_sent_successfully: 'OTP sent successfully'
+    invalid_or_expired_otp: 'Invalid or expired OTP code'
+    phone_number_verified: 'Phone number verified successfully'
