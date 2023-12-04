@@ -25,3 +25,6 @@ en:
         invalid: is invalid
         date_type: must be a valid date
         datetime_type: must be a valid date and time
+        invalid_email_format: has an invalid email format
+        email_taken: email has already been taken
+        password_confirmation: doesn't match password
