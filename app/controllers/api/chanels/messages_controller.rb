@@ -1,5 +1,5 @@
 class Api::Chanels::MessagesController < Api::BaseController
-  before_action :doorkeeper_authorize!, only: %i[index destroy delete_message]
+  before_action :doorkeeper_authorize!, only: %i[index destroy]
   def index
     chanel = Chanel.find_by(id: params[:chanel_id])
     return render json: { error: 'Chanel not found' }, status: :not_found unless chanel
@@ -8,26 +8,16 @@ class Api::Chanels::MessagesController < Api::BaseController
     render json: { messages: @messages, total: @messages.count }, status: :ok
   end
   def destroy
-    @message = Message.find_by('messages.id = ?', params[:id])
-    raise ActiveRecord::RecordNotFound if @message.blank?
-    authorize @message, policy_class: Api::Chanels::MessagesPolicy
-    if @message.destroy
-      head :ok, message: I18n.t('common.200')
-    else
-      head :unprocessable_entity
-    end
-  end
-  def delete_message
     chanel = Chanel.find_by(id: params[:chanel_id])
+    return render json: { error: 'The chanel is not found.' }, status: :not_found unless chanel
     message = Message.find_by(id: params[:id])
-    if chanel.nil? || message.nil?
-      render json: { error: 'Chanel or Message not found' }, status: :not_found
+    return render json: { error: 'The message is not found.' }, status: :not_found unless message
+    authorize message, policy_class: Api::Chanels::MessagesPolicy
+    result = MessageService::Delete.new(chanel_id: chanel.id, message_id: message.id).execute
+    if result.success?
+      render json: { status: 200, message: 'The message was successfully deleted.' }, status: :ok
     else
-      if message.destroy
-        render json: { success: 'Message deleted successfully' }, status: :ok
-      else
-        render json: { error: 'Failed to delete message' }, status: :unprocessable_entity
-      end
+      render json: { error: result.error }, status: :unprocessable_entity
     end
   end
 end
