@@ -1,11 +1,8 @@
 class Api::ChanelsController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index show destroy]
   def index
-    @chanels = ChanelService::Index.new(params.permit!, current_resource_owner).execute
-    @total_pages = @chanels.total_pages
-    respond_to do |format|
-      format.json { render :index, status: :ok }
-    end
+    @chanels = Chanel.all
+    render json: @chanels, only: [:id, :name, :description, :created_at, :updated_at], status: :ok
   end
   def show
     @chanel = Chanel.find(params[:id])
