@@ -1,5 +1,5 @@
 class Api::Chanels::MessagesController < Api::BaseController
-  before_action :doorkeeper_authorize!, only: %i[index destroy delete_message]
+  before_action :doorkeeper_authorize!, only: %i[index destroy]
   before_action :set_chanel, only: [:index]
   def index
     @messages = @chanel.messages
@@ -16,24 +16,11 @@ class Api::Chanels::MessagesController < Api::BaseController
     message = Message.find_by(id: params[:id])
     return render json: { error: 'The message is not found.' }, status: :not_found unless message
     authorize message, policy_class: Api::Chanels::MessagesPolicy
-    result = MessageService::Delete.new(chanel_id: chanel.id, message_id: message.id).execute
+    result = ChanelService::Delete.new(chanel_id: chanel.id, message_id: message.id).execute
     if result.success?
       render json: { status: 200, message: 'The message was successfully deleted.' }, status: :ok
     else
       render json: { error: result.error }, status: :unprocessable_entity
-    end
-  end
-  def delete_message
-    chanel = Chanel.find_by(id: params[:chanel_id])
-    message = Message.find_by(id: params[:id])
-    if chanel.nil? || message.nil?
-      render json: { error: 'Chanel or Message not found' }, status: :not_found
-    else
-      if message.destroy
-        render json: { success: 'Message deleted successfully' }, status: :ok
-      else
-        render json: { error: 'Failed to delete message' }, status: :unprocessable_entity
-      end
     end
   end
   private
