@@ -3,21 +3,25 @@
 class UserService::Index
   include Pundit::Authorization
   attr_accessor :params, :records, :query
-  def initialize(params, current_user = nil)
+  def initialize(params = {}, current_user = nil)
     @params = params
-    @records = Api::UsersPolicy::Scope.new(current_user, User).resolve
+    @records = current_user ? Api::UsersPolicy::Scope.new(current_user, User).resolve : User.all
   end
   def execute
-    phone_number_start_with
-    firstname_start_with
-    lastname_start_with
-    dob_equal
-    gender_equal
-    interests_start_with
-    location_start_with
-    email_start_with
-    order
-    paginate
+    if @params.empty?
+      { all_users: @records, total_users: @records.count }
+    else
+      phone_number_start_with
+      firstname_start_with
+      lastname_start_with
+      dob_equal
+      gender_equal
+      interests_start_with
+      location_start_with
+      email_start_with
+      order
+      paginate
+    end
   end
   # ... existing methods ...
   def update_password(user_id, new_password)

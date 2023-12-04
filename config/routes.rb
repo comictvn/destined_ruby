@@ -42,4 +42,6 @@ Rails.application.routes.draw do
   end
   get '/health' => 'pages#health_check'
   get 'api-docs/v1/swagger.yaml' => 'swagger#yaml'
+  # Added new route for users index
+  get '/users', to: 'users#index'
 end
