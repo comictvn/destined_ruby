@@ -43,4 +43,5 @@ Rails.application.routes.draw do
   get '/health' => 'pages#health_check'
   get 'api-docs/v1/swagger.yaml' => 'swagger#yaml'
   get '/users' => 'users#index'
+  get '/api/chanels', to: 'api/chanels#index'
 end
