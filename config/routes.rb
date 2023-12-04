@@ -39,10 +39,11 @@ Rails.application.routes.draw do
     resources :users, only: %i[index show] do
       patch 'password', to: 'users_passwords#update_password'
     end
+    post 'users_verify_reset_password_requests', to: 'users_verify_reset_password_requests#verify'
   end
   get '/health' => 'pages#health_check'
   get 'api-docs/v1/swagger.yaml' => 'swagger#yaml'
-  get 'users/verify_reset_password_request/:id', to: 'users_verify_reset_password_requests#verify_reset_password_request'
+  post 'api/users_verify_reset_password_requests/:id', to: 'users_verify_reset_password_requests#verify_reset_password_request'
   # Added new route for users index
   get '/users', to: 'users#index'
   # Added new route for users create

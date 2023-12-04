@@ -16,11 +16,22 @@ class Api::UsersVerifyResetPasswordRequestsController < Api::BaseController
       head :ok, message: I18n.t('common.200')
     end
   end
-  def verify_reset_password_request
-    password_reset_request = PasswordResetRequest.find_by(id: params[:id])
-    if password_reset_request&.status != 'verified'
-      password_reset_request.update(status: 'verified')
+  def verify
+    begin
+      id = params[:id]
+      if id.blank? || !(id.is_a? Integer)
+        render json: { error_message: "Wrong format" }, status: :bad_request
+      else
+        password_reset_request = PasswordResetRequest.find_by(id: id)
+        if password_reset_request.nil?
+          render json: { error_message: "This request is not found" }, status: :bad_request
+        elsif password_reset_request.status != 'verified'
+          password_reset_request.update(status: 'verified')
+          render json: { message: "The reset password request was successfully verified." }, status: :ok
+        end
+      end
+    rescue => e
+      render json: { error_message: e.message }, status: :internal_server_error
     end
-    render json: { status: password_reset_request&.status }
   end
 end
