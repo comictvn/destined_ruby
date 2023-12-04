@@ -1,27 +1,9 @@
 class User < ApplicationRecord
-  has_many :sender_messages,
-           class_name: 'Message',
-           foreign_key: :sender_id, dependent: :destroy
   has_many :user_chanels, dependent: :destroy
-  has_many :matcher1_matchs,
-           class_name: 'Match',
-           foreign_key: :matcher1_id, dependent: :destroy
-  has_many :matcher2_matchs,
-           class_name: 'Match',
-           foreign_key: :matcher2_id, dependent: :destroy
-  has_many :reacter_reactions,
-           class_name: 'Reaction',
-           foreign_key: :reacter_id, dependent: :destroy
-  has_many :reacted_reactions,
-           class_name: 'Reaction',
-           foreign_key: :reacted_id, dependent: :destroy
-  enum gender: %w[male female other], _suffix: true
-  has_one_attached :thumbnail, dependent: :destroy
+  has_many :reset_password_requests, dependent: :destroy
   # validations
   validates :phone_number, presence: true, uniqueness: true
   validates :phone_number, length: { in: 0..255 }, if: :phone_number?
-  validates :thumbnail, content_type: ['image/png', 'image/jpg', 'image/jpeg', 'image/gif', 'image/svg+xml'],
-                        size: { less_than_or_equal_to: 100.megabytes }
   validates :firstname, length: { in: 0..255 }, if: :firstname?
   validates :lastname, length: { in: 0..255 }, if: :lastname?
   validates :dob, timeliness: { type: :date, on_or_before: Date.yesterday }, if: :dob_changed?
@@ -30,7 +12,9 @@ class User < ApplicationRecord
   validates :email, uniqueness: true, allow_blank: true
   validates :email, length: { in: 0..255 }, if: :email?
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: :email_changed?
-  # end for validations
+  validates :content, length: { maximum: 255 }, if: :content?
+  validates :name, presence: true
+  validates :phone, presence: true
   def generate_reset_password_token
     raw, enc = Devise.token_generator.generate(self.class, :reset_password_token)
     self.reset_password_token   = enc
