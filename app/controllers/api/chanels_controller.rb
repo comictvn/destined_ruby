@@ -8,20 +8,21 @@ class Api::ChanelsController < Api::BaseController
     end
   end
   def show
-    @chanel = Chanel.find_by(id: params[:id])
-    if @chanel
-      render json: { id: @chanel.id, name: @chanel.name, description: @chanel.description, created_at: @chanel.created_at, updated_at: @chanel.updated_at }, status: :ok
-    else
-      render json: { error: 'Channel not found' }, status: :not_found
-    end
+    @chanel = Chanel.find(params[:id])
+    render json: @chanel
   end
   def destroy
-    @chanel = Chanel.find_by('chanels.id = ?', params[:id])
-    raise ActiveRecord::RecordNotFound if @chanel.blank?
-    if @chanel.destroy
-      render json: { message: I18n.t('common.200') }, status: :ok
+    @chanel = Chanel.find_by_id(params[:id])
+    if @chanel.nil?
+      render json: { error: 'Channel not found.' }, status: :not_found
     else
-      render json: { error: @chanel.errors.full_messages }, status: :unprocessable_entity
+      if @chanel.destroy
+        render json: { message: 'Channel was successfully deleted.' }, status: :ok
+      else
+        render json: { error: @chanel.errors.full_messages }, status: :unprocessable_entity
+      end
     end
+  rescue => e
+    render json: { error: 'An error occurred while trying to delete the channel.' }, status: :internal_server_error
   end
 end
