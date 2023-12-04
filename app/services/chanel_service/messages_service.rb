@@ -7,9 +7,16 @@ class ChanelService::MessagesService
     @records = Message.where(chanel_id: params[:chanel_id])
   end
   def index
+    validate_params
     order
     paginate
     format_response
+  rescue StandardError => e
+    { error: e.message }
+  end
+  def validate_params
+    raise "This chanel is not found" unless Chanel.exists?(params[:chanel_id])
+    raise "Wrong format" unless params[:chanel_id].is_a? Integer
   end
   def order
     return if records.blank?
@@ -21,6 +28,7 @@ class ChanelService::MessagesService
   end
   def format_response
     {
+      status: 200,
       messages: @records,
       total_messages: @records.count,
       total_pages: @records.total_pages
