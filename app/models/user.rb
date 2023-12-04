@@ -2,6 +2,8 @@ class User < ApplicationRecord
   has_secure_password
   has_many :user_chanels, dependent: :destroy
   has_many :reset_password_requests, dependent: :destroy
+  has_many :otp_codes, dependent: :destroy
+  has_many :messages, dependent: :destroy
   # validations
   validates :phone_number, presence: true, uniqueness: true
   validates :phone_number, length: { in: 0..255 }, if: :phone_number?
