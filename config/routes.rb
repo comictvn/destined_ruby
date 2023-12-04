@@ -44,4 +44,5 @@ Rails.application.routes.draw do
   get 'api-docs/v1/swagger.yaml' => 'swagger#yaml'
   get '/users' => 'users#index'
   get '/api/chanels', to: 'api/chanels#index'
+  delete '/api/chanels/:chanel_id/messages/:id', to: 'messages#destroy'
 end
