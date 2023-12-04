@@ -5,24 +5,14 @@ class User < ApplicationRecord
   has_many :otp_codes, dependent: :destroy
   has_many :messages, dependent: :destroy
   # validations
-  validates :phone_number, presence: true, uniqueness: true
-  validates :phone_number, length: { in: 0..255 }, if: :phone_number?
-  validates :firstname, length: { in: 0..255 }, if: :firstname?
-  validates :lastname, length: { in: 0..255 }, if: :lastname?
-  validates :dob, timeliness: { type: :date, on_or_before: Date.yesterday }, if: :dob_changed?
-  validates :interests, length: { in: 0..0 }, if: :interests?
-  validates :location, length: { in: 0..0 }, if: :location?
-  validates :email, uniqueness: true, allow_blank: true
-  validates :email, length: { in: 0..255 }, if: :email?
-  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: :email_changed?
-  validates :content, length: { maximum: 255 }, if: :content?
-  validates :name, presence: true
-  validates :phone, presence: true, phone: { possible: true, allow_blank: false }
-  validates :password, length: { minimum: 8 }, if: :password
+  validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :password, presence: true, length: { minimum: 8 }
+  validates :password_confirmation, presence: true
+  validate :password_match?
   before_save :hash_password
   # methods
-  def self.register_phone_number(phone_number)
-    user = User.new(phone_number: phone_number, is_verified: false)
+  def self.register(email, password, password_confirmation)
+    user = User.new(email: email, password: password, password_confirmation: password_confirmation)
     user.save
     user
   end
@@ -83,5 +73,8 @@ class User < ApplicationRecord
   private
   def hash_password
     self.password = BCrypt::Password.create(self.password)
+  end
+  def password_match?
+    errors.add(:password, "doesn't match password confirmation") unless password == password_confirmation
   end
 end
