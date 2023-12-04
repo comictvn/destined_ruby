@@ -4,4 +4,5 @@ class Chanel < ApplicationRecord
   # validations
   validates :name, presence: true
   validates :name, length: { in: 0..255 }, if: :name?
+  validates :description, length: { in: 0..255 }, allow_blank: true
 end

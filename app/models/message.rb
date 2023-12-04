@@ -1,8 +1,9 @@
 class Message < ApplicationRecord
-  belongs_to :user
+  belongs_to :user, foreign_key: 'sender_id'
   belongs_to :chanel
   belongs_to :sender, class_name: 'User', foreign_key: 'user_id'
   has_many_attached :images, dependent: :destroy
+  # validations
   validates :content, presence: true, length: { in: 0..65_535 }
   validates :sender_id, presence: true
   validates :chanel_id, presence: true

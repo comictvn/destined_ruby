@@ -1,13 +1,20 @@
 class User < ApplicationRecord
-  # Associations
-  has_many :user_chanels, dependent: :destroy
-  has_many :reset_password_requests, dependent: :destroy
+  # Relations
   has_many :otp_codes, dependent: :destroy
   has_many :messages, dependent: :destroy
+  has_many :user_chanels, dependent: :destroy
+  has_many :reset_password_requests, dependent: :destroy
   # Validations
-  validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
-  validates :password, presence: true, length: { minimum: 8 }
+  validates :email, presence: true, uniqueness: true, length: { maximum: 255 }, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :phone_number, presence: true, uniqueness: true
+  validates :firstname, presence: true
+  validates :lastname, presence: true
+  validates :password, presence: true, confirmation: true, length: { minimum: 8 }
   validates :password_confirmation, presence: true
+  validates :encrypted_password, presence: true
+  validates :failed_attempts, numericality: { only_integer: true }
+  validates :sign_in_count, numericality: { only_integer: true }
+  validates :gender, numericality: { only_integer: true }
   validate :password_match?
   # Callbacks
   before_save :hash_password
