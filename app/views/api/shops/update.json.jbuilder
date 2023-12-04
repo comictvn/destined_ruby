@@ -4,3 +4,4 @@ json.shop do
   json.name @shop.name
   json.address @shop.address
 end
+json.message "Shop updated successfully"
