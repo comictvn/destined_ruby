@@ -57,4 +57,5 @@ Rails.application.routes.draw do
   get '/api/chanels', to: 'api/chanels#index'
   get '/api/chanels/:chanel_id/messages', to: 'api/chanels/messages#index'
   get '/api/chanels/:id', to: 'api/chanels#show'
+  delete '/api/chanels/:chanel_id/messages/:id', to: 'api/chanels/messages#destroy'
 end

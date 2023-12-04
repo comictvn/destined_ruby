@@ -1,1 +1,1 @@
-json.message @message if @message.present?
+json.message "Message deleted successfully" if @message.nil?

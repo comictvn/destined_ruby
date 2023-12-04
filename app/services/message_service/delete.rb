@@ -7,16 +7,16 @@ class MessageService::Delete
     @message_id = message_id
     @user_id = user_id
   end
-  def delete
+  def call
     chanel = Chanel.find_by(id: chanel_id)
-    return { error: 'The chanel is not found.' } unless chanel
+    return { error: 'The chanel is not found.', status: 400 } unless chanel
     message = chanel.messages.find_by(id: message_id)
-    return { error: 'The message is not found.' } unless message
-    return { error: 'User does not have permission to access the resource.' } unless message.user_id == user_id
+    return { error: 'The message is not found.', status: 400 } unless message
+    return { error: 'User does not have permission to access the resource.', status: 403 } unless message.user_id == user_id
     if message.destroy
       { status: 200, message: 'The message was successfully deleted.' }
     else
-      { error: 'Failed to delete message.' }
+      raise StandardError, 'Failed to delete message.'
     end
   end
 end

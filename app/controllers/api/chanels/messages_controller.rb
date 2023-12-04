@@ -1,6 +1,6 @@
 class Api::Chanels::MessagesController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index destroy]
-  before_action :set_chanel, only: [:index]
+  before_action :set_chanel, only: [:index, :destroy]
   def index
     authorize @chanel, policy_class: Api::Chanels::MessagesPolicy
     @messages = MessageService::Index.new(chanel_id: @chanel.id).execute
@@ -15,12 +15,10 @@ class Api::Chanels::MessagesController < Api::BaseController
     render json: { error: e.message }, status: :internal_server_error
   end
   def destroy
-    chanel = Chanel.find_by(id: params[:chanel_id])
-    return render json: { error: 'The chanel is not found.' }, status: :not_found unless chanel
-    message = Message.find_by(id: params[:id])
+    message = @chanel.messages.find_by(id: params[:id])
     return render json: { error: 'The message is not found.' }, status: :not_found unless message
     authorize message, policy_class: Api::Chanels::MessagesPolicy
-    result = ChanelService::Delete.new(chanel_id: chanel.id, message_id: message.id).execute
+    result = ChanelService::Delete.new(chanel_id: @chanel.id, message_id: message.id).execute
     if result.success?
       render json: { status: 200, message: 'The message was successfully deleted.' }, status: :ok
     else
@@ -30,5 +28,7 @@ class Api::Chanels::MessagesController < Api::BaseController
   private
   def set_chanel
     @chanel = Chanel.find(params[:chanel_id])
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'The chanel is not found.' }, status: :not_found
   end
 end
