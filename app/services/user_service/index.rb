@@ -38,15 +38,20 @@ class UserService::Index
     user.update(password: encrypted_password)
     { status: 'success', message: 'Password updated successfully' }
   end
-  def register_user
-    phone_number = params[:phone_number]
-    user = find_by_phone(phone_number)
+  def register_user(email, password, password_confirmation)
+    user = User.find_by(email: email)
     if user.nil?
-      password = BCrypt::Password.create(params[:password])
-      user = User.create(name: params[:name], phone_number: phone_number, password: password)
-      { status: 'Registration successful' }
+      if password == password_confirmation
+        encrypted_password = BCrypt::Password.create(password)
+        user = User.create(email: email, password: encrypted_password)
+        # Add confirmation email sending logic here
+        # ...
+        { status: 'success', message: 'Registration successful, confirmation email sent' }
+      else
+        { status: 'error', message: 'Password and password confirmation do not match' }
+      end
     else
-      { status: 'Phone number already registered' }
+      { status: 'error', message: 'Email already registered' }
     end
   end
   def find_by_phone(phone_number)

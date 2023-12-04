@@ -1,0 +1,12 @@
+<p>
+  Hello <%= @user.email %>,
+</p>
+<p>
+  Welcome to our application! Click the link below to confirm your email address and activate your account:
+</p>
+<p>
+  <%= link_to 'Confirm my account', confirmation_url(@user.confirmation_token) %>
+</p>
+<p>
+  If you didn't request this, please ignore this email. Your account won't be activated until you access the link above.
+</p>

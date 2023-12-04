@@ -20,7 +20,7 @@ class User < ApplicationRecord
   has_one_attached :thumbnail, dependent: :destroy
   # validations
   validates :username, presence: { message: "The username is required." }, length: { maximum: 50, message: "You cannot input more 50 characters." }
-  validates :password, presence: { message: "The password is required." }, length: { minimum: 8, message: "Password must be at least 8 characters." }
+  validates :password, presence: { message: "The password is required." }, length: { minimum: 8, message: "Password must be at least 8 characters." }, confirmation: true
   validates :email, presence: { message: "The email is required." }, uniqueness: true, allow_blank: true
   validates :email, length: { in: 0..255 }, if: :email?
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP, message: "Invalid email format." }, if: :email_changed?
