@@ -1,3 +1,4 @@
+# PATH: /app/services/shop_service/update.rb
 # rubocop:disable Style/ClassAndModuleChildren
 class ShopService::Update
   class ShopNotFound < StandardError; end
@@ -9,6 +10,10 @@ class ShopService::Update
     @shop_id = shop_id
     @shop_params = shop_params
   end
+  def call
+    update_shop
+  end
+  private
   def update_shop
     begin
       # Check if the user has the necessary permissions
@@ -18,14 +23,11 @@ class ShopService::Update
       # If the shop does not exist, raise a custom exception
       raise ShopNotFound, 'This shop is not found' unless shop
       # Validate the new shop information
-      raise InvalidShopInformation, 'Wrong format' unless shop_params[:id].is_a? Integer
-      raise InvalidShopInformation, 'You cannot input more 100 characters.' if shop_params[:name].length > 100
-      raise InvalidShopInformation, 'The name is required.' if shop_params[:name].blank?
-      raise InvalidShopInformation, 'You cannot input more 200 characters.' if shop_params[:address].length > 200
+      validate_shop_information
       # If the information is valid, update the shop's name and address
       if shop.update(shop_params)
         # If the update is successful, return the updated shop
-        return { status: 200, shop: shop }
+        return { status: 200, shop: shop.as_json }
       else
         # If there is any other error, raise a custom exception
         raise ShopUpdateFailed, 'Shop update failed'
@@ -35,7 +37,11 @@ class ShopService::Update
       return { success: false, message: e.message }
     end
   end
-  private
+  def validate_shop_information
+    raise InvalidShopInformation, 'The name is required.' if shop_params[:name].blank?
+    raise InvalidShopInformation, 'You cannot input more 100 characters.' if shop_params[:name].length > 100
+    raise InvalidShopInformation, 'You cannot input more 200 characters.' if shop_params[:address].length > 200
+  end
   def authorize(user, action)
     ApplicationPolicy.new(user, Shop).public_send(action)
   end

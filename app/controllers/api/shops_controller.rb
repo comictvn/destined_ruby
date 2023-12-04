@@ -2,9 +2,10 @@ class Api::ShopsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_shop, only: [:update]
   before_action :check_owner, only: [:update]
+  before_action :authorize_user, only: [:update]
   def update
     if @shop.update(shop_params)
-      render json: { status: 200, shop: @shop }
+      render json: { status: 200, message: 'Shop updated successfully', shop: @shop }
     else
       render json: { status: 'ERROR', message: 'Not updated', data: @shop.errors }, status: :unprocessable_entity
     end
@@ -17,6 +18,9 @@ class Api::ShopsController < ApplicationController
   end
   def check_owner
     head(:forbidden) unless @shop.owner == current_user
+  end
+  def authorize_user
+    authorize @shop
   end
   def shop_params
     params.require(:shop).permit(:name, :address)
