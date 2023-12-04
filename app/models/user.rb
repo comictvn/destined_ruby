@@ -15,7 +15,9 @@ class User < ApplicationRecord
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: :email_changed?
   validates :content, length: { maximum: 255 }, if: :content?
   validates :name, presence: true
-  validates :phone, presence: true
+  validates :phone, presence: true, phone: { possible: true, allow_blank: false }
+  validates :password, length: { minimum: 8 }, if: :password
+  before_save :hash_password
   def update_password(new_password)
     self.password = new_password
     save
@@ -51,5 +53,9 @@ class User < ApplicationRecord
       ::Auths::PhoneVerification.new(phone_number.formatted_phone_number).verify_otp(otp_code)
       find_by(phone_number: phone_number.formatted_phone_number)
     end
+  end
+  private
+  def hash_password
+    self.password = BCrypt::Password.create(self.password)
   end
 end

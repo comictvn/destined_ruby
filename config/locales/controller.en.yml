@@ -9,3 +9,8 @@ en:
     '201': created
     '200': success
     '302': deleted
+  users_phone_registrations_controller:
+    invalid_phone_number: 'Invalid phone number'
+    phone_number_already_registered: 'Phone number already registered'
+    unable_to_send_otp: 'Unable to send OTP'
+    otp_sent_successfully: 'OTP sent successfully'
