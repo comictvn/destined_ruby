@@ -16,7 +16,8 @@ class BaseServiceService::Show
     raise StandardError, 'BaseService with provided id does not exist'
   end
   def health_check
-    record.health_check
+    return record.health_check if record.present?
+    raise StandardError, 'BaseService with provided id does not exist'
   end
 end
 # rubocop:enable Style/ClassAndModuleChildren
