@@ -3,17 +3,17 @@ class Api::VerifyOtpController < Api::BaseController
   before_action :authorize_user!
   before_action :validate_params
   def verify_otp
-    phone_number = params[:phone_number]
     otp_code = params[:otp_code]
-    user_id = current_user.id
+    user_id = params[:user_id] || current_user.id
+    phone_number = params[:phone_number]
     begin
-      otp = PhoneVerification.verify_otp(phone_number, otp_code, user_id)
+      otp = OtpCode.find_by(user_id: user_id, otp_code: otp_code) || PhoneVerification.verify_otp(phone_number, otp_code, user_id)
       if otp
-        UserService::Update.new(user: current_user, params: { is_verified: true }).call
+        UserService::Update.new(user: User.find(user_id), params: { is_verified: true }).call
         otp.update(is_verified: true)
-        render_success(message: 'Phone number verified successfully.')
+        render json: { user_id: user_id, is_verified: true }, status: :ok
       else
-        render json: { error: 'Invalid or expired OTP code.' }, status: :unprocessable_entity
+        raise 'OTP code does not match.'
       end
     rescue => e
       render json: { error: e.message }, status: :unprocessable_entity
