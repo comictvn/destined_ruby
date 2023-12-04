@@ -19,15 +19,16 @@ module Api
     end
     def verify_phone_number
       phone_number = params[:phone_number]
-      phone_number_service = Auths::PhoneNumber.new(phone_number)
-      if phone_number_service.valid?
+      if Phonelib.valid?(phone_number)
         user = User.find_by(phone: phone_number)
         if user.nil?
-          user = UserRegistrationService.new(phone: phone_number, is_verified: false).call
+          render json: { error: 'Phone number not registered.' }, status: :unprocessable_entity
+        else
+          otp_code = OtpCode.generate_otp(user.id)
+          SendOtpCodeJob.perform_later(user.phone, otp_code)
+          user.update(is_verified: false)
+          render json: { message: 'OTP code has been sent successfully.' }, status: :ok
         end
-        otp_code = Auths::PhoneVerification.new(user.id).generate_otp
-        SendOtpCodeJob.perform_later(user.phone, otp_code)
-        render json: { user_id: user.id, otp_code: otp_code, is_verified: false }, status: :ok
       else
         render json: { error: 'Invalid phone number.' }, status: :unprocessable_entity
       end
@@ -41,7 +42,7 @@ module Api
     def validate_params
       params.require(:user).permit(:name, :phone, :password)
       raise Exceptions::BadRequestError, 'The name is required.' if params[:user][:name].blank?
-      raise Exceptions::BadRequestError, 'Invalid phone number.' unless params[:user][:phone].match?(/\A[+]?[\d\s]+\z/)
+      raise Exceptions::BadRequestError, 'Invalid phone number.' unless Phonelib.valid?(params[:user][:phone])
       raise Exceptions::BadRequestError, 'Password must be at least 8 characters.' if params[:user][:password].length < 8
     end
   end

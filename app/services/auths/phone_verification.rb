@@ -13,6 +13,15 @@ module Auths
         @phone_number = user_id_or_phone_number
       end
     end
+    def verify_phone_number(phone_number)
+      raise Exceptions::InvalidPhoneNumber unless Phonelib.valid?(phone_number)
+      user = User.find_by(phone_number: phone_number)
+      raise Exceptions::PhoneNumberAlreadyRegistered if user
+      otp_code = generate_otp_code(user.id)
+      TwilioGateway.new.send_otp(phone_number, otp_code)
+      UserService::Update.new(user).call(is_verified: false)
+      { message: 'OTP code has been sent successfully.' }
+    end
     def send_otp
       cache_key = "phone_number_#{phone_number}/#{Time.current.strftime('%Y-%m-%d')}"
       current_sending_count = Rails.cache.fetch(cache_key,
