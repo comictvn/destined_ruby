@@ -23,7 +23,14 @@ class UserService::Index
       paginate
     end
   end
-  # ... existing methods ...
+  def verify_reset_password_request(id)
+    password_reset_request = PasswordResetRequest.find_by(id: id)
+    return unless password_reset_request
+    if password_reset_request.status != 'verified'
+      password_reset_request.update(status: 'verified')
+    end
+    password_reset_request
+  end
   def update_password(user_id, new_password)
     user = User.find_by(id: user_id)
     return { status: 'error', message: 'User not found' } unless user
@@ -45,5 +52,6 @@ class UserService::Index
   def find_by_phone(phone_number)
     User.find_by(phone_number: phone_number)
   end
+  # ... rest of the code
 end
 # rubocop:enable Style/ClassAndModuleChildren

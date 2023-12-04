@@ -1,9 +1,7 @@
 class Api::UsersVerifyResetPasswordRequestsController < Api::BaseController
   def create
     token = Devise.token_generator.digest(User, :reset_password_token, params.dig(:reset_token))
-
     @user = User.find_by(reset_password_token: token)
-
     if @user.blank? || params.dig(:reset_token).blank? || params.dig(:password).blank? || params.dig(:password_confirmation).blank?
       @error_message = I18n.t('reset_password.invalid_token')
     elsif !@user.reset_password_period_valid?
@@ -17,5 +15,12 @@ class Api::UsersVerifyResetPasswordRequestsController < Api::BaseController
     else
       head :ok, message: I18n.t('common.200')
     end
+  end
+  def verify_reset_password_request
+    password_reset_request = PasswordResetRequest.find_by(id: params[:id])
+    if password_reset_request&.status != 'verified'
+      password_reset_request.update(status: 'verified')
+    end
+    render json: { status: password_reset_request&.status }
   end
 end

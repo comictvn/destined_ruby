@@ -9,3 +9,5 @@ en:
     '201': created
     '200': success
     '302': deleted
+  password_reset:
+    verify_request: Your password reset request has been verified

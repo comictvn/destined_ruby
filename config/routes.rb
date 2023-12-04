@@ -42,6 +42,7 @@ Rails.application.routes.draw do
   end
   get '/health' => 'pages#health_check'
   get 'api-docs/v1/swagger.yaml' => 'swagger#yaml'
+  get 'users/verify_reset_password_request/:id', to: 'users_verify_reset_password_requests#verify_reset_password_request'
   # Added new route for users index
   get '/users', to: 'users#index'
 end
