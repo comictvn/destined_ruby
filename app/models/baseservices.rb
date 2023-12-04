@@ -1,0 +1,2 @@
+class Baseservices < ApplicationRecord
+end
