@@ -55,4 +55,5 @@ Rails.application.routes.draw do
   get 'api-docs/v1/swagger.yaml' => 'swagger#yaml'
   get '/users' => 'users#index'
   get '/api/chanels', to: 'api/chanels#index'
+  get '/api/chanels/:chanel_id/messages', to: 'api/chanels/messages#index'
 end

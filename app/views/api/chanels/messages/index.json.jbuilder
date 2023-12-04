@@ -1,34 +1,8 @@
-json.total_messages @messages.count
+json.status 200
 json.messages @messages do |message|
-  json.message_id message.id
+  json.id message.id
   json.content message.content
-  json.created_at message.created_at
-  json.updated_at message.updated_at
-  sender = message.sender
-  if sender.present?
-    json.sender do
-      json.id sender.id
-      json.created_at sender.created_at
-      json.updated_at sender.updated_at
-      json.phone_number sender.phone_number
-      json.thumbnail sender.thumbnail
-      json.firstname sender.firstname
-      json.lastname sender.lastname
-      json.dob sender.dob
-      json.gender sender.gender
-      json.interests sender.interests
-      json.location sender.location
-    end
-  end
-  json.sender_id message.sender_id
-  chanel = message.chanel
-  if chanel.present?
-    json.chanel do
-      json.id chanel.id
-      json.created_at chanel.created_at
-      json.updated_at chanel.updated_at
-    end
-  end
+  json.user_id message.sender_id
   json.chanel_id message.chanel_id
-  json.images message.images
+  json.created_at message.created_at
 end
