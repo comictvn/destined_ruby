@@ -1,5 +1,9 @@
 class Api::MessagesController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[create]
+  def index
+    @messages = Message.all
+    render json: @messages, only: [:id, :content, :created_at, :updated_at]
+  end
   def create
     @message = Message.new(message_params)
     authorize @message, policy_class: Api::MessagesPolicy
