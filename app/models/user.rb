@@ -1,30 +1,20 @@
 class User < ApplicationRecord
-  has_secure_password
+  # Associations
   has_many :user_chanels, dependent: :destroy
   has_many :reset_password_requests, dependent: :destroy
   has_many :otp_codes, dependent: :destroy
   has_many :messages, dependent: :destroy
-  # validations
+  # Validations
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :password, presence: true, length: { minimum: 8 }
   validates :password_confirmation, presence: true
   validate :password_match?
+  # Callbacks
   before_save :hash_password
-  # methods
-  def self.register(email, password, password_confirmation)
-    user = User.new(email: email, password: password, password_confirmation: password_confirmation)
-    user.save
-    user
-  end
+  # Instance methods
   def update_password(new_password)
     self.password = new_password
     save
-  end
-  def self.update_password_by_id(id, new_password)
-    user = User.find_by(id: id)
-    return { status: false, message: 'User does not exist' } unless user
-    user.update_password(new_password)
-    { status: true, message: 'Password updated successfully' }
   end
   def generate_reset_password_token
     raw, enc = Devise.token_generator.generate(self.class, :reset_password_token)
@@ -51,7 +41,19 @@ class User < ApplicationRecord
       return { otp_code: otp_code.otp_code, user_id: self.id, is_verified: self.is_verified }
     end
   end
+  # Class methods
   class << self
+    def register(email, password, password_confirmation)
+      user = User.new(email: email, password: password, password_confirmation: password_confirmation)
+      user.save
+      user
+    end
+    def update_password_by_id(id, new_password)
+      user = User.find_by(id: id)
+      return { status: false, message: 'User does not exist' } unless user
+      user.update_password(new_password)
+      { status: true, message: 'Password updated successfully' }
+    end
     def authenticate?(email, password)
       user = User.find_for_authentication(email: email)
       return false if user.blank?
