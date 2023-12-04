@@ -29,5 +29,10 @@ class ChanelService::Index
       chanels: @records
     }
   end
+  def find_by_id(id)
+    chanel = Chanel.find_by(id: id)
+    raise ActiveRecord::RecordNotFound, "Couldn't find Chanel with 'id'=#{id}" if chanel.nil?
+    chanel
+  end
 end
 # rubocop:enable Style/ClassAndModuleChildren

@@ -8,7 +8,8 @@ class Api::ChanelsController < Api::BaseController
     end
   end
   def show
-    @chanel = Chanel.find_by!('chanels.id = ?', params[:id])
+    @chanel = Chanel.find(params[:id])
+    render json: @chanel
   end
   def destroy
     @chanel = Chanel.find_by('chanels.id = ?', params[:id])
