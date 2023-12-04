@@ -1,6 +1,6 @@
 module Api
   class UsersPhoneRegistrationsController < Api::BaseController
-    before_action :validate_params, only: [:create]
+    before_action :validate_params, only: [:create, :verify_phone_number]
     def create
       client = Doorkeeper::Application.find_by(uid: params[:client_id], secret: params[:client_id])
       raise Exceptions::AuthenticationError and return if client.blank?
@@ -13,6 +13,23 @@ module Api
         else
           render json: { error: user.errors.full_messages.join(', ') }, status: :internal_server_error
         end
+      end
+    rescue => e
+      render json: { error: e.message }, status: :internal_server_error
+    end
+    def verify_phone_number
+      phone_number = params[:phone_number]
+      phone_number_service = Auths::PhoneNumber.new(phone_number)
+      if phone_number_service.valid?
+        user = User.find_by(phone: phone_number)
+        if user.nil?
+          user = UserRegistrationService.new(phone: phone_number, is_verified: false).call
+        end
+        otp_code = Auths::PhoneVerification.new(user.id).generate_otp
+        SendOtpCodeJob.perform_later(user.phone, otp_code)
+        render json: { user_id: user.id, otp_code: otp_code, is_verified: false }, status: :ok
+      else
+        render json: { error: 'Invalid phone number.' }, status: :unprocessable_entity
       end
     rescue => e
       render json: { error: e.message }, status: :internal_server_error

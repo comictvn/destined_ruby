@@ -1,7 +1,7 @@
 class SendOtpCodeJob < ApplicationJob
   queue_as :critical
   sidekiq_options retry: 1
-  def perform(user_id, resend = false)
+  def perform(user_id, otp_code = nil, resend = false)
     user = User.find_by(id: user_id)
     return unless user
     otp_code = if resend
@@ -9,9 +9,9 @@ class SendOtpCodeJob < ApplicationJob
                  otp.update(otp_code: SecureRandom.hex(3), created_at: Time.now)
                  otp.otp_code
                else
-                 SecureRandom.hex(3)
+                 otp_code || SecureRandom.hex(3)
                end
-    twilio.verifications.create(to: user.phone_number, channel: 'sms', otp_code: otp_code)
+    twilio.verifications.create(to: user.phone_number, channel: 'sms', code: otp_code)
   end
   private
   def twilio

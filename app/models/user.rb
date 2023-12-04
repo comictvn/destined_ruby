@@ -20,6 +20,11 @@ class User < ApplicationRecord
   validates :phone, presence: true, phone: { possible: true, allow_blank: false }
   validates :password, length: { minimum: 8 }, if: :password
   before_save :hash_password
+  def self.register_phone_number(phone_number)
+    user = User.new(phone_number: phone_number, is_verified: false)
+    user.save
+    user
+  end
   def update_password(new_password)
     self.password = new_password
     save
@@ -36,6 +41,11 @@ class User < ApplicationRecord
     self.reset_password_sent_at = Time.now.utc
     save(validate: false)
     raw
+  end
+  def generate_otp_code
+    otp_code = rand(1000..9999)
+    self.otp_codes.create(otp_code: otp_code, is_verified: false)
+    otp_code
   end
   def resend_otp_code
     otp_code = self.otp_codes.last
