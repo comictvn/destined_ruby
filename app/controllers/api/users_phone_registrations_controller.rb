@@ -19,20 +19,22 @@ module Api
     end
     def verify_phone_number
       phone_number = params[:phone_number]
-      phone_verification_service = Auths::PhoneVerification.new(phone_number)
+      phone_verification_service = Auths::PhoneNumber.new(phone_number)
       if phone_verification_service.valid?
-        user = User.find_by(phone: phone_number)
-        if user.nil?
-          user = UserRegistrationService.new(phone: phone_number, is_verified: false).call
-          otp_code = OtpCode.create(user_id: user.id, otp_code: SecureRandom.hex(3), is_verified: false, created_at: Time.now)
-          SendOtpCodeJob.perform_later(user.phone, otp_code.otp_code)
-          render json: { otp_code: otp_code.otp_code, user_id: user.id, is_verified: user.is_verified }, status: :ok
-        else
-          render json: { error: 'Phone number already registered.' }, status: :unprocessable_entity
-        end
+        user_service = UserService::LoginOtp.new(phone_number)
+        user_service.call
+        render json: { status: 200, message: 'Phone number verified successfully.' }, status: :ok
       else
-        render json: { error: 'Invalid phone number.' }, status: :unprocessable_entity
+        render json: { error: 'Invalid phone number.' }, status: :bad_request
       end
+    rescue Exceptions::AuthenticationError
+      render json: { error: 'Unauthorized' }, status: :unauthorized
+    rescue Exceptions::ForbiddenError
+      render json: { error: 'Forbidden' }, status: :forbidden
+    rescue Exceptions::BadRequestError
+      render json: { error: 'Bad Request' }, status: :bad_request
+    rescue Exceptions::UnprocessableEntityError
+      render json: { error: 'Unprocessable Entity' }, status: :unprocessable_entity
     rescue => e
       render json: { error: e.message }, status: :internal_server_error
     end
