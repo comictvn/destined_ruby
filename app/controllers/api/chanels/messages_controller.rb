@@ -1,10 +1,11 @@
 class Api::Chanels::MessagesController < Api::BaseController
-  before_action :doorkeeper_authorize!, only: %i[index destroy]
+  before_action :doorkeeper_authorize!, only: %i[index destroy delete_message]
   before_action :set_chanel, only: [:index]
   def index
-    @messages = @chanel.messages
+    @messages = @chanel.messages.page(params[:page]).per(params[:per_page])
     @total_pages = @messages.total_pages
-    render json: { messages: @messages, total: @messages.count }, status: :ok
+    @total_items = @messages.total_count
+    render 'api/chanels/messages/index', status: :ok
   rescue ActiveRecord::RecordNotFound
     render json: { error: 'The chanel is not found.' }, status: :not_found
   rescue StandardError => e

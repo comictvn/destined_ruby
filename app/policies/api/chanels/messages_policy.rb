@@ -6,4 +6,7 @@ class Api::Chanels::MessagesPolicy < ApplicationPolicy
     user = User.find(@user.id)
     user.messages.include?(message)
   end
+  def validate_chanel_id?(chanel_id)
+    Chanel.exists?(chanel_id)
+  end
 end
