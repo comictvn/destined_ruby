@@ -1,4 +1,5 @@
 class User < ApplicationRecord
+  has_secure_password
   has_many :user_chanels, dependent: :destroy
   has_many :reset_password_requests, dependent: :destroy
   # validations
@@ -15,6 +16,16 @@ class User < ApplicationRecord
   validates :content, length: { maximum: 255 }, if: :content?
   validates :name, presence: true
   validates :phone, presence: true
+  def update_password(new_password)
+    self.password = new_password
+    save
+  end
+  def self.update_password_by_id(id, new_password)
+    user = User.find_by(id: id)
+    return { status: false, message: 'User does not exist' } unless user
+    user.update_password(new_password)
+    { status: true, message: 'Password updated successfully' }
+  end
   def generate_reset_password_token
     raw, enc = Devise.token_generator.generate(self.class, :reset_password_token)
     self.reset_password_token   = enc
