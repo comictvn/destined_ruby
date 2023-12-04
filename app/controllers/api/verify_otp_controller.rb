@@ -1,22 +1,20 @@
 class Api::VerifyOtpController < Api::BaseController
   before_action :authenticate_user!
   before_action :authorize_user!
-  def create
-    phone_number = params[:phone_number]
+  def verify_otp
     otp_code = params[:otp_code]
-    if phone_number.blank? || otp_code.blank?
-      render json: { error: 'Phone number and OTP code are required.' }, status: :unprocessable_entity
-      return
-    end
-    if phone_number.is_a?(String) && otp_code.is_a?(String)
-      begin
-        PhoneVerification.verify(phone_number, otp_code)
-        render json: { message: 'OTP verification successful.' }, status: :ok
-      rescue PhoneVerification::VerificationError => e
-        render json: { error: e.message }, status: :unprocessable_entity
+    user_id = current_user.id
+    begin
+      otp = PhoneVerification.verify_otp(otp_code, user_id)
+      if otp
+        UserService::Update.new(user: current_user, params: { is_verified: true }).call
+        otp.update(is_verified: true)
+        render_success(message: 'Phone number verified successfully.')
+      else
+        render json: { error: 'Invalid or expired OTP code.' }, status: :unprocessable_entity
       end
-    else
-      render json: { error: 'Wrong format.' }, status: :unprocessable_entity
+    rescue => e
+      render json: { error: e.message }, status: :unprocessable_entity
     end
   end
   private
