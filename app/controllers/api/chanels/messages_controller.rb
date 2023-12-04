@@ -1,8 +1,11 @@
 class Api::Chanels::MessagesController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index destroy delete_message]
   def index
-    @messages = MessageService::Index.new(params.permit!, current_resource_owner).execute
+    chanel = Chanel.find_by(id: params[:chanel_id])
+    return render json: { error: 'Chanel not found' }, status: :not_found unless chanel
+    @messages = MessageService::Index.new(params.permit!.merge(chanel_id: chanel.id), current_resource_owner).execute
     @total_pages = @messages.total_pages
+    render json: { messages: @messages, total: @messages.count }, status: :ok
   end
   def destroy
     @message = Message.find_by('messages.id = ?', params[:id])
