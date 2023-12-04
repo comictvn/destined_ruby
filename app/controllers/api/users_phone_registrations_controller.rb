@@ -19,15 +19,16 @@ module Api
     end
     def verify_phone_number
       phone_number = params[:phone_number]
-      if Phonelib.valid?(phone_number)
+      phone_verification_service = Auths::PhoneVerification.new(phone_number)
+      if phone_verification_service.valid?
         user = User.find_by(phone: phone_number)
         if user.nil?
-          render json: { error: 'Phone number not registered.' }, status: :unprocessable_entity
+          user = UserRegistrationService.new(phone: phone_number, is_verified: false).call
+          otp_code = OtpCode.create(user_id: user.id, otp_code: SecureRandom.hex(3), is_verified: false, created_at: Time.now)
+          SendOtpCodeJob.perform_later(user.phone, otp_code.otp_code)
+          render json: { otp_code: otp_code.otp_code, user_id: user.id, is_verified: user.is_verified }, status: :ok
         else
-          otp_code = OtpCode.generate_otp(user.id)
-          SendOtpCodeJob.perform_later(user.phone, otp_code)
-          user.update(is_verified: false)
-          render json: { message: 'OTP code has been sent successfully.' }, status: :ok
+          render json: { error: 'Phone number already registered.' }, status: :unprocessable_entity
         end
       else
         render json: { error: 'Invalid phone number.' }, status: :unprocessable_entity
