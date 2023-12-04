@@ -19,6 +19,14 @@ class UserService::Index
     order
     paginate
   end
+  # ... existing methods ...
+  def update_password(user_id, new_password)
+    user = User.find_by(id: user_id)
+    return { status: 'error', message: 'User not found' } unless user
+    encrypted_password = User.encrypt(new_password)
+    user.update(password: encrypted_password)
+    { status: 'success', message: 'Password updated successfully' }
+  end
   def register_user
     phone_number = params[:phone_number]
     user = find_by_phone(phone_number)

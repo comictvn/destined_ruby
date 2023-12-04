@@ -1,14 +1,15 @@
 class Api::UsersPasswordsController < Api::BaseController
-  def create
-    if current_resource_owner.valid_password?(params.dig(:old_password))
-      if current_resource_owner.update(password: params.dig(:new_password))
-        head :ok, message: I18n.t('common.200')
+  def update_password
+    user = User.find(params[:id])
+    if user
+      encrypted_password = user.encrypt(params[:password])
+      if user.update(password: encrypted_password)
+        render json: { message: 'Password updated successfully' }, status: :ok
       else
-        render json: { messages: current_current_resource_owneruser.errors.full_messages },
-               status: :unprocessable_entity
+        render json: { messages: user.errors.full_messages }, status: :unprocessable_entity
       end
     else
-      render json: { message: I18n.t('email_login.passwords.old_password_mismatch') }, status: :unprocessable_entity
+      render json: { message: 'User not found' }, status: :not_found
     end
   end
 end

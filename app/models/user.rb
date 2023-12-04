@@ -1,4 +1,5 @@
 class User < ApplicationRecord
+  has_secure_password
   has_many :sender_messages,
            class_name: 'Message',
            foreign_key: :sender_id, dependent: :destroy
@@ -37,6 +38,10 @@ class User < ApplicationRecord
     self.reset_password_sent_at = Time.now.utc
     save(validate: false)
     raw
+  end
+  def update_password(new_password)
+    self.password = new_password
+    save
   end
   class << self
     def authenticate?(email, password)

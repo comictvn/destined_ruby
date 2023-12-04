@@ -37,6 +37,7 @@ Rails.application.routes.draw do
     resources :users_phone_registrations, only: [:create] do
     end
     resources :users, only: %i[index show] do
+      patch 'password', to: 'users_passwords#update_password'
     end
   end
   get '/health' => 'pages#health_check'
