@@ -25,3 +25,8 @@ en:
         invalid: is invalid
         date_type: must be a valid date
         datetime_type: must be a valid date and time
+        name_required: The name is required
+        invalid_phone_number: Invalid phone number
+        password_length: Password must be at least 8 characters
+        invalid_otp: The OTP code is invalid
+        expired_otp: The OTP code has expired

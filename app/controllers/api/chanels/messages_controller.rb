@@ -1,23 +1,34 @@
 class Api::Chanels::MessagesController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index destroy]
-
+  before_action :set_chanel, only: [:index, :destroy]
   def index
-    # inside service params are checked and whiteisted
-    @messages = MessageService::Index.new(params.permit!, current_resource_owner).execute
-    @total_pages = @messages.total_pages
-  end
-
-  def destroy
-    @message = Message.find_by('messages.id = ?', params[:id])
-
-    raise ActiveRecord::RecordNotFound if @message.blank?
-
-    authorize @message, policy_class: Api::Chanels::MessagesPolicy
-
-    if @message.destroy
-      head :ok, message: I18n.t('common.200')
+    authorize @chanel, policy_class: Api::Chanels::MessagesPolicy
+    @messages = MessageService::Index.new(chanel_id: @chanel.id).execute
+    if @messages.success?
+      render json: { status: 200, messages: @messages.data }, status: :ok
     else
-      head :unprocessable_entity
+      render json: { error: @messages.error }, status: :unprocessable_entity
     end
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'The chanel is not found.' }, status: :not_found
+  rescue StandardError => e
+    render json: { error: e.message }, status: :internal_server_error
+  end
+  def destroy
+    message = @chanel.messages.find_by(id: params[:id])
+    return render json: { error: 'The message is not found.' }, status: :not_found unless message
+    authorize message, policy_class: Api::Chanels::MessagesPolicy
+    result = ChanelService::Delete.new(chanel_id: @chanel.id, message_id: message.id).execute
+    if result.success?
+      render json: { status: 200, message: 'The message was successfully deleted.' }, status: :ok
+    else
+      render json: { error: result.error }, status: :unprocessable_entity
+    end
+  end
+  private
+  def set_chanel
+    @chanel = Chanel.find(params[:chanel_id])
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'The chanel is not found.' }, status: :not_found
   end
 end

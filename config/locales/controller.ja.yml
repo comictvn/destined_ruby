@@ -9,3 +9,7 @@ ja:
     '201': 作成されました
     '200': 成功
     '302': 削除されました
+  users_phone_registrations_controller:
+    invalid_phone_number: 無効な電話番号です
+    phone_number_already_registered: 電話番号はすでに登録されています
+    unable_to_send_verification_code: 認証コードを送信できませんでした
