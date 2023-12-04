@@ -4,4 +4,8 @@ class ResetPasswordRequest < ApplicationRecord
   validates :otp, presence: true
   validates :status, presence: true
   validates :user_id, presence: true
+  # Verify OTP
+  def verify_otp(input_otp)
+    self.otp == input_otp
+  end
 end
