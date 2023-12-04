@@ -45,4 +45,6 @@ Rails.application.routes.draw do
   get 'users/verify_reset_password_request/:id', to: 'users_verify_reset_password_requests#verify_reset_password_request'
   # Added new route for users index
   get '/users', to: 'users#index'
+  # Added new route for users create
+  post '/api/users', to: 'users#create'
 end

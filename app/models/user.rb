@@ -19,18 +19,11 @@ class User < ApplicationRecord
   enum gender: %w[male female other], _suffix: true
   has_one_attached :thumbnail, dependent: :destroy
   # validations
-  validates :phone_number, presence: true, uniqueness: true
-  validates :phone_number, length: { in: 0..255 }, if: :phone_number?
-  validates :thumbnail, content_type: ['image/png', 'image/jpg', 'image/jpeg', 'image/gif', 'image/svg+xml'],
-                        size: { less_than_or_equal_to: 100.megabytes }
-  validates :firstname, length: { in: 0..255 }, if: :firstname?
-  validates :lastname, length: { in: 0..255 }, if: :lastname?
-  validates :dob, timeliness: { type: :date, on_or_before: Date.yesterday }, if: :dob_changed?
-  validates :interests, length: { in: 0..0 }, if: :interests?
-  validates :location, length: { in: 0..0 }, if: :location?
-  validates :email, uniqueness: true, allow_blank: true
+  validates :username, presence: { message: "The username is required." }, length: { maximum: 50, message: "You cannot input more 50 characters." }
+  validates :password, presence: { message: "The password is required." }, length: { minimum: 8, message: "Password must be at least 8 characters." }
+  validates :email, presence: { message: "The email is required." }, uniqueness: true, allow_blank: true
   validates :email, length: { in: 0..255 }, if: :email?
-  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: :email_changed?
+  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP, message: "Invalid email format." }, if: :email_changed?
   # end for validations
   def generate_reset_password_token
     raw, enc = Devise.token_generator.generate(self.class, :reset_password_token)
