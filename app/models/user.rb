@@ -20,6 +20,7 @@ class User < ApplicationRecord
   validates :phone, presence: true, phone: { possible: true, allow_blank: false }
   validates :password, length: { minimum: 8 }, if: :password
   before_save :hash_password
+  # methods
   def self.register_phone_number(phone_number)
     user = User.new(phone_number: phone_number, is_verified: false)
     user.save
