@@ -1,5 +1,6 @@
 class Api::Chanels::MessagesController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index destroy]
+  before_action :validate_params, only: [:destroy]
   def index
     chanel_id = params[:chanel_id]
     if chanel_id.nil? || !is_integer?(chanel_id)
@@ -11,11 +12,12 @@ class Api::Chanels::MessagesController < Api::BaseController
       render json: { error: 'This chanel is not found' }, status: :not_found
       return
     end
-    @messages = MessagesService.getMessages(chanel_id)
+    @messages = MessageService::Index.new(params.permit!, current_resource_owner).execute
+    @total_pages = @messages.total_pages
     if @messages.nil?
       render json: { error: 'No messages found for this chanel' }, status: :not_found
     else
-      render json: { status: 200, messages: @messages }, status: :ok
+      render 'api/chanels/messages/index', status: :ok
     end
   end
   def destroy
@@ -24,12 +26,23 @@ class Api::Chanels::MessagesController < Api::BaseController
     raise ActiveRecord::RecordNotFound if @message.blank?
     authorize @message, policy_class: Api::Chanels::MessagesPolicy
     if @message.destroy
-      render json: { message: I18n.t('common.200') }, status: :ok
+      render json: { status: 200, message: 'The message was successfully deleted.' }, status: :ok
     else
       head :unprocessable_entity
     end
   end
   private
+  def validate_params
+    chanel_id = params[:chanel_id]
+    message_id = params[:id]
+    unless chanel_id.to_i.to_s == chanel_id && message_id.to_i.to_s == message_id
+      render json: { error: 'Wrong format' }, status: :unprocessable_entity
+      return
+    end
+    unless Chanel.exists?(chanel_id) && Message.exists?(message_id)
+      render json: { error: 'This chanel or message is not found' }, status: :unprocessable_entity
+    end
+  end
   def is_integer?(str)
     str.to_i.to_s == str
   end

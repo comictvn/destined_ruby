@@ -3,17 +3,16 @@
 class MessageService::Delete
   attr_accessor :chanel_id, :id
   def initialize(chanel_id, id)
+    raise 'Wrong format' unless chanel_id.is_a?(Integer) && id.is_a?(Integer)
+    @chanel = Chanel.find_by(id: chanel_id)
+    raise 'This chanel is not found' unless @chanel
+    @message = @chanel.messages.find_by(id: id)
+    raise 'This message is not found' unless @message
     @chanel_id = chanel_id
     @id = id
   end
   def execute
-    message = Message.find_by(chanel_id: chanel_id, id: id)
-    return { status: :not_found, message: 'Message not found' } unless message
-    if message.destroy
-      { status: :success, message: 'Message deleted successfully' }
-    else
-      { status: :error, message: 'Failed to delete message' }
-    end
+    @message.destroy
   end
 end
 # rubocop:enable Style/ClassAndModuleChildren
