@@ -39,6 +39,7 @@ Rails.application.routes.draw do
     end
     resources :send_otp_codes, only: [:create] do
     end
+    post 'resend_otp_code', to: 'send_otp_codes#resend'
     resources :users_phone_registrations, only: [:create] do
     end
     resources :users, only: %i[index show] do

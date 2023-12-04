@@ -37,6 +37,19 @@ class User < ApplicationRecord
     save(validate: false)
     raw
   end
+  def resend_otp_code
+    otp_code = self.otp_codes.last
+    if otp_code
+      otp_code.update(otp_code: SecureRandom.hex(3), created_at: Time.now)
+    end
+  end
+  def resend_otp_code_and_return_info
+    otp_code = self.otp_codes.last
+    if otp_code
+      otp_code.update(otp_code: SecureRandom.hex(3), created_at: Time.now)
+      return { otp_code: otp_code.otp_code, user_id: self.id, is_verified: self.is_verified }
+    end
+  end
   class << self
     def authenticate?(email, password)
       user = User.find_for_authentication(email: email)
