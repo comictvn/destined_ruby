@@ -20,5 +20,11 @@ class MessageService::Index
     @records = Message.none if records.blank? || records.is_a?(Class)
     @records = records.page(params.dig(:pagination_page) || 1).per(params.dig(:pagination_limit) || 20)
   end
+  def delete_message(chanel_id, id)
+    message = @records.find_by(chanel_id: chanel_id, id: id)
+    return { error: 'Message not found' } unless message
+    message.destroy
+    { success: 'Message deleted successfully' }
+  end
 end
 # rubocop:enable Style/ClassAndModuleChildren
