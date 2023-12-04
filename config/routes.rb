@@ -45,6 +45,11 @@ Rails.application.routes.draw do
     resources :users, only: %i[index show] do
       patch 'password', to: 'users#update_password'
     end
+    resources :shops, only: [] do
+      member do
+        put '', to: 'shops#update'
+      end
+    end
   end
   get '/health' => 'pages#health_check'
   get 'api-docs/v1/swagger.yaml' => 'swagger#yaml'
