@@ -1,23 +1,24 @@
-class Api::UsersRegistrationsController < Api::BaseController
-  def create
-    @user = User.new(create_params)
-    if @user.save
-      if Rails.env.staging?
-        # to show token in staging
-        token = @user.respond_to?(:confirmation_token) ? @user.confirmation_token : ''
-        render json: { message: I18n.t('common.200'), token: token }, status: :ok and return
-      else
-        head :ok, message: I18n.t('common.200') and return
-      end
+class Api::UsersRegistrationsController < ApplicationController
+  skip_before_action :authenticate_user!, only: [:register]
+  def register
+    user_params = params.permit(:email, :password, :password_confirmation)
+    result = UserValidator.new(user_params).validate
+    if result[:status] == :error
+      render json: { error: result[:message] }, status: :bad_request
     else
-      error_messages = @user.errors.messages
-      render json: { error_messages: error_messages, message: I18n.t('email_login.registrations.failed_to_sign_up') },
-             status: :unprocessable_entity
+      user = User.find_by_email(user_params[:email])
+      if user
+        render json: { error: 'Email is already in use' }, status: :bad_request
+      else
+        user = User.new(user_params)
+        user.password = Devise::Encryptor.digest(User, user_params[:password])
+        if user.save
+          UserMailer.confirmation_email(user).deliver_now
+          render json: { status: 200, message: 'Registration successful. Please confirm your email address.', user_id: user.id }, status: :ok
+        else
+          render json: { error: 'Registration failed' }, status: :bad_request
+        end
+      end
     end
-  end
-
-  def create_params
-    params.require(:user).permit(:password, :password_confirmation, :phone_number, :firstname, :lastname, :dob,
-                                 :gender, :email)
   end
 end
