@@ -4,6 +4,7 @@ class Api::FeedbacksController < ApplicationController
   include Pundit
 
   before_action :authenticate_user!
+  before_action :doorkeeper_authorize!, only: [:create]
 
   def create
     feedback_params = feedback_params()
@@ -15,10 +16,16 @@ class Api::FeedbacksController < ApplicationController
       return
     end
 
-    # Verify that the user_id exists in the "users" table and is part of the match.
+    # Verify that the user_id exists in the "users" table.
     user = User.find_by(id: feedback_params[:user_id])
-    unless user && (match.matcher1_id == user.id || match.matcher2_id == user.id)
-      render json: { error: 'User not found or not part of the match.' }, status: :not_found
+    unless user
+      render json: { error: 'User not found.' }, status: :not_found
+      return
+    end
+
+    # Verify that the user is part of the match.
+    unless match.matcher1_id == user.id || match.matcher2_id == user.id
+      render json: { error: 'User not part of the match.' }, status: :unprocessable_entity
       return
     end
 
