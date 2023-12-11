@@ -62,8 +62,10 @@ class UserService::UpdateProfile
 
   def validate_input_data
     errors.add(:age, 'must be a number') unless @age.is_a?(Integer)
+    errors.add(:age, 'must be between 18 and 100') unless @age.between?(18, 100)
     errors.add(:gender, 'must be a valid gender') unless ['male', 'female', 'other'].include?(@gender.downcase)
     errors.add(:location, 'must be a string') unless @location.is_a?(String)
+    errors.add(:location, 'must be a valid format') unless @location.match?(/\A[a-zA-Z]+(?: [a-zA-Z]+)?, [a-zA-Z]{2}\z/)
     errors.add(:interests, 'must be an array of strings') unless @interests.is_a?(Array) && @interests.all? { |i| i.is_a?(String) }
   end
 
