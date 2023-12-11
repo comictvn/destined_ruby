@@ -27,15 +27,24 @@ class UserService::UpdateProfile
     { success: 'Profile and preferences updated successfully' }
   rescue ActiveRecord::RecordInvalid => e
     { error: e.message }
+  rescue StandardError => e
+    { error: e.message }
   end
 
   private
 
   def update_user_interests(user)
-    user.user_interests.destroy_all
-    @interests.each do |interest_id|
-      interest = Interest.find_or_create_by!(id: interest_id)
-      UserInterest.create!(user_id: @user_id, interest_id: interest.id)
+    existing_interest_ids = user.interests.pluck(:id)
+    new_interest_ids = @interests - existing_interest_ids
+    removed_interest_ids = existing_interest_ids - @interests
+
+    # Remove interests that are no longer associated with the user
+    UserInterest.where(user_id: @user_id, interest_id: removed_interest_ids).destroy_all
+
+    # Add new interests to the user
+    new_interest_ids.each do |interest_name|
+      interest = Interest.find_or_create_by!(name: interest_name)
+      UserInterest.create!(user_id: @user_id, interest_id: interest.id) unless user.interests.exists?(interest.id)
     end
   end
 
@@ -48,7 +57,7 @@ class UserService::UpdateProfile
     errors.add(:age, 'must be a number') unless @age.is_a?(Integer)
     errors.add(:gender, 'must be a valid gender') unless ['male', 'female', 'other'].include?(@gender.downcase)
     errors.add(:location, 'must be a string') unless @location.is_a?(String)
-    errors.add(:interests, 'must be an array of numbers') unless @interests.is_a?(Array) && @interests.all? { |i| i.is_a?(Integer) }
+    errors.add(:interests, 'must be an array of strings') unless @interests.is_a?(Array) && @interests.all? { |i| i.is_a?(String) }
   end
 
   def validate_preference_data
