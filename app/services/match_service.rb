@@ -6,21 +6,26 @@ class MatchService
   # New method to record mutual interest
   def record_mutual_interest(user_id, matcher1_id, matcher2_id)
     match = nil
+    message = ''
     ActiveRecord::Base.transaction do
       # Check for an existing match entry
-      match = Match.find_by(matcher1_id: matcher1_id, matcher2_id: matcher2_id) ||
-              Match.find_by(matcher1_id: matcher2_id, matcher2_id: matcher1_id)
+      match = Match.find_or_create_by(matcher1_id: matcher1_id, matcher2_id: matcher2_id) do |new_match|
+        new_match.user_id = user_id
+      end
 
-      # If a match entry does not exist, create a new one
-      if match.nil?
-        match = Match.create!(user_id: user_id, matcher1_id: matcher1_id, matcher2_id: matcher2_id)
+      # If a new match was created, send notifications
+      if match.persisted? && match.user_id.nil?
+        match.update(user_id: user_id)
+        send_match_notification(match)
+        message = 'Match recorded successfully.'
+      elsif match.persisted?
+        message = 'Match already exists.'
       end
     end
 
-    # Send a notification to both users about the match
-    send_match_notification(match) if match.persisted?
-
-    { success: true, message: 'Match recorded successfully.' }
+    { success: true, message: message }
+  rescue ActiveRecord::RecordNotFound => e
+    { success: false, message: "User not found: #{e.message}" }
   rescue => e
     { success: false, message: e.message }
   end
