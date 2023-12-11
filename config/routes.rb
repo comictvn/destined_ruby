@@ -59,6 +59,9 @@ Rails.application.routes.draw do
       end
     end
 
+    # Added new route for matches#create action
+    resources :matches, only: [:create], constraints: lambda { |request| doorkeeper_authorize! }
+
     post '/feedback', to: 'feedbacks#create', constraints: lambda { |request| doorkeeper_authorize! }
   end
 
