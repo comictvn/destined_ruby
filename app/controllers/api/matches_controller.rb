@@ -22,7 +22,15 @@ class Api::MatchesController < ApplicationController
     result = match_service.create_match(match_params[:user_id], match_params[:matched_user_id])
 
     if result[:success]
-      render json: { status: 201, message: "Match recorded successfully." }, status: :created
+      # Ensure the response includes the match details as per the requirement
+      match_details = {
+        id: result[:match].id,
+        user_id: result[:match].user_id,
+        matcher1_id: result[:match].user_id,
+        matcher2_id: result[:match].matched_user_id,
+        created_at: result[:match].created_at.iso8601
+      }
+      render json: { status: 201, message: "Match recorded successfully.", match: match_details }, status: :created
     else
       render json: { error: result[:message] }, status: (result[:error] ? :internal_server_error : :conflict)
     end
