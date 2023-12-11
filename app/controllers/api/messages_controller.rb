@@ -1,17 +1,26 @@
 class Api::MessagesController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[create initiate_conversation]
   before_action :set_match, only: [:initiate_conversation]
+  before_action :authenticate_sender, only: [:create]
 
   def create
-    @message = Message.new(create_params)
+    if valid_message_params?
+      service = MessageCreationService.new
+      result = service.create_message(
+        match_id: @match.id,
+        sender_id: message_params[:sender_id],
+        receiver_id: recipient_id(@match, message_params[:sender_id].to_i),
+        content: message_params[:content]
+      )
 
-    authorize @message, policy_class: Api::MessagesPolicy
-
-    return if @message.save
-
-    @error_object = @message.errors.messages
-
-    render status: :unprocessable_entity
+      if result[:success]
+        render json: { status: 201, message: "Message sent successfully." }, status: :created
+      else
+        render json: { error: result[:error] }, status: :unprocessable_entity
+      end
+    else
+      render json: { error: "Invalid parameters" }, status: :bad_request
+    end
   end
 
   def initiate_conversation
@@ -39,6 +48,17 @@ class Api::MessagesController < Api::BaseController
   end
 
   private
+
+  def authenticate_sender
+    set_match
+    unless @match && [@match.matcher1_id, @match.matcher2_id].include?(message_params[:sender_id].to_i)
+      render_error('Sender not part of the match', :forbidden)
+    end
+  end
+
+  def valid_message_params?
+    message_params[:sender_id].present? && message_params[:content].present?
+  end
 
   def set_match
     @match = Match.find_by(id: params[:match_id])
