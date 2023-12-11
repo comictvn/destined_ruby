@@ -10,17 +10,17 @@ class MatchFeedbackService
         raise 'User not part of the match'
       end
 
-      feedback = Feedback.create!(
+      # Instantiate and save a new MatchFeedback record
+      match_feedback = MatchFeedback.create!(
         match_id: match_id,
         user_id: user_id,
         content: content
       )
 
       # Use the feedback to refine the matching algorithm
-      # This is a placeholder for the algorithm refinement logic
-      # refine_matching_algorithm(feedback)
+      refine_matching_algorithm(match_feedback)
 
-      "Feedback successfully created"
+      "Feedback successfully created and will be used to improve the matching algorithm."
     end
   rescue => e
     raise e.message
@@ -28,9 +28,9 @@ class MatchFeedbackService
 
   private
 
-  # Placeholder method for refining the matching algorithm
-  # This should be implemented with the actual logic
-  def refine_matching_algorithm(feedback)
+  # Method for refining the matching algorithm
+  def refine_matching_algorithm(match_feedback)
     # Algorithm refinement logic goes here
+    # This should be implemented with the actual logic
   end
 end
