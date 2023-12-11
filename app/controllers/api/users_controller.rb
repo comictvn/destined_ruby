@@ -1,7 +1,9 @@
 class Api::UsersController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index show update_profile matches update_preferences complete_profile swipes]
-  before_action :set_user, only: [:update_preferences, :complete_profile, :matches]
+  before_action :set_user, only: [:matches, :update_preferences, :complete_profile]
 
+  # Require both services as they might be used in different contexts
+  require_dependency 'user_matching_service'
   require_dependency 'matchmaking_service'
 
   # ... existing methods ...
@@ -92,8 +94,17 @@ class Api::UsersController < Api::BaseController
     authorize @user, policy_class: Api::UsersPolicy
 
     begin
-      matchmaking_service = MatchmakingService.new
-      potential_matches = matchmaking_service.generate_potential_matches(@user.id)
+      # Use a conditional to determine which service to use based on some condition
+      # For example, a feature flag, user preference, etc.
+      # Here we assume a simple condition, but this should be replaced with a real one
+      if use_new_matching_service?
+        user_matching_service = UserMatchingService.new
+        potential_matches = user_matching_service.find_potential_matches(@user.id)
+      else
+        matchmaking_service = MatchmakingService.new
+        potential_matches = matchmaking_service.generate_potential_matches(@user.id)
+      end
+
       formatted_matches = potential_matches.map do |match|
         {
           id: match[:match].id,
@@ -146,6 +157,14 @@ class Api::UsersController < Api::BaseController
   end
 
   def set_user
-    @user = User.find_by(id: params[:user_id] || params[:id])
+    @user = User.find(params[:user_id] || params[:id])
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'User not found' }, status: :not_found
+  end
+
+  # Add a method to determine which matching service to use
+  def use_new_matching_service?
+    # Placeholder condition, replace with actual logic
+    true
   end
 end
