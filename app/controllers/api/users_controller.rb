@@ -21,7 +21,39 @@ class Api::UsersController < Api::BaseController
 
   # PUT /api/users/:id/profile
   def update_profile
-    # ... existing update_profile method ...
+    return render json: { error: 'User not found' }, status: :not_found unless set_user_by_id
+
+    unless valid_update_profile_params?
+      render json: { error: "Invalid parameters" }, status: :bad_request
+      return
+    end
+
+    ActiveRecord::Base.transaction do
+      UserService::UpdateProfile.new(
+        user_id: @user.id,
+        age: params[:age],
+        gender: params[:gender],
+        location: params[:location]
+      ).execute
+
+      params[:interests].each do |interest_name|
+        interest = Interest.find_or_create_by!(name: interest_name)
+        UserInterest.find_or_create_by!(user: @user, interest: interest)
+      end
+
+      user_preference = @user.user_preference || @user.build_user_preference
+      user_preference.update!(preference_data: params[:preferences])
+    end
+
+    render json: { status: 200, message: "Profile updated successfully." }, status: :ok
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { error: e.record.errors.full_messages.to_sentence }, status: :unprocessable_entity
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "User not found" }, status: :not_found
+  rescue Pundit::NotAuthorizedError
+    render json: { error: "Not authorized to update profile" }, status: :forbidden
+  rescue StandardError => e
+    render json: { error: e.message }, status: :internal_server_error
   end
 
   # PUT /api/users/:user_id/preferences
@@ -82,6 +114,32 @@ class Api::UsersController < Api::BaseController
       render json: { error: 'Invalid preferences format' }, status: :bad_request
     end
     # Add more validation rules as needed
+  end
+
+  def set_user_by_id
+    @user = User.find_by(id: params[:user_id] || params[:id])
+  end
+
+  def valid_update_profile_params?
+    params[:age].is_a?(Integer) && params[:age] > 0 &&
+    User.genders.keys.include?(params[:gender]) &&
+    params[:location].is_a?(String) &&
+    valid_interests_params?(params[:interests]) &&
+    valid_preferences_params?(params[:preferences])
+  end
+
+  def valid_interests_params?(interests)
+    interests.is_a?(Array) && interests.all? { |i| i.is_a?(String) }
+  end
+
+  def valid_preferences_params?(preferences)
+    preferences.is_a?(Hash) &&
+    preferences['age_range'].is_a?(Array) &&
+    preferences['age_range'].size == 2 &&
+    preferences['age_range'].all? { |i| i.is_a?(Integer) } &&
+    preferences['distance'].is_a?(Integer) &&
+    preferences['gender'].is_a?(Array) &&
+    preferences['gender'].all? { |i| User.genders.keys.include?(i) }
   end
 
   def set_user
