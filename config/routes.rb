@@ -54,14 +54,11 @@ Rails.application.routes.draw do
     resources :users, only: %i[index show] do
       member do
         put 'profile', to: 'users#update_profile'
-        # New route for updating user preferences
         put 'preferences', to: 'users#update_preferences', constraints: lambda { |request| doorkeeper_authorize! }
-        # Added new route for swipe action
         post 'swipes', to: 'users#swipes'
       end
     end
 
-    # New route for feedback submission
     post '/feedback', to: 'feedbacks#create', constraints: lambda { |request| doorkeeper_authorize! }
   end
 

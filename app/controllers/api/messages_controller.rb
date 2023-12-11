@@ -2,6 +2,7 @@ class Api::MessagesController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[create]
   before_action :set_match, only: [:create]
   before_action :authenticate_sender, only: [:create]
+  before_action :validate_users, only: [:create]
 
   def create
     if valid_message_params?
@@ -29,6 +30,14 @@ class Api::MessagesController < Api::BaseController
     set_match
     unless @match && [@match.matcher1_id, @match.matcher2_id].include?(message_params[:sender_id].to_i)
       render_error('Sender not part of the match', :forbidden)
+    end
+  end
+
+  def validate_users
+    sender = User.find_by(id: message_params[:sender_id])
+    receiver = User.find_by(id: message_params[:receiver_id])
+    unless sender && receiver && [@match.matcher1_id, @match.matcher2_id].include?(sender.id) && [@match.matcher1_id, @match.matcher2_id].include?(receiver.id)
+      render_error('User not found or not part of the match', :not_found)
     end
   end
 
