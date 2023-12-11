@@ -56,10 +56,10 @@ Rails.application.routes.draw do
         put 'profile', to: 'users#update_profile'
         put 'preferences', to: 'users#update_preferences', constraints: lambda { |request| doorkeeper_authorize! }
         post 'swipes', to: 'users#swipes'
+        get 'matches', to: 'users#get_potential_matches', constraints: lambda { |request| doorkeeper_authorize! } # Added new nested route for users#get_potential_matches action with authorization
       end
     end
 
-    # Added new route for matches#create action
     resources :matches, only: [:create], constraints: lambda { |request| doorkeeper_authorize! }
 
     post '/feedback', to: 'feedbacks#create', constraints: lambda { |request| doorkeeper_authorize! }
