@@ -66,9 +66,50 @@ class Api::MatchesController < ApplicationController
     end
   end
 
+  # New method to handle swipe actions
+  def record_swipe
+    swipe_params = params.require(:swipe).permit(:user_id, :target_user_id, :swipe_direction)
+
+    # Validate the existence of both users
+    unless User.exists?(swipe_params[:user_id]) && User.exists?(swipe_params[:target_user_id])
+      return render json: { error: "User not found." }, status: :not_found
+    end
+
+    # Validate swipe direction
+    unless ['right', 'left'].include?(swipe_params[:swipe_direction])
+      return render json: { error: "Invalid swipe direction." }, status: :bad_request
+    end
+
+    # Check for an existing opposite swipe
+    if swipe_params[:swipe_direction] == 'right' && opposite_swipe_exists?(swipe_params[:target_user_id], swipe_params[:user_id])
+      # Create a new match
+      match = Match.create(user_id: swipe_params[:user_id], matched_user_id: swipe_params[:target_user_id])
+      if match.persisted?
+        render json: { message: "It's a match!", match_id: match.id }, status: :created
+      else
+        render json: { error: "Could not create match." }, status: :internal_server_error
+      end
+    else
+      # Log or store the one-sided swipe action
+      Swipe.create!(user_id: swipe_params[:user_id], target_user_id: swipe_params[:target_user_id], swipe_direction: swipe_params[:swipe_direction])
+      render json: { message: "Swipe recorded." }, status: :ok
+    end
+  rescue ActiveRecord::RecordNotFound => e
+    render json: { error: e.message }, status: :not_found
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  rescue => e
+    render json: { error: e.message }, status: :internal_server_error
+  end
+
   private
 
   def match_params
     params.require(:match).permit(:user_id, :matched_user_id)
+  end
+
+  # Helper method to check for an existing opposite swipe
+  def opposite_swipe_exists?(target_user_id, user_id)
+    Swipe.exists?(user_id: target_user_id, target_user_id: user_id, swipe_direction: 'right')
   end
 end
