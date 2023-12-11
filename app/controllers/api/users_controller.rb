@@ -1,6 +1,6 @@
 class Api::UsersController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index show update_profile matches update_preferences complete_profile swipes]
-  before_action :set_user, only: [:matches, :update_preferences, :complete_profile]
+  before_action :set_user, only: [:update_preferences, :complete_profile, :matches]
 
   # ... existing methods ...
 
@@ -23,7 +23,7 @@ class Api::UsersController < Api::BaseController
   def update_preferences
     return render json: { error: 'User not found' }, status: :not_found unless @user
 
-    preferences = user_params[:preferences]
+    preferences = params[:preferences]
     unless preferences.is_a?(Hash) # Assuming preferences should be a Hash, update as needed
       return render json: { error: 'Invalid preferences' }, status: :bad_request
     end
@@ -68,7 +68,7 @@ class Api::UsersController < Api::BaseController
       user_preference.update!(preference_data: params[:preferences])
     end
 
-    render json: { status: 200, message: "Profile completed successfully.", user: @user.as_json.merge(updated_at: Time.current) }, status: :ok
+    render json: { status: 200, message: "Profile completed successfully." }, status: :ok
   rescue ActiveRecord::RecordInvalid => e
     render json: { error: e.record.errors.full_messages.to_sentence }, status: :unprocessable_entity
   rescue ActiveRecord::RecordNotFound
@@ -79,8 +79,28 @@ class Api::UsersController < Api::BaseController
     render json: { error: e.message }, status: :internal_server_error
   end
 
+  # GET /api/users/:user_id/matches
   def matches
-    # ... existing matches method ...
+    return render json: { error: 'User not found.' }, status: :not_found unless @user
+    authorize @user, policy_class: Api::UsersPolicy
+
+    potential_matches = MatchmakingService.new.generate_potential_matches(@user.id)
+    formatted_matches = potential_matches.map do |match|
+      {
+        id: match[:match].id,
+        age: match[:match].age, # Assuming the User model has an 'age' attribute
+        gender: match[:match].gender,
+        location: match[:match].location, # Assuming the User model has a 'location' attribute
+        compatibility_score: match[:score],
+        interests: match[:match].interests.pluck(:name) # Assuming the User model has_many :interests
+      }
+    end
+
+    render json: { status: 200, matches: formatted_matches }, status: :ok
+  rescue Pundit::NotAuthorizedError
+    render json: { error: "Not authorized to view matches" }, status: :forbidden
+  rescue StandardError => e
+    render json: { error: e.message }, status: :internal_server_error
   end
 
   # POST /api/users/:user_id/swipes
@@ -112,21 +132,11 @@ class Api::UsersController < Api::BaseController
     params.permit(:target_user_id, :action)
   end
 
-  def user_params
-    params.require(:user).permit(:age, :gender, :location, interests: [], preferences: {})
-  end
-
   def valid_complete_profile_params?
     valid_update_profile_params? && valid_preferences_params?(params[:preferences]) && params[:interests].is_a?(Array)
   end
 
-  def valid_update_profile_params?
-    params[:age].is_a?(Integer) && params[:age] > 0 &&
-    User.genders.keys.include?(params[:gender]) &&
-    params[:location].is_a?(String)
-  end
-
-  def valid_preferences_params?(preferences)
-    preferences.is_a?(Hash) && preferences.keys.all? { |key| %w[age_range distance gender].include?(key) }
+  def set_user
+    @user = User.find_by(id: params[:user_id] || params[:id])
   end
 end
