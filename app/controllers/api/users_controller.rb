@@ -2,9 +2,8 @@ class Api::UsersController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index show update_profile matches update_preferences complete_profile swipes]
   before_action :set_user, only: [:matches, :update_preferences, :complete_profile]
 
-  # Require both services as they might be used in different contexts
-  require_dependency 'user_matching_service'
   require_dependency 'matchmaking_service'
+  require_dependency 'user_service/update_profile' # Import the UserService::UpdateProfile class
 
   # ... existing methods ...
 
@@ -60,24 +59,20 @@ class Api::UsersController < Api::BaseController
       return
     end
 
-    ActiveRecord::Base.transaction do
-      UserService::UpdateProfile.new(
-        user_id: @user.id,
-        age: params[:age],
-        gender: params[:gender],
-        location: params[:location]
-      ).execute
+    result = UserService::UpdateProfile.new(
+      user_id: @user.id,
+      age: params[:age],
+      gender: params[:gender],
+      location: params[:location],
+      interests: params[:interests],
+      preference_data: params[:preferences]
+    ).update_profile
 
-      params[:interests].each do |interest_name|
-        interest = Interest.find_or_create_by!(name: interest_name)
-        UserInterest.find_or_create_by!(user: @user, interest: interest)
-      end
-
-      user_preference = @user.user_preference || @user.build_user_preference
-      user_preference.update!(preference_data: params[:preferences])
+    if result[:error]
+      render json: { error: result[:error] }, status: :unprocessable_entity
+    else
+      render json: { status: 200, message: "Profile updated successfully." }, status: :ok
     end
-
-    render json: { status: 200, message: "Profile completed successfully." }, status: :ok
   rescue ActiveRecord::RecordInvalid => e
     render json: { error: e.record.errors.full_messages.to_sentence }, status: :unprocessable_entity
   rescue ActiveRecord::RecordNotFound
@@ -94,17 +89,8 @@ class Api::UsersController < Api::BaseController
     authorize @user, policy_class: Api::UsersPolicy
 
     begin
-      # Use a conditional to determine which service to use based on some condition
-      # For example, a feature flag, user preference, etc.
-      # Here we assume a simple condition, but this should be replaced with a real one
-      if use_new_matching_service?
-        user_matching_service = UserMatchingService.new
-        potential_matches = user_matching_service.find_potential_matches(@user.id)
-      else
-        matchmaking_service = MatchmakingService.new
-        potential_matches = matchmaking_service.generate_potential_matches(@user.id)
-      end
-
+      matchmaking_service = MatchmakingService.new
+      potential_matches = matchmaking_service.generate_potential_matches(@user.id)
       formatted_matches = potential_matches.map do |match|
         {
           id: match[:match].id,
@@ -153,18 +139,33 @@ class Api::UsersController < Api::BaseController
   end
 
   def valid_complete_profile_params?
-    valid_update_profile_params? && valid_preferences_params?(params[:preferences]) && params[:interests].is_a?(Array)
+    # Assuming valid_update_profile_params? and valid_preferences_params? are defined elsewhere
+    valid_age?(params[:age]) &&
+    valid_gender?(params[:gender]) &&
+    valid_location?(params[:location]) &&
+    valid_interests?(params[:interests]) &&
+    valid_preferences_params?(params[:preferences])
+  end
+
+  def valid_age?(age)
+    age.is_a?(Integer) && age.positive?
+  end
+
+  def valid_gender?(gender)
+    User.genders.keys.include?(gender)
+  end
+
+  def valid_location?(location)
+    location.is_a?(String)
+  end
+
+  def valid_interests?(interests)
+    interests.is_a?(Array) && interests.all? { |interest_id| Interest.exists?(interest_id) }
   end
 
   def set_user
-    @user = User.find(params[:user_id] || params[:id])
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: 'User not found' }, status: :not_found
+    @user = User.find_by(id: params[:user_id] || params[:id])
   end
 
-  # Add a method to determine which matching service to use
-  def use_new_matching_service?
-    # Placeholder condition, replace with actual logic
-    true
-  end
+  # ... rest of the file ...
 end
