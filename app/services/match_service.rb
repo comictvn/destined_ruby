@@ -4,17 +4,20 @@ class MatchService
   # Existing methods...
 
   # New method to record mutual interest
-  def record_mutual_interest(matcher1_id, matcher2_id)
+  def record_mutual_interest(user_id, matcher1_id, matcher2_id)
     ActiveRecord::Base.transaction do
+      # Check for an existing match entry
       match = Match.find_by(matcher1_id: matcher1_id, matcher2_id: matcher2_id) ||
               Match.find_by(matcher1_id: matcher2_id, matcher2_id: matcher1_id)
 
-      if match
-        match.touch
-      else
-        match = Match.create!(matcher1_id: matcher1_id, matcher2_id: matcher2_id)
+      # If a match entry does not exist, create a new one
+      unless match
+        match = Match.new(matcher1_id: matcher1_id, matcher2_id: matcher2_id)
+        match.user_id = user_id if match.respond_to?(:user_id)
+        match.save!
       end
 
+      # Send a notification to both users about the match
       send_match_notification(match)
     end
 
