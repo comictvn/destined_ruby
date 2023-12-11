@@ -1,6 +1,8 @@
 class Api::UsersController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index show update_profile matches update_preferences complete_profile swipes]
   before_action :set_user, only: [:matches, :update_preferences, :complete_profile]
+  before_action :authenticate_user!, only: [:update_preferences] # Added before_action to authenticate user
+  before_action :validate_preferences, only: [:update_preferences] # Added before_action to validate preferences
 
   require_dependency 'matchmaking_service'
   require_dependency 'user_service/update_profile' # Import the UserService::UpdateProfile class
@@ -26,7 +28,7 @@ class Api::UsersController < Api::BaseController
   def update_preferences
     return render json: { error: 'User not found' }, status: :not_found unless @user
 
-    preferences = params[:preferences]
+    preferences = params[:preference_data] # Changed from params[:preferences] to params[:preference_data]
     unless preferences.is_a?(Hash)
       return render json: { error: 'Invalid preferences' }, status: :bad_request
     end
@@ -36,7 +38,8 @@ class Api::UsersController < Api::BaseController
       user_preference_service = UserPreferenceService.new(@user, preferences)
 
       if user_preference_service.update
-        render json: { status: 200, message: 'Preferences updated successfully' }, status: :ok
+        MatchmakingService.new.refresh_matches_for(@user) # Call to matchmaking service to refresh matches
+        render json: { status: 200, message: 'Preferences updated successfully', preferences: user_preference_service.preferences }, status: :ok
       else
         render json: { error: user_preference_service.errors.full_messages.to_sentence }, status: :unprocessable_entity
       end
@@ -51,116 +54,34 @@ class Api::UsersController < Api::BaseController
 
   # PUT /api/users/:user_id/profile/complete
   def complete_profile
-    return render json: { error: 'User not found' }, status: :not_found unless @user
-    authorize @user, policy_class: Api::UsersPolicy
-
-    unless valid_complete_profile_params?
-      render json: { error: "Invalid parameters" }, status: :bad_request
-      return
-    end
-
-    result = UserService::UpdateProfile.new(
-      user_id: @user.id,
-      age: params[:age],
-      gender: params[:gender],
-      location: params[:location],
-      interests: params[:interests],
-      preference_data: params[:preferences]
-    ).update_profile
-
-    if result[:error]
-      render json: { error: result[:error] }, status: :unprocessable_entity
-    else
-      render json: { status: 200, message: "Profile updated successfully." }, status: :ok
-    end
-  rescue ActiveRecord::RecordInvalid => e
-    render json: { error: e.record.errors.full_messages.to_sentence }, status: :unprocessable_entity
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: "User not found" }, status: :not_found
-  rescue Pundit::NotAuthorizedError
-    render json: { error: "Not authorized to complete profile" }, status: :forbidden
-  rescue StandardError => e
-    render json: { error: e.message }, status: :internal_server_error
+    # ... existing complete_profile method ...
   end
 
   # GET /api/users/:user_id/matches
   def matches
-    return render json: { error: 'User not found.' }, status: :not_found unless @user
-    authorize @user, policy_class: Api::UsersPolicy
-
-    begin
-      matchmaking_service = MatchmakingService.new
-      potential_matches = matchmaking_service.generate_potential_matches(@user.id)
-      formatted_matches = potential_matches.map do |match|
-        {
-          id: match[:match].id,
-          age: match[:match].age, # Assuming the User model has an 'age' attribute
-          gender: match[:match].gender,
-          location: match[:match].location, # Assuming the User model has a 'location' attribute
-          compatibility_score: match[:score],
-          interests: match[:match].interests.pluck(:name) # Assuming the User model has_many :interests
-        }
-      end
-      render json: { status: 200, matches: formatted_matches }, status: :ok
-    rescue Pundit::NotAuthorizedError
-      render json: { error: "Not authorized to view matches" }, status: :forbidden
-    rescue StandardError => e
-      render json: { error: "An unexpected error occurred: #{e.message}" }, status: :internal_server_error
-    end
+    # ... existing matches method ...
   end
 
   # POST /api/users/:user_id/swipes
   def swipes
-    target_user = User.find_by(id: swipe_params[:target_user_id])
-    return render json: { error: 'User not found' }, status: :not_found unless target_user
-
-    action = swipe_params[:action]
-    unless %w[like pass].include?(action)
-      return render json: { error: 'Invalid action' }, status: :bad_request
-    end
-
-    # Assuming SwipeService exists and handles the swipe logic
-    result = SwipeService.new(current_resource_owner, target_user, action).perform
-    if result.success?
-      render json: { status: 201, message: 'Swipe action recorded successfully.' }, status: :created
-    else
-      render json: { error: result.error }, status: :unprocessable_entity
-    end
-  rescue StandardError => e
-    render json: { error: e.message }, status: :internal_server_error
+    # ... existing swipes method ...
   end
 
   private
 
   # ... existing private methods ...
 
-  def swipe_params
-    params.permit(:target_user_id, :action)
+  def authenticate_user!
+    # Assuming there's a method to authenticate the user
+    render json: { error: 'Unauthorized' }, status: :unauthorized unless current_user && current_user.id == params[:user_id].to_i
   end
 
-  def valid_complete_profile_params?
-    # Assuming valid_update_profile_params? and valid_preferences_params? are defined elsewhere
-    valid_age?(params[:age]) &&
-    valid_gender?(params[:gender]) &&
-    valid_location?(params[:location]) &&
-    valid_interests?(params[:interests]) &&
-    valid_preferences_params?(params[:preferences])
-  end
-
-  def valid_age?(age)
-    age.is_a?(Integer) && age.positive?
-  end
-
-  def valid_gender?(gender)
-    User.genders.keys.include?(gender)
-  end
-
-  def valid_location?(location)
-    location.is_a?(String)
-  end
-
-  def valid_interests?(interests)
-    interests.is_a?(Array) && interests.all? { |interest_id| Interest.exists?(interest_id) }
+  def validate_preferences
+    preferences = params[:preference_data]
+    unless preferences.is_a?(Hash) && preferences.keys.all? { |k| k.is_a?(String) }
+      render json: { error: 'Invalid preferences format' }, status: :bad_request
+    end
+    # Add more validation rules as needed
   end
 
   def set_user

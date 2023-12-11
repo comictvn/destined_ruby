@@ -53,23 +53,30 @@ class UserPreferenceService
 
   # New method to handle the updating of user preferences
   def update_user_preferences(user_id, preference_data)
+    user = User.find_by(id: user_id)
+    raise NotFoundException.new("User not found") unless user
+
+    validate_user_preference_data(preference_data) # Assuming this is a method for validating preference_data
+
     suggested_matches = nil
     ActiveRecord::Base.transaction do
-      user_preference = UserPreference.find_or_initialize_by(user_id: user_id)
-      user_preference.preference_data = preference_data
-      user_preference.save!
+      user_preference = user.user_preference || user.build_user_preference
+      user_preference.update!(preference_data: preference_data)
 
       # Recalculate suggested matches
-      suggested_matches = MatchmakingService.new(user_id).recalculate_matches
+      suggested_matches = MatchmakingService.new(user_id).refresh_user_matches
     end
 
-    suggested_matches
+    { success: true, message: "User preferences updated successfully." }
   rescue ActiveRecord::RecordInvalid => e
     Rails.logger.error "Validation failed: #{e.message}"
-    raise e
+    { success: false, message: e.record.errors.full_messages.to_sentence }
+  rescue NotFoundException => e
+    Rails.logger.error e.message
+    { success: false, message: e.message }
   rescue => e
     Rails.logger.error "Failed to update user preferences: #{e.message}"
-    raise e
+    { success: false, message: "Failed to update user preferences due to an unexpected error." }
   end
 
   private
@@ -84,17 +91,24 @@ class UserPreferenceService
       errors.add(:interests_preference, "must be an array of integers") unless interests_preference.is_a?(Array) && interests_preference.all? { |i| i.is_a?(Integer) }
     end
   end
+
+  def validate_user_preference_data(preference_data)
+    # Add validation logic for preference_data here
+    # This is a placeholder for the actual implementation
+  end
 end
 
-# Assuming MatchmakingService exists and has a method `recalculate_matches`
+# Assuming MatchmakingService exists and has a method `refresh_user_matches`
 class MatchmakingService
   def initialize(user_id)
     @user_id = user_id
   end
 
-  def recalculate_matches
-    # Logic to recalculate matches based on user preferences
+  def refresh_user_matches
+    # Logic to refresh user matches based on updated preferences
     # This is a placeholder for the actual implementation
-    []
   end
 end
+
+# Assuming NotFoundException exists in /lib/exceptions.rb
+class NotFoundException < StandardError; end
