@@ -1,6 +1,8 @@
 class Api::UsersController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index show update_profile matches update_preferences complete_profile swipes]
-  before_action :set_user, only: [:update_preferences, :complete_profile, :matches]
+  before_action :set_user, only: [:matches, :update_preferences, :complete_profile]
+
+  require_dependency 'matchmaking_service'
 
   # ... existing methods ...
 
@@ -84,23 +86,25 @@ class Api::UsersController < Api::BaseController
     return render json: { error: 'User not found.' }, status: :not_found unless @user
     authorize @user, policy_class: Api::UsersPolicy
 
-    potential_matches = MatchmakingService.new.generate_potential_matches(@user.id)
-    formatted_matches = potential_matches.map do |match|
-      {
-        id: match[:match].id,
-        age: match[:match].age, # Assuming the User model has an 'age' attribute
-        gender: match[:match].gender,
-        location: match[:match].location, # Assuming the User model has a 'location' attribute
-        compatibility_score: match[:score],
-        interests: match[:match].interests.pluck(:name) # Assuming the User model has_many :interests
-      }
+    begin
+      matchmaking_service = MatchmakingService.new
+      potential_matches = matchmaking_service.generate_potential_matches(@user.id)
+      formatted_matches = potential_matches.map do |match|
+        {
+          id: match[:match].id,
+          age: match[:match].age, # Assuming the User model has an 'age' attribute
+          gender: match[:match].gender,
+          location: match[:match].location, # Assuming the User model has a 'location' attribute
+          compatibility_score: match[:score],
+          interests: match[:match].interests.pluck(:name) # Assuming the User model has_many :interests
+        }
+      end
+      render json: { status: 200, matches: formatted_matches }, status: :ok
+    rescue Pundit::NotAuthorizedError
+      render json: { error: "Not authorized to view matches" }, status: :forbidden
+    rescue StandardError => e
+      render json: { error: "An unexpected error occurred: #{e.message}" }, status: :internal_server_error
     end
-
-    render json: { status: 200, matches: formatted_matches }, status: :ok
-  rescue Pundit::NotAuthorizedError
-    render json: { error: "Not authorized to view matches" }, status: :forbidden
-  rescue StandardError => e
-    render json: { error: e.message }, status: :internal_server_error
   end
 
   # POST /api/users/:user_id/swipes
