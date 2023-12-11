@@ -30,8 +30,7 @@ class Api::MatchesController < ApplicationController
 
   def create_feedback
     match_id = params[:match_id]
-    user_id = feedback_params[:user_id]
-    content = feedback_params[:content]
+    feedback_params = params.require(:feedback).permit(:user_id, :comment, :rating)
 
     # Perform validation checks here...
     unless Match.exists?(id: match_id)
@@ -39,17 +38,26 @@ class Api::MatchesController < ApplicationController
     end
 
     match = Match.find_by(id: match_id)
-    unless match.users.exists?(id: user_id)
+    unless match.users.exists?(id: feedback_params[:user_id])
       return render json: { error: 'User not part of the match' }, status: :unprocessable_entity
     end
 
-    if content.blank?
-      return render json: { error: 'Feedback content cannot be empty' }, status: :unprocessable_entity
+    # Validate rating
+    unless feedback_params[:rating].is_a?(Integer) && feedback_params[:rating].between?(1, 5)
+      return render json: { error: 'Rating must be an integer between 1 and 5' }, status: :unprocessable_entity
     end
 
     begin
-      feedback = create_feedback(match_id, user_id, content)
-      render json: { status: 201, feedback: feedback.as_json }, status: :created
+      ActiveRecord::Base.transaction do
+        feedback = Feedback.create!(
+          match_id: match_id,
+          user_id: feedback_params[:user_id],
+          content: feedback_params[:comment],
+          rating: feedback_params[:rating]
+        )
+        MatchService.new.adjust_matching_algorithm(feedback)
+      end
+      render json: { message: 'Feedback submitted successfully' }, status: :created
     rescue StandardError => e
       render json: { error: e.message }, status: :internal_server_error
     end
@@ -58,11 +66,6 @@ class Api::MatchesController < ApplicationController
   private
 
   def feedback_params
-    params.require(:feedback).permit(:user_id, :content)
-  end
-
-  def create_feedback(match_id, user_id, content)
-    # Assuming there is a Feedback model with :match_id, :user_id, :content attributes
-    Feedback.create!(match_id: match_id, user_id: user_id, content: content)
+    params.require(:feedback).permit(:user_id, :content, :rating)
   end
 end
