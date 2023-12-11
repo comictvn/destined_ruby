@@ -1,10 +1,32 @@
-# /app/controllers/api/matches_controller.rb
-
 class Api::MatchesController < ApplicationController
   include AuthenticationConcern
   include MatchFeedbackService
 
   before_action :authenticate_user!
+
+  def create
+    match_params = params.require(:match).permit(:matcher1_id, :matcher2_id)
+
+    # Validate user IDs
+    unless User.exists?(match_params[:matcher1_id]) && User.exists?(match_params[:matcher2_id])
+      return render json: { error: "User not found." }, status: :bad_request
+    end
+
+    # Check if match already exists
+    if Match.exists?(matcher1_id: match_params[:matcher1_id], matcher2_id: match_params[:matcher2_id]) ||
+       Match.exists?(matcher1_id: match_params[:matcher2_id], matcher2_id: match_params[:matcher1_id])
+      return render json: { error: "Match already exists." }, status: :unprocessable_entity
+    end
+
+    result = MatchService.new.record_mutual_interest(match_params[:matcher1_id], match_params[:matcher2_id])
+    render json: result[:match], status: result[:status]
+  rescue ActiveRecord::RecordNotFound => e
+    render json: { error: e.message }, status: :bad_request
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  rescue => e
+    render json: { error: e.message }, status: :internal_server_error
+  end
 
   def create_feedback
     match_id = params[:match_id]
