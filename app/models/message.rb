@@ -1,8 +1,10 @@
 class Message < ApplicationRecord
-  # Associations
+  self.table_name = 'messages'
+
+  # Define relationships
+  belongs_to :match, class_name: 'Match', foreign_key: 'match_id', optional: true
   belongs_to :sender, class_name: 'User', foreign_key: :sender_id
-  belongs_to :chanel
-  belongs_to :match, optional: true # Assuming match is optional as it was not present in the existing code
+  belongs_to :chanel, class_name: 'Chanel', foreign_key: 'chanel_id'
 
   # Active Storage for images
   has_many_attached :images, dependent: :destroy
@@ -15,7 +17,7 @@ class Message < ApplicationRecord
   validates :images, content_type: ['image/png', 'image/jpg', 'image/jpeg', 'image/gif', 'image/svg+xml'],
                      size: { less_than_or_equal_to: 100.megabytes }, if: :images_attached?
 
-  # Custom methods (if any)
+  # Add any custom methods below
   # ...
 
   private
@@ -26,5 +28,9 @@ class Message < ApplicationRecord
 
   def match_id?
     match_id.present?
+  end
+
+  def content?
+    content.present?
   end
 end
