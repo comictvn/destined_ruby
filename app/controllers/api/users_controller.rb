@@ -1,6 +1,6 @@
 class Api::UsersController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index show update_profile matches update_preferences complete_profile swipes]
-  before_action :set_user, only: [:matches, :update_preferences, :complete_profile]
+  before_action :set_user, only: [:update_preferences, :complete_profile, :matches]
 
   require_dependency 'matchmaking_service'
 
@@ -26,14 +26,19 @@ class Api::UsersController < Api::BaseController
     return render json: { error: 'User not found' }, status: :not_found unless @user
 
     preferences = params[:preferences]
-    unless preferences.is_a?(Hash) # Assuming preferences should be a Hash, update as needed
+    unless preferences.is_a?(Hash)
       return render json: { error: 'Invalid preferences' }, status: :bad_request
     end
 
     begin
-      user_preference = @user.user_preference || @user.build_user_preference
-      user_preference.update!(preferences)
-      render json: { status: 200, message: 'Preferences updated successfully', preferences: user_preference }, status: :ok
+      # Assuming UserPreferenceService exists and handles the preferences update logic
+      user_preference_service = UserPreferenceService.new(@user, preferences)
+
+      if user_preference_service.update
+        render json: { status: 200, message: 'Preferences updated successfully' }, status: :ok
+      else
+        render json: { error: user_preference_service.errors.full_messages.to_sentence }, status: :unprocessable_entity
+      end
     rescue ActiveRecord::RecordInvalid => e
       render json: { error: e.record.errors.full_messages.to_sentence }, status: :unprocessable_entity
     rescue Pundit::NotAuthorizedError
