@@ -35,7 +35,7 @@ class UserPreferenceService
         @interests_preference.each do |interest_id|
           UserInterest.create!(user_id: @user_id, interest_id: interest_id)
         end
-        MatchingAlgorithm.update_user_preferences(user)
+        MatchingAlgorithm.update_user_preferences(user) if defined?(MatchingAlgorithm)
       end
 
       # Recalculate suggested matches
