@@ -52,6 +52,9 @@ Rails.application.routes.draw do
     end
 
     resources :users, only: %i[index show] do
+      member do
+        put 'profile', to: 'users#update_profile'
+      end
     end
 
     # New route for feedback submission
