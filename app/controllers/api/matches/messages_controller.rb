@@ -12,7 +12,12 @@ module Api
       def create
         initiate_conversation do |match, receiver_id|
           # Call the service to create a message with the provided message_text
-          result = service.create_message(message_params[:message_text])
+          result = MessageCreationService.new(
+            match_id: match.id,
+            sender_id: current_user.id,
+            receiver_id: receiver_id,
+            content: message_params[:content]
+          ).call
 
           if result[:success]
             # Update the match's last_message_at timestamp
@@ -32,7 +37,7 @@ module Api
                   {
                     sender_id: current_user.id,
                     receiver_id: receiver_id,
-                    message_text: result[:message].content,
+                    content: result[:message].content,
                     created_at: result[:message].created_at
                   }
                 ]
@@ -56,7 +61,7 @@ module Api
               match_id: match.id,
               sender_id: current_user.id,
               receiver_id: receiver_id,
-              content: message_params[:message_text]
+              content: message_params[:content]
             )
             yield(match, receiver_id) if block_given?
           end
@@ -68,8 +73,8 @@ module Api
       end
 
       def message_params
-        # Permit message_text in the strong parameters
-        params.require(:message).permit(:message_text)
+        # Permit content in the strong parameters
+        params.require(:message).permit(:content)
       end
 
       def validate_sender
@@ -80,7 +85,7 @@ module Api
       end
 
       def validate_message_content
-        unless message_params[:message_text].is_a?(String)
+        unless message_params[:content].is_a?(String)
           render json: { error: 'Invalid message.' }, status: :bad_request and return
         end
       end
