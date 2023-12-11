@@ -6,18 +6,18 @@ class MatchmakingService
   # New method to generate potential matches
   def generate_potential_matches(user_id)
     current_user = User.find(user_id)
-    user_preferences = UserPreferenceService.get_user_preferences(user_id)
-    user_interests = UserInterest.where(user_id: user_id).pluck(:interest_id)
-    potential_matches = User.joins(:user_interests)
+    user_preferences = current_user.user_preferences
+    user_interests = current_user.user_interests.pluck(:interest_id)
+    potential_matches = User.includes(:user_interests, :user_answers)
                             .where.not(id: user_id)
                             .where(user_interests: { interest_id: user_interests })
-                            .where(user_preferences[:location_key] => user_preferences[:location_value]) # Assuming user_preferences returns a hash with location info
+                            .select { |user| within_location_range?(user_preferences, user) }
                             .distinct
 
-    current_user_answers = UserAnswer.where(user_id: user_id).pluck(:question_id, :answer)
+    current_user_answers = current_user.user_answers.pluck(:compatibility_question_id, :answer)
     potential_matches_with_scores = potential_matches.map do |match|
-      match_answers = UserAnswer.where(user_id: match.id, question_id: current_user_answers.map(&:first)).pluck(:answer)
-      compatibility_score = MatchmakingAlgorithm.calculate_compatibility(user_interests, current_user_answers, match_answers, user_preferences)
+      match_answers = match.user_answers.where(compatibility_question_id: current_user_answers.map(&:first)).pluck(:answer)
+      compatibility_score = calculate_compatibility_score(user_interests, current_user_answers, match_answers, user_preferences)
       { match: match, score: compatibility_score }
     end
 
@@ -30,14 +30,21 @@ class MatchmakingService
 
     # Return the list of suggested matches with their compatibility scores
     top_matches
+  rescue StandardError => e
+    # Handle exceptions, possibly log them or send notifications
+    raise "An error occurred while generating potential matches: #{e.message}"
   end
-end
 
-# Assuming the existence of the MatchmakingAlgorithm module
-module MatchmakingAlgorithm
-  def self.calculate_compatibility(user_interests, user_answers, match_answers, user_preferences)
+  private
+
+  def within_location_range?(user_preferences, other_user)
+    # Actual location range checking logic should be implemented here
+    # For now, we'll assume all users are within the location range
+    true
+  end
+
+  def calculate_compatibility_score(user_interests, user_answers, match_answers, user_preferences)
     # Compatibility calculation logic goes here
-    # This is a placeholder implementation
     score = 0
     user_answers.each_with_index do |(question_id, content), index|
       score += 1 if content == match_answers[index]
@@ -48,9 +55,12 @@ module MatchmakingAlgorithm
     score
   end
 
-  def self.calculate_preference_score(user_preferences, match_answers)
+  def calculate_preference_score(user_preferences, match_answers)
     # Placeholder for additional preference scoring logic
     # For example, increase score if preferences match certain criteria
     0 # This should be replaced with actual scoring logic
   end
 end
+
+# Assuming the existence of the MatchmakingAlgorithm module
+# This module is no longer needed as its functionality has been integrated into the MatchmakingService
