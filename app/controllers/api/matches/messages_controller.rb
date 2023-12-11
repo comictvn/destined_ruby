@@ -6,6 +6,8 @@ module Api
       before_action :authenticate_user!
       before_action :validate_sender, only: [:create]
       before_action :validate_message_content, only: [:create]
+      before_action :validate_match_existence, only: [:create]
+      before_action :validate_user_part_of_match, only: [:create]
 
       def create
         match = Match.find_by(id: params[:match_id])
@@ -27,13 +29,18 @@ module Api
           # Return the message details along with a success status
           render json: {
             status: 201,
-            message: {
-              id: result[:message].id,
-              match_id: result[:message].match_id,
-              sender_id: result[:message].sender_id,
-              receiver_id: result[:message].receiver_id,
-              content: result[:message].content,
-              created_at: result[:message].created_at
+            message: "Message sent successfully.",
+            conversation: {
+              id: match.id,
+              match_id: match.id,
+              messages: [
+                {
+                  sender_id: current_user.id,
+                  receiver_id: receiver_id,
+                  message_text: result[:message].content,
+                  created_at: result[:message].created_at
+                }
+              ]
             }
           }, status: :created
         else
@@ -52,13 +59,25 @@ module Api
       def validate_sender
         match = Match.find_by(id: params[:match_id])
         unless match && (match.matcher1_id == current_user.id || match.matcher2_id == current_user.id)
-          render json: { error: 'Sender not part of the match.' }, status: :unauthorized and return
+          render json: { error: 'Invalid sender or receiver.' }, status: :forbidden and return
         end
       end
 
       def validate_message_content
-        if message_params[:message_text].blank?
-          render json: { error: 'Message content cannot be empty.' }, status: :bad_request and return
+        unless message_params[:message_text].is_a?(String)
+          render json: { error: 'Invalid message.' }, status: :bad_request and return
+        end
+      end
+
+      def validate_match_existence
+        unless Match.exists?(id: params[:match_id])
+          render json: { error: 'Match not found.' }, status: :not_found and return
+        end
+      end
+
+      def validate_user_part_of_match
+        unless User.exists?(id: params[:sender_id]) && User.exists?(id: params[:receiver_id])
+          render json: { error: 'Invalid sender or receiver.' }, status: :bad_request and return
         end
       end
     end

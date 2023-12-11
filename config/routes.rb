@@ -1,4 +1,3 @@
-require 'sidekiq/web'
 
 Rails.application.routes.draw do
   use_doorkeeper do
@@ -59,6 +58,11 @@ Rails.application.routes.draw do
 
     # New route for feedback submission
     post '/feedback', to: 'feedbacks#create', constraints: lambda { |request| doorkeeper_authorize! }
+
+    # New route for initiating a conversation within a match
+    resources :matches, only: [] do
+      resources :messages, only: [:create], controller: 'matches/messages'
+    end
   end
 
   get '/health' => 'pages#health_check'
