@@ -33,37 +33,50 @@ class Api::MatchesController < ApplicationController
 
   def create_feedback
     match_id = params[:match_id]
-    feedback_params = params.require(:feedback).permit(:user_id, :comment, :rating)
+    feedback_params = params.require(:feedback).permit(:user_id, :feedback_text, :comment, :rating)
 
-    # Perform validation checks here...
-    unless Match.exists?(id: match_id)
-      return render json: { error: 'Match not found' }, status: :not_found
-    end
-
+    # Validate match existence
     match = Match.find_by(id: match_id)
-    unless match.users.exists?(id: feedback_params[:user_id])
-      return render json: { error: 'User not part of the match' }, status: :unprocessable_entity
+    return render json: { error: 'Match not found' }, status: :not_found unless match
+
+    # Validate user existence and part of the match
+    unless User.exists?(feedback_params[:user_id]) && match.users.exists?(id: feedback_params[:user_id])
+      return render json: { error: 'Invalid user' }, status: :forbidden
     end
 
-    # Validate rating
-    unless feedback_params[:rating].is_a?(Integer) && feedback_params[:rating].between?(1, 5)
-      return render json: { error: 'Rating must be an integer between 1 and 5' }, status: :unprocessable_entity
+    # Validate feedback text or comment
+    content = feedback_params[:feedback_text] || feedback_params[:comment]
+    unless content.is_a?(String)
+      return render json: { error: 'Invalid feedback' }, status: :unprocessable_entity
     end
 
-    begin
-      ActiveRecord::Base.transaction do
-        feedback = Feedback.create!(
-          match_id: match_id,
-          user_id: feedback_params[:user_id],
-          content: feedback_params[:comment] || feedback_params[:feedback_text], # Support both parameter names
-          rating: feedback_params[:rating] # This line is only needed if the rating is present
-        )
-        MatchService.new.adjust_matching_algorithm(feedback) if feedback_params[:rating].present?
+    # Validate rating if present
+    if feedback_params[:rating].present?
+      unless feedback_params[:rating].is_a?(Integer) && feedback_params[:rating].between?(1, 5)
+        return render json: { error: 'Rating must be an integer between 1 and 5' }, status: :unprocessable_entity
       end
-      render json: { message: 'Feedback submitted successfully' }, status: :created
-    rescue StandardError => e
-      render json: { error: e.message }, status: :internal_server_error
     end
+
+    # Create feedback
+    feedback = Feedback.create!(
+      match_id: match_id,
+      user_id: feedback_params[:user_id],
+      content: content,
+      rating: feedback_params[:rating] # This line is only needed if the rating is present
+    )
+
+    if feedback.persisted?
+      MatchService.new.adjust_matching_algorithm(feedback) if feedback_params[:rating].present?
+      render json: { status: 201, message: 'Feedback submitted successfully' }, status: :created
+    else
+      render json: { error: 'Internal server error' }, status: :internal_server_error
+    end
+  rescue ActiveRecord::RecordNotFound => e
+    render json: { error: e.message }, status: :not_found
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  rescue => e
+    render json: { error: e.message }, status: :internal_server_error
   end
 
   def record_swipe
@@ -101,41 +114,9 @@ class Api::MatchesController < ApplicationController
     render json: { error: e.message }, status: :internal_server_error
   end
 
-  # New method to handle mutual interest and create a match if it exists
-  def create_match_if_mutual_interest
-    user_id = params[:user_id]
-    matcher1_id = params[:matcher1_id]
-    matcher2_id = params[:matcher2_id]
-
-    # Check if there is an existing match entry
-    if Match.exists?(user_id: matcher1_id, matched_user_id: matcher2_id) ||
-       Match.exists?(user_id: matcher2_id, matched_user_id: matcher1_id)
-      return render json: { error: "Match already exists." }, status: :conflict
-    end
-
-    begin
-      ActiveRecord::Base.transaction do
-        # Create a new match entry
-        match = Match.create!(user_id: user_id, matched_user_id: matcher1_id, matched_user_id: matcher2_id)
-        # Enqueue a job to send a notification to both users
-        MatchNotificationJob.perform_later(match.id)
-      end
-      render json: { message: "Match created successfully.", match: match }, status: :created
-    rescue ActiveRecord::RecordInvalid => e
-      render json: { error: e.message }, status: :unprocessable_entity
-    rescue => e
-      render json: { error: e.message }, status: :internal_server_error
-    end
-  end
+  # Other actions...
 
   private
 
-  def match_params
-    params.require(:match).permit(:user_id, :matched_user_id)
-  end
-
-  # Helper method to check for an existing opposite swipe
-  def opposite_swipe_exists?(target_user_id, user_id)
-    Swipe.exists?(user_id: target_user_id, target_user_id: user_id, swipe_direction: 'right')
-  end
+  # Other private methods...
 end
