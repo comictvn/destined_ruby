@@ -20,11 +20,7 @@ class UserService::UpdateProfile
 
     ActiveRecord::Base.transaction do
       user.update!(age: @age, gender: @gender, location: @location)
-      user.user_interests.destroy_all
-      @interests.each do |interest_id|
-        interest = Interest.find_or_create_by!(id: interest_id)
-        UserInterest.create!(user_id: @user_id, interest_id: interest.id)
-      end
+      update_user_interests(user)
       update_user_preferences(user) if @preference_data
     end
 
@@ -34,6 +30,14 @@ class UserService::UpdateProfile
   end
 
   private
+
+  def update_user_interests(user)
+    user.user_interests.destroy_all
+    @interests.each do |interest_id|
+      interest = Interest.find_or_create_by!(id: interest_id)
+      UserInterest.create!(user_id: @user_id, interest_id: interest.id)
+    end
+  end
 
   def update_user_preferences(user)
     user_preference = user.user_preference || user.build_user_preference
