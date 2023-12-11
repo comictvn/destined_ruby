@@ -1,7 +1,7 @@
 class Api::UsersController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index show update_profile matches update_preferences complete_profile swipes record_swipe]
-  before_action :set_user, only: [:matches, :update_preferences, :complete_profile, :record_swipe]
-  before_action :authenticate_user!, only: [:update_preferences, :record_swipe] # authenticate_user! is now used for :record_swipe as well
+  before_action :set_user, only: [:update_preferences, :complete_profile, :matches, :record_swipe]
+  before_action :authenticate_user!, only: [:update_preferences, :update_profile, :record_swipe] # authenticate_user! is now used for :record_swipe as well
   before_action :validate_preferences, only: [:update_preferences] # validate_preferences is used here
   before_action :validate_swipe_action, only: [:record_swipe] # Added before_action to validate swipe action
 
@@ -25,7 +25,47 @@ class Api::UsersController < Api::BaseController
 
   # PUT /api/users/:id/profile
   def update_profile
-    # ... existing update_profile method ...
+    return render json: { error: 'User not found' }, status: :not_found unless set_user_by_id
+
+    unless valid_update_profile_params?
+      render json: { error: "Invalid parameters" }, status: :bad_request
+      return
+    end
+
+    ActiveRecord::Base.transaction do
+      UserService::UpdateProfile.new(
+        user_id: @user.id,
+        age: params[:age],
+        gender: params[:gender],
+        location: params[:location],
+        interests: params[:interests],
+        preferences: params[:preferences],
+        answers: params[:answers]
+      ).execute
+
+      params[:interests].each do |interest_name|
+        interest = Interest.find_or_create_by!(name: interest_name)
+        UserInterest.find_or_create_by!(user: @user, interest: interest)
+      end
+
+      user_preference = @user.user_preference || @user.build_user_preference
+      user_preference.update!(preference_data: params[:preferences])
+
+      params[:answers].each do |answer|
+        question = CompatibilityQuestion.find(answer[:question_id])
+        UserAnswer.find_or_create_by!(user: @user, compatibility_question: question, answer_text: answer[:answer_text])
+      end
+    end
+
+    render json: { status: 200, message: "Profile updated successfully.", user: @user.as_json(include: [:interests, :user_preference, :user_answers]) }, status: :ok
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { error: e.record.errors.full_messages.to_sentence }, status: :unprocessable_entity
+  rescue ActiveRecord::RecordNotFound => e
+    render json: { error: e.message }, status: :not_found
+  rescue Pundit::NotAuthorizedError
+    render json: { error: "Not authorized to update profile" }, status: :forbidden
+  rescue StandardError => e
+    render json: { error: e.message }, status: :internal_server_error
   end
 
   # PUT /api/users/:user_id/preferences
@@ -80,33 +120,46 @@ class Api::UsersController < Api::BaseController
   # ... existing private methods ...
 
   def authenticate_user!
-    # ... existing authenticate_user! method ...
+    # Assuming there's a method to authenticate the user
+    render json: { error: 'Unauthorized' }, status: :unauthorized unless current_user && current_user.id == params[:user_id].to_i
   end
 
   def validate_preferences
-    preferences = params[:preferences] || params[:preference_data]
-    unless preferences.is_a?(String) || (preferences.is_a?(Hash) && preferences.keys.all? { |k| k.is_a?(String) })
+    preferences = params[:preference_data] || params[:preferences]
+    unless preferences.is_a?(Hash) && preferences.keys.all? { |k| k.is_a?(String) } || preferences.is_a?(String)
       render json: { error: 'Invalid preferences format' }, status: :bad_request
     end
     # Add more validation rules as needed
   end
 
   def set_user_by_id
-    # ... existing set_user_by_id method ...
+    @user = User.find_by(id: params[:user_id] || params[:id])
   end
 
   def valid_update_profile_params?
-    # ... existing valid_update_profile_params? method ...
+    params[:age].is_a?(Integer) && params[:age] > 0 &&
+    User.genders.keys.include?(params[:gender]) &&
+    params[:location].is_a?(String) &&
+    valid_interests_params?(params[:interests]) &&
+    valid_preferences_params?(params[:preferences]) &&
+    valid_answers_params?(params[:answers])
   end
 
   def valid_interests_params?(interests)
-    interests.is_a?(Array) && interests.all? do |interest_name|
-      Interest.exists?(name: interest_name)
-    end
+    interests.is_a?(Array) && interests.all? { |i| i.is_a?(String) }
   end
 
   def valid_preferences_params?(preferences)
-    # ... existing valid_preferences_params? method ...
+    preferences.is_a?(String)
+  end
+
+  def valid_answers_params?(answers)
+    answers.is_a?(Array) && answers.all? do |answer|
+      answer.is_a?(Hash) &&
+      answer.key?(:question_id) && answer[:question_id].is_a?(Integer) &&
+      answer.key?(:answer_text) && answer[:answer_text].is_a?(String) &&
+      CompatibilityQuestion.exists?(answer[:question_id])
+    end
   end
 
   def set_user
@@ -114,7 +167,7 @@ class Api::UsersController < Api::BaseController
   end
 
   def swipe_params
-    # ... existing swipe_params method ...
+    params.permit(:target_user_id, :action)
   end
 
   def validate_swipe_action
