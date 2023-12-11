@@ -1,9 +1,8 @@
 class Api::UsersController < Api::BaseController
-  before_action :doorkeeper_authorize!, only: %i[index show update_profile matches]
-  before_action :set_user, only: [:matches]
+  before_action :doorkeeper_authorize!, only: %i[index show update_profile matches update_preferences]
+  before_action :set_user, only: [:matches, :update_preferences]
 
   def index
-    # inside service params are checked and whitelisted
     @users = UserService::Index.new(params.permit!, current_resource_owner).execute
     @total_pages = @users.total_pages
   end
@@ -15,7 +14,6 @@ class Api::UsersController < Api::BaseController
 
   # PUT /api/users/:id/profile
   def update_profile
-    # Validate the input parameters
     unless valid_update_profile_params?
       render json: { error: "Invalid parameters" }, status: :bad_request
       return
@@ -39,6 +37,30 @@ class Api::UsersController < Api::BaseController
     end
   rescue ActiveRecord::RecordNotFound
     render json: { error: "User not found" }, status: :not_found
+  end
+
+  # PUT /api/users/:id/preferences
+  def update_preferences
+    return render json: { error: 'User not found' }, status: :not_found unless @user
+
+    unless valid_update_preferences_params?
+      render json: { error: 'Invalid parameters' }, status: :unprocessable_entity
+      return
+    end
+
+    service = UserService::UpdateProfile.new(@user.id, user_params)
+    
+    if service.update_profile
+      render json: { status: 200, message: 'Preferences updated successfully.' }, status: :ok
+    else
+      render json: { error: service.errors.full_messages }, status: :unprocessable_entity
+    end
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'User not found' }, status: :not_found
+  rescue StandardError => e
+    render json: { error: e.message }, status: :internal_server_error
   end
 
   def matches
@@ -90,5 +112,17 @@ class Api::UsersController < Api::BaseController
       return false
     end
     true
+  end
+
+  def valid_update_preferences_params?
+    # Validate interests format
+    return false unless params[:interests].is_a?(Array) && params[:interests].all? { |i| i.is_a?(Integer) }
+    # Validate answers format
+    return false unless params[:answers].is_a?(Array) && params[:answers].all? { |a| a.is_a?(Hash) && a.key?('question_id') && a.key?('content') }
+    true
+  end
+
+  def user_params
+    params.require(:user).permit(interests: [], answers_attributes: [:question_id, :content])
   end
 end
