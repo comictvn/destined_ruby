@@ -1,3 +1,4 @@
+require 'sidekiq/web'
 
 Rails.application.routes.draw do
   use_doorkeeper do
@@ -53,16 +54,15 @@ Rails.application.routes.draw do
     resources :users, only: %i[index show] do
       member do
         put 'profile', to: 'users#update_profile'
+        # New route for updating user preferences
+        put 'preferences', to: 'users#update_preferences', constraints: lambda { |request| doorkeeper_authorize! }
+        # Added new route for swipe action
+        post 'swipes', to: 'users#swipes'
       end
     end
 
     # New route for feedback submission
     post '/feedback', to: 'feedbacks#create', constraints: lambda { |request| doorkeeper_authorize! }
-
-    # New route for initiating a conversation within a match
-    resources :matches, only: [] do
-      resources :messages, only: [:create], controller: 'matches/messages'
-    end
   end
 
   get '/health' => 'pages#health_check'
