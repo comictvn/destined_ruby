@@ -11,13 +11,13 @@ module Api
 
       def create
         initiate_conversation do |match, receiver_id|
-          # Call the service to create a message with the provided message_text
+          # Call the service to create a message with the provided message_text or content
           result = MessageCreationService.new(
-            match_id: match.id,
-            sender_id: current_user.id,
-            receiver_id: receiver_id,
-            content: message_params[:content]
-          ).call
+            current_user, # from new code
+            match,
+            receiver_id,
+            message_params[:message_text] || message_params[:content] # accommodate both parameters
+          ).perform # changed to perform to match the new code
 
           if result[:success]
             # Update the match's last_message_at timestamp
@@ -27,22 +27,20 @@ module Api
             NotificationService.new.send_message_notification(receiver_id, result[:message].id)
 
             # Return the message details along with a success status
+            # Merged the response format to include both message_text and content
             render json: {
-              status: 201,
+              status: result[:message].persisted? ? 201 : 200, # Use 201 if message is persisted, otherwise 200
               message: "Message sent successfully.",
               conversation: {
                 id: match.id,
                 match_id: match.id,
-                messages: [
-                  {
-                    sender_id: current_user.id,
-                    receiver_id: receiver_id,
-                    content: result[:message].content,
-                    created_at: result[:message].created_at
-                  }
-                ]
+                sender_id: current_user.id,
+                receiver_id: receiver_id,
+                message_text: result[:message].content, # from new code
+                content: result[:message].content, # from existing code
+                created_at: result[:message].created_at.iso8601(3) # Use iso8601 format from new code
               }
-            }, status: :created
+            }, status: result[:message].persisted? ? :created : :ok # Use :created if message is persisted, otherwise :ok
           else
             # Return the error details if the message creation failed
             render json: { errors: result[:errors] }, status: :unprocessable_entity
@@ -56,15 +54,7 @@ module Api
         match = Match.find_by(id: params[:match_id])
         if match && (match.matcher1_id == current_user.id || match.matcher2_id == current_user.id)
           receiver_id = match.matcher1_id == current_user.id ? match.matcher2_id : match.matcher1_id
-          ActiveRecord::Base.transaction do
-            message = Message.create!(
-              match_id: match.id,
-              sender_id: current_user.id,
-              receiver_id: receiver_id,
-              content: message_params[:content]
-            )
-            yield(match, receiver_id) if block_given?
-          end
+          yield(match, receiver_id) if block_given?
         else
           render json: { error: 'Match not found or you are not part of the match.' }, status: :not_found
         end
@@ -73,8 +63,8 @@ module Api
       end
 
       def message_params
-        # Permit content in the strong parameters
-        params.require(:message).permit(:content)
+        # Permit both message_text and content in the strong parameters
+        params.require(:message).permit(:message_text, :content)
       end
 
       def validate_sender
@@ -85,8 +75,10 @@ module Api
       end
 
       def validate_message_content
-        unless message_params[:content].is_a?(String)
-          render json: { error: 'Invalid message.' }, status: :bad_request and return
+        # Check for both message_text and content
+        message_text = message_params[:message_text] || message_params[:content]
+        unless message_text.is_a?(String) && !message_text.empty?
+          render json: { error: 'Message cannot be empty.' }, status: :bad_request and return
         end
       end
 
