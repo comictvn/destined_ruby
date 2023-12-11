@@ -10,7 +10,7 @@ class UserService::UpdateProfile
     @age = age
     @gender = gender
     @location = location
-    @interests = interests
+    @interests = interests.map(&:downcase) # Ensure interests are stored consistently
     @preference_data = preference_data
   end
 
@@ -18,13 +18,17 @@ class UserService::UpdateProfile
     user = User.find_by(id: @user_id)
     return { error: 'User not found' } unless user
 
-    ActiveRecord::Base.transaction do
-      user.update!(age: @age, gender: @gender, location: @location)
-      update_user_interests(user)
-      update_user_preferences(user) if @preference_data
-    end
+    if valid?
+      ActiveRecord::Base.transaction do
+        user.update!(age: @age, gender: @gender, location: @location)
+        update_user_interests(user)
+        update_user_preferences(user) if @preference_data
+      end
 
-    { success: 'Profile and preferences updated successfully' }
+      { success: 'Profile and preferences updated successfully' }
+    else
+      { error: errors.full_messages.join(', ') }
+    end
   rescue ActiveRecord::RecordInvalid => e
     { error: e.message }
   rescue StandardError => e
@@ -34,17 +38,20 @@ class UserService::UpdateProfile
   private
 
   def update_user_interests(user)
-    existing_interest_ids = user.interests.pluck(:id)
-    new_interest_ids = @interests - existing_interest_ids
-    removed_interest_ids = existing_interest_ids - @interests
+    existing_interests = user.interests.pluck(:name).map(&:downcase)
+    new_interests = @interests - existing_interests
+    removed_interests = existing_interests - @interests
 
     # Remove interests that are no longer associated with the user
-    UserInterest.where(user_id: @user_id, interest_id: removed_interest_ids).destroy_all
+    removed_interests.each do |interest_name|
+      interest = Interest.find_by(name: interest_name)
+      user.user_interests.find_by(interest_id: interest.id).destroy if interest
+    end
 
     # Add new interests to the user
-    new_interest_ids.each do |interest_name|
+    new_interests.each do |interest_name|
       interest = Interest.find_or_create_by!(name: interest_name)
-      UserInterest.create!(user_id: @user_id, interest_id: interest.id) unless user.interests.exists?(interest.id)
+      user.user_interests.create!(interest_id: interest.id) unless user.interests.exists?(interest.id)
     end
   end
 
