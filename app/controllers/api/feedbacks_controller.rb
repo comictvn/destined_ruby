@@ -1,6 +1,7 @@
 # PATH: /app/controllers/api/feedbacks_controller.rb
 class Api::FeedbacksController < ApplicationController
   include AuthenticationConcern
+  include Pundit
 
   before_action :authenticate_user!
 
@@ -14,16 +15,16 @@ class Api::FeedbacksController < ApplicationController
       return
     end
 
-    # Verify that the user_id exists in the "users" table.
+    # Verify that the user_id exists in the "users" table and is part of the match.
     user = User.find_by(id: feedback_params[:user_id])
-    unless user
-      render json: { error: 'User not found.' }, status: :not_found
+    unless user && (match.matcher1_id == user.id || match.matcher2_id == user.id)
+      render json: { error: 'User not found or not part of the match.' }, status: :not_found
       return
     end
 
-    # Verify that user_id is one of the users involved in the match
-    if match.matcher1_id != user.id && match.matcher2_id != user.id
-      render json: { error: 'Invalid match_id or user_id' }, status: :unprocessable_entity
+    # Validate the comment
+    unless feedback_params[:comment].is_a?(String)
+      render json: { error: 'Invalid comment.' }, status: :unprocessable_entity
       return
     end
 
@@ -33,16 +34,17 @@ class Api::FeedbacksController < ApplicationController
       return
     end
 
-    # Create a new entry in the feedback table
-    feedback = Feedback.new(feedback_params)
+    # Authorize the action using FeedbackPolicy
+    authorize match, :create_feedback?
 
-    if feedback.save
-      # Adjust the matching algorithm here if necessary
-      # ...
+    # Create a new entry in the feedback table using FeedbackService::Create
+    feedback_service = FeedbackService::Create.new(match_id: feedback_params[:match_id], user_id: feedback_params[:user_id], comment: feedback_params[:comment], rating: feedback_params[:rating])
+    result = feedback_service.call
 
+    if result.success?
       render json: { status: 201, message: 'Feedback submitted successfully.' }, status: :created
     else
-      render json: { error: feedback.errors.full_messages }, status: :unprocessable_entity
+      render json: { error: result.errors }, status: :unprocessable_entity
     end
   rescue Pundit::NotAuthorizedError
     render json: { error: 'You are not authorized to perform this action' }, status: :forbidden
