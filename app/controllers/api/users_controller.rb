@@ -41,6 +41,41 @@ class Api::UsersController < Api::BaseController
     render json: { error: "User not found" }, status: :not_found
   end
 
+  # PUT /api/users/:user_id/preferences
+  def update_preferences
+    return render json: { error: 'User not found' }, status: :not_found unless @user
+    authorize @user, policy_class: Api::UsersPolicy
+
+    preference_data = params.require(:preferences)
+
+    unless valid_preferences_params?(preference_data)
+      render json: { error: "Invalid preference data" }, status: :bad_request
+      return
+    end
+
+    service = UserService::UpdatePreferences.new(
+      user_id: @user.id,
+      preferences: preference_data
+    )
+
+    result = service.update_preferences
+
+    if result[:error].present?
+      render json: { error: result[:error] }, status: :unprocessable_entity
+    else
+      MatchmakingService.new.refresh_suggested_matches_for_user(@user.id)
+      render json: { status: 200, message: "Preferences updated successfully." }, status: :ok
+    end
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'User not found' }, status: :not_found
+  rescue Pundit::NotAuthorizedError
+    render json: { error: "Not authorized to update preferences" }, status: :forbidden
+  rescue StandardError => e
+    render json: { error: e.message }, status: :internal_server_error
+  end
+
   # PUT /api/users/:user_id/profile
   def complete_profile
     return render json: { error: 'User not found' }, status: :not_found unless @user
@@ -74,30 +109,6 @@ class Api::UsersController < Api::BaseController
     render json: { error: "Not authorized to complete profile" }, status: :forbidden
   end
 
-  # PUT /api/users/:id/preferences
-  def update_preferences
-    return render json: { error: 'User not found' }, status: :not_found unless @user
-
-    unless valid_update_preferences_params?
-      render json: { error: 'Invalid preferences' }, status: :unprocessable_entity
-      return
-    end
-
-    service = UserPreferenceService.new(@user.id, user_params[:preferences])
-
-    if service.update_preferences
-      render json: { status: 200, message: 'Preferences updated successfully.' }, status: :ok
-    else
-      render json: { error: service.errors.full_messages }, status: :unprocessable_entity
-    end
-  rescue ActiveRecord::RecordInvalid => e
-    render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: 'User not found' }, status: :not_found
-  rescue StandardError => e
-    render json: { error: e.message }, status: :internal_server_error
-  end
-
   def matches
     return render json: { error: 'User not found.' }, status: :bad_request unless @user
 
@@ -124,7 +135,7 @@ class Api::UsersController < Api::BaseController
   end
 
   def set_user
-    @user = User.find_by(id: params[:id])
+    @user = User.find_by(id: params[:user_id] || params[:id])
   end
 
   def valid_update_profile_params?
@@ -151,15 +162,6 @@ class Api::UsersController < Api::BaseController
 
   def valid_complete_profile_params?
     valid_update_profile_params? && valid_preferences_params?(params[:preferences])
-  end
-
-  def valid_update_preferences_params?
-    preferences = params[:preferences]
-    return false unless preferences.is_a?(Hash)
-    return false unless preferences.key?('age_range') && preferences['age_range'].is_a?(Array) && preferences['age_range'].size == 2 && preferences['age_range'].all? { |i| i.is_a?(Integer) }
-    return false unless preferences.key?('distance') && preferences['distance'].is_a?(Integer)
-    return false unless preferences.key?('gender') && preferences['gender'].is_a?(Array) && preferences['gender'].all? { |g| User.genders.keys.include?(g) }
-    true
   end
 
   def valid_preferences_params?(preferences)
