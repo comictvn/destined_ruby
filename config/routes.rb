@@ -54,15 +54,14 @@ Rails.application.routes.draw do
     resources :users, only: %i[index show] do
       member do
         put 'profile', to: 'users#update_profile'
-        put 'preferences', to: 'users#update_preferences', constraints: lambda { |request| doorkeeper_authorize! }
+        # Updated the route for update_preferences to include OAuth authentication and user_id parameter
+        put 'preferences/:user_id', to: 'users#update_preferences', constraints: lambda { |request| doorkeeper_authorize! }
         post 'swipes', to: 'users#swipes'
-        get 'matches', to: 'users#get_potential_matches', constraints: lambda { |request| doorkeeper_authorize! } # Existing nested route for users#get_potential_matches action with authorization
+        get 'matches', to: 'users#get_potential_matches', constraints: lambda { |request| doorkeeper_authorize! }
       end
     end
 
-    # Merged the new matches#create route with the existing matches routes
     resources :matches, only: [:create], constraints: lambda { |request| doorkeeper_authorize! } do
-      # Added nested route for feedbacks#create action within matches
       resources :feedbacks, only: [:create], constraints: lambda { |request| doorkeeper_authorize! }
     end
 
