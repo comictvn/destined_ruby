@@ -21,16 +21,15 @@ class Api::UsersController < Api::BaseController
 
   # PUT /api/users/:user_id/preferences
   def update_preferences
-    user = User.find_by(id: params[:user_id])
-    return render json: { error: 'User not found' }, status: :not_found unless user
+    return render json: { error: 'User not found' }, status: :not_found unless @user
 
-    preferences = params[:preferences]
+    preferences = user_params[:preferences]
     unless preferences.is_a?(Hash) # Assuming preferences should be a Hash, update as needed
       return render json: { error: 'Invalid preferences' }, status: :bad_request
     end
 
     begin
-      user_preference = user.user_preference || user.build_user_preference
+      user_preference = @user.user_preference || @user.build_user_preference
       user_preference.update!(preferences)
       render json: { status: 200, message: 'Preferences updated successfully', preferences: user_preference }, status: :ok
     rescue ActiveRecord::RecordInvalid => e
@@ -69,7 +68,7 @@ class Api::UsersController < Api::BaseController
       user_preference.update!(preference_data: params[:preferences])
     end
 
-    render json: { status: 200, message: "Profile completed successfully." }, status: :ok
+    render json: { status: 200, message: "Profile completed successfully.", user: @user.as_json.merge(updated_at: Time.current) }, status: :ok
   rescue ActiveRecord::RecordInvalid => e
     render json: { error: e.record.errors.full_messages.to_sentence }, status: :unprocessable_entity
   rescue ActiveRecord::RecordNotFound
@@ -113,7 +112,21 @@ class Api::UsersController < Api::BaseController
     params.permit(:target_user_id, :action)
   end
 
+  def user_params
+    params.require(:user).permit(:age, :gender, :location, interests: [], preferences: {})
+  end
+
   def valid_complete_profile_params?
     valid_update_profile_params? && valid_preferences_params?(params[:preferences]) && params[:interests].is_a?(Array)
+  end
+
+  def valid_update_profile_params?
+    params[:age].is_a?(Integer) && params[:age] > 0 &&
+    User.genders.keys.include?(params[:gender]) &&
+    params[:location].is_a?(String)
+  end
+
+  def valid_preferences_params?(preferences)
+    preferences.is_a?(Hash) && preferences.keys.all? { |key| %w[age_range distance gender].include?(key) }
   end
 end
