@@ -1,6 +1,6 @@
 class Api::UsersController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index show update_profile matches update_preferences complete_profile swipes]
-  before_action :set_user, only: [:matches, :update_preferences, :complete_profile]
+  before_action :set_user, only: [:update_preferences, :complete_profile, :matches]
   before_action :authenticate_user!, only: [:update_preferences] # Added before_action to authenticate user
   before_action :validate_preferences, only: [:update_preferences] # Added before_action to validate preferences
 
@@ -60,28 +60,26 @@ class Api::UsersController < Api::BaseController
   def update_preferences
     return render json: { error: 'User not found' }, status: :not_found unless @user
 
-    preferences = params[:preference_data] # Changed from params[:preferences] to params[:preference_data]
-    unless preferences.is_a?(Hash)
-      return render json: { error: 'Invalid preferences' }, status: :bad_request
-    end
+    preferences_params = params.require(:preferences).permit(:age_range, :distance, :gender) rescue nil
+    preferences_params ||= params[:preference_data] # Fallback to :preference_data if :preferences is missing
 
-    begin
-      # Assuming UserPreferenceService exists and handles the preferences update logic
-      user_preference_service = UserPreferenceService.new(@user, preferences)
-
-      if user_preference_service.update
-        MatchmakingService.new.refresh_matches_for(@user) # Call to matchmaking service to refresh matches
-        render json: { status: 200, message: 'Preferences updated successfully', preferences: user_preference_service.preferences }, status: :ok
-      else
-        render json: { error: user_preference_service.errors.full_messages.to_sentence }, status: :unprocessable_entity
-      end
-    rescue ActiveRecord::RecordInvalid => e
-      render json: { error: e.record.errors.full_messages.to_sentence }, status: :unprocessable_entity
-    rescue Pundit::NotAuthorizedError
-      render json: { error: 'Not authorized to update preferences' }, status: :forbidden
-    rescue StandardError => e
-      render json: { error: e.message }, status: :internal_server_error
+    # Ensure the user is authorized to update these preferences
+    authorize! :update, @user
+    
+    # Update preferences using the service
+    service = UserPreferenceService.new(@user, preferences_params.to_h)
+    if service.update
+      MatchmakingService.new.refresh_matches_for(@user) # Call to matchmaking service to refresh matches
+      render json: { status: 200, message: "Preferences updated successfully.", preferences: service.preferences }, status: :ok
+    else
+      render json: { status: 422, message: service.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end
+  rescue ActionController::ParameterMissing
+    render json: { status: 400, message: "Invalid preferences." }, status: :bad_request
+  rescue Pundit::NotAuthorizedError
+    render json: { status: 403, message: "Not authorized to update preferences" }, status: :forbidden
+  rescue => e
+    render json: { status: 500, message: e.message }, status: :internal_server_error
   end
 
   # PUT /api/users/:user_id/profile/complete
@@ -109,7 +107,7 @@ class Api::UsersController < Api::BaseController
   end
 
   def validate_preferences
-    preferences = params[:preference_data]
+    preferences = params[:preference_data] || params[:preferences]
     unless preferences.is_a?(Hash) && preferences.keys.all? { |k| k.is_a?(String) }
       render json: { error: 'Invalid preferences format' }, status: :bad_request
     end
@@ -144,6 +142,14 @@ class Api::UsersController < Api::BaseController
 
   def set_user
     @user = User.find_by(id: params[:user_id] || params[:id])
+  end
+
+  def swipe_params
+    params.permit(:target_user_id, :action)
+  end
+
+  def valid_complete_profile_params?
+    # ... existing valid_complete_profile_params? method ...
   end
 
   # ... rest of the file ...
