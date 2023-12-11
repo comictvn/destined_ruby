@@ -24,7 +24,7 @@ class Api::FeedbacksController < ApplicationController
     end
 
     # Verify that the user is part of the match.
-    unless match.matcher1_id == user.id || match.matcher2_id == user.id
+    unless match.user_id == user.id || match.matcher1_id == user.id || match.matcher2_id == user.id
       render json: { error: 'User not part of the match.' }, status: :unprocessable_entity
       return
     end
@@ -37,7 +37,7 @@ class Api::FeedbacksController < ApplicationController
 
     # Validate the rating
     unless feedback_params[:rating].to_f.between?(1.0, 5.0)
-      render json: { error: 'Invalid rating.' }, status: :unprocessable_entity
+      render json: { error: 'Invalid rating. Must be between 1.0 and 5.0.' }, status: :unprocessable_entity
       return
     end
 
@@ -49,7 +49,10 @@ class Api::FeedbacksController < ApplicationController
     result = feedback_service.call
 
     if result.success?
-      render json: { status: 201, message: 'Feedback submitted successfully.' }, status: :created
+      # Call the matchmaking service to adjust the algorithm based on the feedback
+      MatchmakingService.adjust_algorithm(feedback: result.feedback)
+
+      render json: { status: 201, message: 'Feedback submitted successfully.', feedback: result.feedback }, status: :created
     else
       render json: { error: result.errors }, status: :unprocessable_entity
     end
