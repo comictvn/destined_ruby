@@ -35,7 +35,47 @@ class MatchmakingService
     raise "An error occurred while generating potential matches: #{e.message}"
   end
 
-  # Existing code for record_swipe_action method goes here
+  # Updated method to record swipe action
+  def record_swipe_action(user_id, target_user_id, swipe_direction)
+    # Validate user existence
+    unless User.exists?(id: user_id) && User.exists?(id: target_user_id)
+      return { success: false, message: 'One or both users do not exist.' }
+    end
+    
+    # Validate swipe direction
+    unless ['right', 'left'].include?(swipe_direction)
+      return { success: false, message: 'Invalid swipe direction' }
+    end
+    
+    begin
+      # Logic for recording swipe action
+      if swipe_direction == 'right'
+        # Check for mutual 'right' swipe
+        if SwipeLog.exists?(user_id: target_user_id, target_user_id: user_id, swipe_direction: 'right')
+          match = nil
+          ActiveRecord::Base.transaction do
+            match = Match.create!(user1_id: user_id, user2_id: target_user_id)
+            # Remove the swipe logs to prevent duplicate matches
+            SwipeLog.where(user_id: user_id, target_user_id: target_user_id, swipe_direction: 'right').destroy_all
+            SwipeLog.where(user_id: target_user_id, target_user_id: user_id, swipe_direction: 'right').destroy_all
+          end
+          return { success: true, message: 'Match created', match: true }
+        else
+          # Store the swipe action
+          SwipeLog.create!(user_id: user_id, target_user_id: target_user_id, swipe_direction: swipe_direction)
+        end
+      elsif swipe_direction == 'left'
+        # Store the swipe action for a 'left' swipe
+        SwipeLog.create!(user_id: user_id, target_user_id: target_user_id, swipe_direction: swipe_direction)
+      end
+      
+      # If swipe direction is 'left' or no mutual 'right' swipe, just return success message
+      { success: true, message: 'Swipe recorded', match: false }
+    rescue => e
+      # Handle exceptions and provide a meaningful error message
+      { success: false, message: "An error occurred: #{e.message}" }
+    end
+  end
 
   private
 

@@ -92,31 +92,36 @@ class Api::MatchesController < ApplicationController
       return render json: { error: "Invalid swipe direction." }, status: :bad_request
     end
 
-    # Check for an existing opposite swipe
-    if swipe_params[:swipe_direction] == 'right' && opposite_swipe_exists?(swipe_params[:target_user_id], swipe_params[:user_id])
-      # Create a new match
-      match = Match.create(user_id: swipe_params[:user_id], matched_user_id: swipe_params[:target_user_id])
-      if match.persisted?
-        render json: { message: "It's a match!", match_id: match.id }, status: :created
+    begin
+      # Check for an existing opposite swipe
+      if swipe_params[:swipe_direction] == 'right' && opposite_swipe_exists?(swipe_params[:target_user_id], swipe_params[:user_id])
+        # Create a new match
+        match = Match.create(user_id: swipe_params[:user_id], matched_user_id: swipe_params[:target_user_id])
+        if match.persisted?
+          render json: { message: "It's a match!", match_id: match.id }, status: :created
+        else
+          render json: { error: "Could not create match." }, status: :internal_server_error
+        end
       else
-        render json: { error: "Could not create match." }, status: :internal_server_error
+        # Log or store the one-sided swipe action
+        Swipe.create!(user_id: swipe_params[:user_id], target_user_id: swipe_params[:target_user_id], swipe_direction: swipe_params[:swipe_direction])
+        render json: { message: "Swipe recorded." }, status: :ok
       end
-    else
-      # Log or store the one-sided swipe action
-      Swipe.create!(user_id: swipe_params[:user_id], target_user_id: swipe_params[:target_user_id], swipe_direction: swipe_params[:swipe_direction])
-      render json: { message: "Swipe recorded." }, status: :ok
+    rescue ActiveRecord::RecordInvalid => e
+      render json: { error: e.message }, status: :unprocessable_entity
+    rescue => e
+      render json: { error: e.message }, status: :internal_server_error
     end
-  rescue ActiveRecord::RecordNotFound => e
-    render json: { error: e.message }, status: :not_found
-  rescue ActiveRecord::RecordInvalid => e
-    render json: { error: e.message }, status: :unprocessable_entity
-  rescue => e
-    render json: { error: e.message }, status: :internal_server_error
   end
 
   # Other actions...
 
   private
+
+  # Helper method to check for an existing opposite swipe
+  def opposite_swipe_exists?(target_user_id, user_id)
+    Swipe.exists?(user_id: target_user_id, target_user_id: user_id, swipe_direction: 'right')
+  end
 
   # Other private methods...
 end
