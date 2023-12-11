@@ -1,25 +1,28 @@
 class Api::MatchesController < ApplicationController
   include AuthenticationConcern
-  include MatchFeedbackService
 
   before_action :authenticate_user!
 
   def create
-    match_params = params.require(:match).permit(:matcher1_id, :matcher2_id)
+    match_params = params.require(:match).permit(:user_id, :matched_user_id)
 
     # Validate user IDs
-    unless User.exists?(match_params[:matcher1_id]) && User.exists?(match_params[:matcher2_id])
+    unless User.exists?(match_params[:user_id]) && User.exists?(match_params[:matched_user_id])
       return render json: { error: "User not found." }, status: :bad_request
     end
 
     # Check if match already exists
-    if Match.exists?(matcher1_id: match_params[:matcher1_id], matcher2_id: match_params[:matcher2_id]) ||
-       Match.exists?(matcher1_id: match_params[:matcher2_id], matcher2_id: match_params[:matcher1_id])
-      return render json: { error: "Match already exists." }, status: :unprocessable_entity
+    if Match.exists?(user_id: match_params[:user_id], matched_user_id: match_params[:matched_user_id]) ||
+       Match.exists?(user_id: match_params[:matched_user_id], matched_user_id: match_params[:user_id])
+      return render json: { error: "Match already exists." }, status: :conflict
     end
 
-    result = MatchService.new.record_mutual_interest(match_params[:matcher1_id], match_params[:matcher2_id])
-    render json: result[:match], status: result[:status]
+    match = Match.create(user_id: match_params[:user_id], matched_user_id: match_params[:matched_user_id])
+    if match.persisted?
+      render json: { status: 201, message: "Match recorded successfully." }, status: :created
+    else
+      render json: { error: "Internal server error." }, status: :internal_server_error
+    end
   rescue ActiveRecord::RecordNotFound => e
     render json: { error: e.message }, status: :bad_request
   rescue ActiveRecord::RecordInvalid => e
@@ -65,7 +68,7 @@ class Api::MatchesController < ApplicationController
 
   private
 
-  def feedback_params
-    params.require(:feedback).permit(:user_id, :content, :rating)
+  def match_params
+    params.require(:match).permit(:user_id, :matched_user_id)
   end
 end
