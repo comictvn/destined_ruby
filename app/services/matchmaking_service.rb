@@ -8,7 +8,7 @@ class MatchmakingService
     current_user = User.find(user_id)
     user_preferences = UserPreferenceService.get_user_preferences(user_id) || current_user.user_preferences
     user_interests = UserInterest.where(user_id: user_id).pluck(:interest_id) || current_user.user_interests.pluck(:interest_id)
-    potential_matches = User.joins(:user_interests)
+    potential_matches = User.includes(:user_interests, :user_answers)
                             .where.not(id: user_id)
                             .where(user_interests: { interest_id: user_interests })
                             .select { |user| within_location_range?(user_preferences, user) }
