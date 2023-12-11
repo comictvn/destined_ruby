@@ -35,7 +35,7 @@ class MatchService < BaseService
         # Send notification to both users
         MatchNotificationJob.perform_later(matcher1_id, 'You have a new match!')
         MatchNotificationJob.perform_later(matcher2_id, 'You have a new match!')
-        { success: true, match: match, message: 'Mutual interest recorded and match created successfully' }
+        { success: true, message: 'Mutual interest recorded and match created successfully' }
       else
         { success: false, message: 'Match already exists' }
       end
