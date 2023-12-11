@@ -1,6 +1,6 @@
 class Api::MessagesController < Api::BaseController
-  before_action :doorkeeper_authorize!, only: %i[create initiate_conversation]
-  before_action :set_match, only: [:initiate_conversation]
+  before_action :doorkeeper_authorize!, only: %i[create]
+  before_action :set_match, only: [:create]
   before_action :authenticate_sender, only: [:create]
 
   def create
@@ -9,7 +9,7 @@ class Api::MessagesController < Api::BaseController
       result = service.create_message(
         match_id: @match.id,
         sender_id: message_params[:sender_id],
-        receiver_id: recipient_id(@match, message_params[:sender_id].to_i),
+        receiver_id: message_params[:receiver_id],
         content: message_params[:content]
       )
 
@@ -23,30 +23,6 @@ class Api::MessagesController < Api::BaseController
     end
   end
 
-  def initiate_conversation
-    ActiveRecord::Base.transaction do
-      return render_error('Match not found', :not_found) unless @match
-
-      unless [@match.matcher1_id, @match.matcher2_id].include?(message_params[:sender_id].to_i)
-        return render_error('Sender not part of the match', :forbidden)
-      end
-
-      if message_params[:content].blank?
-        return render_error('Message content cannot be empty', :bad_request)
-      end
-
-      @message = Message.new(match_id: @match.id, sender_id: message_params[:sender_id], content: message_params[:content])
-
-      if @message.save
-        MessageNotificationJob.perform_later(@message.id, recipient_id(@match, message_params[:sender_id].to_i))
-        render json: { status: 201, message: @message.as_json }, status: :created
-      else
-        @error_object = @message.errors.messages
-        render status: :unprocessable_entity
-      end
-    end
-  end
-
   private
 
   def authenticate_sender
@@ -57,24 +33,16 @@ class Api::MessagesController < Api::BaseController
   end
 
   def valid_message_params?
-    message_params[:sender_id].present? && message_params[:content].present?
+    message_params[:match_id].present? && message_params[:sender_id].present? && message_params[:receiver_id].present? && message_params[:content].present?
   end
 
   def set_match
-    @match = Match.find_by(id: params[:match_id])
+    @match = Match.find_by(id: message_params[:match_id])
     render_error('Match not found', :not_found) unless @match
   end
 
-  def create_params
-    params.require(:messages).permit(:content, :sender_id, :chanel_id, :images)
-  end
-
   def message_params
-    params.require(:message).permit(:sender_id, :content)
-  end
-
-  def recipient_id(match, sender_id)
-    match.matcher1_id == sender_id ? match.matcher2_id : match.matcher1_id
+    params.require(:message).permit(:match_id, :sender_id, :receiver_id, :content)
   end
 
   def render_error(message, status)
