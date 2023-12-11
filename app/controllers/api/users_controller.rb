@@ -1,11 +1,12 @@
 class Api::UsersController < Api::BaseController
-  before_action :doorkeeper_authorize!, only: %i[index show update_profile matches update_preferences complete_profile swipes]
-  before_action :set_user, only: [:update_preferences, :complete_profile, :matches]
-  before_action :authenticate_user!, only: [:update_preferences] # Added before_action to authenticate user
-  before_action :validate_preferences, only: [:update_preferences] # Added before_action to validate preferences
+  before_action :doorkeeper_authorize!, only: %i[index show update_profile matches update_preferences complete_profile swipes record_swipe]
+  before_action :set_user, only: [:matches, :update_preferences, :complete_profile, :record_swipe]
+  before_action :authenticate_user!, only: [:update_preferences, :record_swipe] # Added :record_swipe to the array
+  before_action :validate_preferences, only: [:update_preferences]
+  before_action :validate_swipe_action, only: [:record_swipe] # Added before_action to validate swipe action
 
   require_dependency 'matchmaking_service'
-  require_dependency 'user_service/update_profile' # Import the UserService::UpdateProfile class
+  require_dependency 'user_service/update_profile'
 
   # ... existing methods ...
 
@@ -93,8 +94,24 @@ class Api::UsersController < Api::BaseController
   end
 
   # POST /api/users/:user_id/swipes
-  def swipes
-    # ... existing swipes method ...
+  def record_swipe
+    return render json: { error: 'User not found' }, status: :not_found unless @user
+
+    target_user = User.find_by(id: swipe_params[:target_user_id])
+    return render json: { error: 'User not found' }, status: :not_found unless target_user
+
+    action = swipe_params[:action]
+    return render json: { error: 'Invalid swipe action' }, status: :bad_request unless %w[left right].include?(action)
+
+    result = MatchmakingService.new.record_swipe_action(@user.id, target_user.id, action)
+
+    if result[:success]
+      render json: { status: 200, message: 'Swipe action recorded successfully.' }, status: :ok
+    else
+      render json: { status: 422, message: result[:message] }, status: :unprocessable_entity
+    end
+  rescue StandardError => e
+    render json: { status: 500, message: "An unexpected error occurred: #{e.message}" }, status: :internal_server_error
   end
 
   private
@@ -145,7 +162,14 @@ class Api::UsersController < Api::BaseController
   end
 
   def swipe_params
-    params.permit(:target_user_id, :action)
+    params.require(:swipe).permit(:target_user_id, :action)
+  end
+
+  def validate_swipe_action
+    swipe = swipe_params
+    unless swipe[:target_user_id].present? && swipe[:action].present?
+      render json: { error: 'Missing swipe parameters' }, status: :bad_request
+    end
   end
 
   def valid_complete_profile_params?
