@@ -7,3 +7,9 @@ steps:
   commands:
   - bundle install --jobs=3 --retry=3
   - rake
+
+trigger:
+  branch:
+  - main
+  event:
+  - push
