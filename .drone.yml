@@ -1,3 +1,4 @@
+---
 kind: pipeline
 type: docker
 name: default
@@ -8,9 +9,3 @@ steps:
   commands:
   - go build
   - go test
-
-trigger:
-  branch:
-  - main
-  event:
-  - push
