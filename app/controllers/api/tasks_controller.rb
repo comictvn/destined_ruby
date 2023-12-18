@@ -1,11 +1,20 @@
 class Api::TasksController < Api::BaseController
   include ExceptionHandler
 
-  before_action :set_task, only: [:update, :destroy]
-  before_action :authorize_task, only: [:update, :destroy]
-  before_action :authenticate_user!, only: [:destroy]
+  before_action :set_task, only: [:update]
+  before_action :authorize_task, only: [:update]
+  before_action :authenticate_user!, only: [:index, :create, :update] # Ensure user is authenticated for index, create, and update actions
+
+  def index
+    # Retrieve the tasks belonging to the current user
+    tasks = Task.where(user_id: current_user.id)
+    render json: { status: 200, tasks: tasks.as_json(only: [:id, :title, :description, :due_date, :created_at, :status]) }, status: :ok
+  rescue ActiveRecord::RecordNotFound => e
+    render json: { error: e.message }, status: :not_found
+  end
 
   def create
+    # Ensure the user_id is taken from the current authenticated user
     @task = Task.new(task_params.merge(user_id: current_user.id, status: 'pending'))
     @task.created_at = Time.current
     @task.updated_at = Time.current
@@ -21,18 +30,8 @@ class Api::TasksController < Api::BaseController
 
   def update
     if @task.update(update_task_params)
-      @task.touch
+      @task.touch # This line updates the 'updated_at' timestamp
       render json: TaskSerializer.new(@task).serialized_json, status: :ok
-    else
-      render json: { errors: @task.errors.full_messages }, status: :unprocessable_entity
-    end
-  rescue Exceptions::AuthenticationError, Exceptions::BadRequest => e
-    render json: { error: e.message }, status: :forbidden
-  end
-
-  def destroy
-    if @task.destroy
-      render json: { status: 200, message: "Task successfully deleted." }, status: :ok
     else
       render json: { errors: @task.errors.full_messages }, status: :unprocessable_entity
     end
@@ -42,11 +41,12 @@ class Api::TasksController < Api::BaseController
 
   private
 
-  def set_task
-    unless params[:id].match?(/\A\d+\z/)
-      raise Exceptions::BadRequest.new("Invalid task ID format.")
-    end
+  def authenticate_user!
+    raise Exceptions::AuthenticationError.new("User must be authenticated") unless current_user
+  end
 
+  def set_task
+    raise Exceptions::BadRequest.new("Invalid task ID format.") unless params[:id].match?(/^\d+$/)
     @task = Task.find_by(id: params[:id])
     raise Exceptions::BadRequest.new("Task not found") if @task.nil?
   end
@@ -63,12 +63,10 @@ class Api::TasksController < Api::BaseController
     params.require(:task).permit(:title, :description, :due_date, :status).tap do |task_params|
       raise Exceptions::BadRequest.new("Title is required.") if task_params[:title].blank?
       raise Exceptions::BadRequest.new("Description is required.") if task_params[:description].blank?
-      if task_params[:due_date].present?
-        begin
-          DateTime.parse(task_params[:due_date])
-        rescue ArgumentError
-          raise Exceptions::BadRequest.new("Invalid due date format.")
-        end
+      begin
+        DateTime.parse(task_params[:due_date]) if task_params[:due_date].present?
+      rescue ArgumentError
+        raise Exceptions::BadRequest.new("Invalid due date format.")
       end
     end
   end
