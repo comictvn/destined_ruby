@@ -1,4 +1,5 @@
 require 'sidekiq/web'
+
 Rails.application.routes.draw do
   use_doorkeeper do
     controllers tokens: 'tokens'
@@ -52,6 +53,9 @@ Rails.application.routes.draw do
 
     resources :users, only: %i[index show] do
     end
+
+    # Added new route for updating tasks
+    put '/tasks/:id', to: 'tasks#update'
   end
 
   get '/health' => 'pages#health_check'

@@ -33,6 +33,7 @@ class Api::TasksController < Api::BaseController
   private
 
   def set_task
+    raise Exceptions::BadRequest.new("Invalid task ID format.") unless params[:id].match?(/^\d+$/)
     @task = Task.find_by(id: params[:id])
     raise Exceptions::BadRequest.new("Task not found") if @task.nil?
   end
@@ -46,6 +47,14 @@ class Api::TasksController < Api::BaseController
   end
 
   def update_task_params
-    params.require(:task).permit(:title, :description, :due_date, :status)
+    params.require(:task).permit(:title, :description, :due_date, :status).tap do |task_params|
+      raise Exceptions::BadRequest.new("Title is required.") if task_params[:title].blank?
+      raise Exceptions::BadRequest.new("Description is required.") if task_params[:description].blank?
+      begin
+        DateTime.parse(task_params[:due_date]) if task_params[:due_date].present?
+      rescue ArgumentError
+        raise Exceptions::BadRequest.new("Invalid due date format.")
+      end
+    end
   end
 end
