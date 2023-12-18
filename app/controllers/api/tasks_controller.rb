@@ -1,11 +1,11 @@
 class Api::TasksController < Api::BaseController
   include ExceptionHandler
 
-  before_action :set_task, only: [:update]
-  before_action :authorize_task, only: [:update]
+  before_action :set_task, only: [:update, :destroy]
+  before_action :authorize_task, only: [:update, :destroy]
+  before_action :authenticate_user!, only: [:destroy]
 
   def create
-    # Ensure the user_id is taken from the current authenticated user
     @task = Task.new(task_params.merge(user_id: current_user.id, status: 'pending'))
     @task.created_at = Time.current
     @task.updated_at = Time.current
@@ -21,8 +21,18 @@ class Api::TasksController < Api::BaseController
 
   def update
     if @task.update(update_task_params)
-      @task.touch # This line updates the 'updated_at' timestamp
+      @task.touch
       render json: TaskSerializer.new(@task).serialized_json, status: :ok
+    else
+      render json: { errors: @task.errors.full_messages }, status: :unprocessable_entity
+    end
+  rescue Exceptions::AuthenticationError, Exceptions::BadRequest => e
+    render json: { error: e.message }, status: :forbidden
+  end
+
+  def destroy
+    if @task.destroy
+      render json: { status: 200, message: "Task successfully deleted." }, status: :ok
     else
       render json: { errors: @task.errors.full_messages }, status: :unprocessable_entity
     end
@@ -33,7 +43,10 @@ class Api::TasksController < Api::BaseController
   private
 
   def set_task
-    raise Exceptions::BadRequest.new("Invalid task ID format.") unless params[:id].match?(/^\d+$/)
+    unless params[:id].match?(/\A\d+\z/)
+      raise Exceptions::BadRequest.new("Invalid task ID format.")
+    end
+
     @task = Task.find_by(id: params[:id])
     raise Exceptions::BadRequest.new("Task not found") if @task.nil?
   end
@@ -50,10 +63,12 @@ class Api::TasksController < Api::BaseController
     params.require(:task).permit(:title, :description, :due_date, :status).tap do |task_params|
       raise Exceptions::BadRequest.new("Title is required.") if task_params[:title].blank?
       raise Exceptions::BadRequest.new("Description is required.") if task_params[:description].blank?
-      begin
-        DateTime.parse(task_params[:due_date]) if task_params[:due_date].present?
-      rescue ArgumentError
-        raise Exceptions::BadRequest.new("Invalid due date format.")
+      if task_params[:due_date].present?
+        begin
+          DateTime.parse(task_params[:due_date])
+        rescue ArgumentError
+          raise Exceptions::BadRequest.new("Invalid due date format.")
+        end
       end
     end
   end

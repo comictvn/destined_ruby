@@ -1,4 +1,3 @@
-require 'sidekiq/web'
 
 Rails.application.routes.draw do
   use_doorkeeper do
@@ -53,6 +52,9 @@ Rails.application.routes.draw do
 
     resources :users, only: %i[index show] do
     end
+
+    # Added the destroy action route for tasks within the api namespace
+    resources :tasks, only: [:destroy]
 
     # Added new route for updating tasks
     put '/tasks/:id', to: 'tasks#update'
