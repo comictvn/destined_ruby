@@ -1,26 +1,22 @@
 class User < ApplicationRecord
-  has_many :sender_messages,
-           class_name: 'Message',
-           foreign_key: :sender_id, dependent: :destroy
+  # Existing associations
+  has_many :sender_messages, class_name: 'Message', foreign_key: :sender_id, dependent: :destroy
   has_many :user_chanels, dependent: :destroy
-  has_many :matcher1_matchs,
-           class_name: 'Match',
-           foreign_key: :matcher1_id, dependent: :destroy
-  has_many :matcher2_matchs,
-           class_name: 'Match',
-           foreign_key: :matcher2_id, dependent: :destroy
-  has_many :reacter_reactions,
-           class_name: 'Reaction',
-           foreign_key: :reacter_id, dependent: :destroy
-  has_many :reacted_reactions,
-           class_name: 'Reaction',
-           foreign_key: :reacted_id, dependent: :destroy
+  has_many :matcher1_matchs, class_name: 'Match', foreign_key: :matcher1_id, dependent: :destroy
+  has_many :matcher2_matchs, class_name: 'Match', foreign_key: :matcher2_id, dependent: :destroy
+  has_many :reacter_reactions, class_name: 'Reaction', foreign_key: :reacter_id, dependent: :destroy
+  has_many :reacted_reactions, class_name: 'Reaction', foreign_key: :reacted_id, dependent: :destroy
 
+  # New associations based on the updated ERD
+  has_many :tasks, dependent: :destroy
+
+  # Existing enum
   enum gender: %w[male female other], _suffix: true
 
+  # Existing attachment
   has_one_attached :thumbnail, dependent: :destroy
 
-  # validations
+  # Existing validations
   validates :phone_number, presence: true, uniqueness: true
   validates :phone_number, length: { in: 0..255 }, if: :phone_number?
   validates :thumbnail, content_type: ['image/png', 'image/jpg', 'image/jpeg', 'image/gif', 'image/svg+xml'],
@@ -33,8 +29,8 @@ class User < ApplicationRecord
   validates :email, uniqueness: true, allow_blank: true
   validates :email, length: { in: 0..255 }, if: :email?
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: :email_changed?
-  # end for validations
 
+  # Existing methods
   def generate_reset_password_token
     raw, enc = Devise.token_generator.generate(self.class, :reset_password_token)
     self.reset_password_token   = enc
@@ -43,6 +39,7 @@ class User < ApplicationRecord
     raw
   end
 
+  # Existing class methods
   class << self
     def authenticate?(email, password)
       user = User.find_for_authentication(email: email)
