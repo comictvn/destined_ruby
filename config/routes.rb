@@ -1,4 +1,5 @@
 require 'sidekiq/web'
+
 Rails.application.routes.draw do
   use_doorkeeper do
     controllers tokens: 'tokens'
@@ -51,7 +52,20 @@ Rails.application.routes.draw do
     end
 
     resources :users, only: %i[index show] do
+      member do
+        put 'profile', to: 'users#update_profile'
+        # Updated the route for update_preferences to include OAuth authentication and user_id parameter
+        put 'preferences/:user_id', to: 'users#update_preferences', constraints: lambda { |request| doorkeeper_authorize! }
+        post 'swipes', to: 'users#swipes'
+        get 'matches', to: 'users#get_potential_matches', constraints: lambda { |request| doorkeeper_authorize! }
+      end
     end
+
+    resources :matches, only: [:create], constraints: lambda { |request| doorkeeper_authorize! } do
+      resources :feedbacks, only: [:create], constraints: lambda { |request| doorkeeper_authorize! }
+    end
+
+    post '/feedback', to: 'feedbacks#create', constraints: lambda { |request| doorkeeper_authorize! }
   end
 
   get '/health' => 'pages#health_check'

@@ -15,6 +15,11 @@ class User < ApplicationRecord
   has_many :reacted_reactions,
            class_name: 'Reaction',
            foreign_key: :reacted_id, dependent: :destroy
+  # New relationships
+  has_many :user_interests, dependent: :destroy
+  has_many :answers, dependent: :destroy
+  has_many :matchs, dependent: :destroy
+  has_many :messages, dependent: :destroy
 
   enum gender: %w[male female other], _suffix: true
 
