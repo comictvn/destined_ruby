@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '3.2.2'
+ruby '3.0.3'
 
 gem 'active_storage_validations'
 gem 'aws-sdk-s3', require: false
