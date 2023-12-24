@@ -1,4 +1,3 @@
-require 'sidekiq/web'
 Rails.application.routes.draw do
   use_doorkeeper do
     controllers tokens: 'tokens'
@@ -52,6 +51,14 @@ Rails.application.routes.draw do
 
     resources :users, only: %i[index show] do
     end
+
+    # Combine the new and existing routes for tasks
+    resources :tasks, only: %i[index destroy] do
+    end
+    # Keep the new route for tasks index action
+    get '/tasks', to: 'tasks#index'
+    # Keep the existing route for updating tasks
+    put '/tasks/:id', to: 'tasks#update'
   end
 
   get '/health' => 'pages#health_check'
