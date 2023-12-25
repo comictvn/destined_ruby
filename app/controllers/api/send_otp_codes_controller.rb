@@ -17,20 +17,16 @@ class Api::SendOtpCodesController < Api::BaseController
     end
 
     service = ::Auths::PhoneVerification.new(@phone_number.formatted_phone_number)
+    result = service.send_otp
 
-    if service.send_otp
-      @success = true
-      @message = I18n.t('phone_login.otp.send_otp_success')
-      increment_otp_send_count(@phone_number.formatted_phone_number)
-    else
-      @success = false
-      @message = I18n.t('common.otp.exceed_amount_sent_otp')
-    end
+    @success = result[:success]
+    @message = result[:message]
+    increment_otp_send_count(@phone_number.formatted_phone_number) if @success
 
     if Rails.env.development? || whitelisted_number?(@phone_number.formatted_phone_number)
       log_otp_code(@phone_number.formatted_phone_number)
     else
-      SendOtpCodeJob.perform_later(@phone_number.formatted_phone_number)
+      SendOtpCodeJob.perform_later(@phone_number.formatted_phone_number) if @success
     end
   end
 

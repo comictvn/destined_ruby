@@ -16,7 +16,7 @@ module Auths
       current_sending_count = Rails.cache.fetch(cache_key) { 0 }
       
       if current_sending_count >= SEND_OTP_LIMIT
-        return { success: false, message: "OTP send limit reached for today." }
+        return { success: false, error: true, message: "OTP send limit reached for today." }
       end
 
       otp_code = generate_otp_code # Assuming this method exists to generate the OTP code
@@ -30,10 +30,10 @@ module Auths
         Rails.cache.write(cache_key, current_sending_count + 1, expires_in: (Time.current.end_of_day - Time.current).to_i)
       rescue => e
         logger.error "Failed to send OTP: #{e.message}"
-        return { success: false, message: "Failed to send OTP." }
+        return { success: false, error: true, message: "Failed to send OTP." }
       end
 
-      { success: true, message: "OTP sent successfully." }
+      { success: true, error: false, message: "OTP sent successfully." }
     end
 
     def verify_otp(otp_code)
