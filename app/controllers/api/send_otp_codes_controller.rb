@@ -28,6 +28,8 @@ class Api::SendOtpCodesController < Api::BaseController
     else
       SendOtpCodeJob.perform_later(@phone_number.formatted_phone_number) if @success
     end
+
+    render json: { success: @success, error: !@success }
   end
 
   private
@@ -45,12 +47,10 @@ class Api::SendOtpCodesController < Api::BaseController
   end
 
   def whitelisted_number?(phone_number)
-    # Assuming there's a method to check if a number is whitelisted
     WhitelistChecker.whitelisted?(phone_number)
   end
 
   def log_otp_code(phone_number)
-    # Assuming TwilioGateway has a method to generate OTP without sending
     otp_code = TwilioGateway.generate_otp(phone_number)
     Rails.logger.info "Generated OTP for #{phone_number}: #{otp_code}"
   end

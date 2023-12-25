@@ -15,19 +15,19 @@ module Auths
       cache_key = "phone_number_#{@phone_number}/#{Time.current.strftime('%Y-%m-%d')}"
       current_sending_count = Rails.cache.fetch(cache_key) { 0 }
       
-      if current_sending_count >= SEND_OTP_LIMIT
+      if exceed_otp_send_limit?(current_sending_count)
         return { success: false, error: true, message: "OTP send limit reached for today." }
       end
 
-      otp_code = generate_otp_code # Assuming this method exists to generate the OTP code
+      otp_code = generate_otp_code
 
       begin
         if Rails.env.development? || whitelisted?
-          logger.info "Sent OTP code: #{otp_code} to #{@phone_number}"
+          log_otp_code(otp_code)
         else
           ::SendOtpCodeJob.perform_later(@phone_number, otp_code)
         end
-        Rails.cache.write(cache_key, current_sending_count + 1, expires_in: (Time.current.end_of_day - Time.current).to_i)
+        increment_otp_send_count(cache_key, current_sending_count)
       rescue => e
         logger.error "Failed to send OTP: #{e.message}"
         return { success: false, error: true, message: "Failed to send OTP." }
@@ -58,6 +58,18 @@ module Auths
 
     def generate_otp_code
       rand(100000..999999).to_s
+    end
+
+    def exceed_otp_send_limit?(current_sending_count)
+      current_sending_count >= SEND_OTP_LIMIT
+    end
+
+    def log_otp_code(otp_code)
+      logger.info "Sent OTP code: #{otp_code} to #{@phone_number}"
+    end
+
+    def increment_otp_send_count(cache_key, current_sending_count)
+      Rails.cache.write(cache_key, current_sending_count + 1, expires_in: (Time.current.end_of_day - Time.current).to_i)
     end
   end
 end
