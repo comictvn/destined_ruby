@@ -37,10 +37,12 @@ module Auths
     end
 
     def verify_otp(otp_code)
-      return true if Rails.env.development? || whitelisted?
+      return { success: true } if Rails.env.development? || whitelisted?
 
       check = twilio.verification_checks.create(to: @phone_number, code: otp_code)
       raise VerifyDeclined unless check.status == 'approved'
+
+      { success: true }
     end
 
     private
