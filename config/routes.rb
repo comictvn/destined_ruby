@@ -1,4 +1,3 @@
-require 'sidekiq/web'
 Rails.application.routes.draw do
   use_doorkeeper do
     controllers tokens: 'tokens'
@@ -51,6 +50,7 @@ Rails.application.routes.draw do
     end
 
     resources :users, only: %i[index show] do
+      post '/swipes', to: 'swipes#create'
     end
   end
 
