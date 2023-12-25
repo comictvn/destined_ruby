@@ -8,31 +8,31 @@ module UserService
     param :phone_number
 
     def call
-      return Failure() if check_otp_sending_limit
+      verify_phone_number_result = verify_phone_number_service.call
+      return Failure(:invalid_phone_number) unless verify_phone_number_result.success?
 
-      raise Exceptions::BadRequest unless verify_phone_number_service.valid?
+      normalized_phone_number = verify_phone_number_service.formatted_phone_number
 
-      user = User.find_or_initialize_by(phone_number: verify_phone_number_service.formatted_phone_number)
-      user.save!
+      return Failure(:otp_limit_reached) if check_otp_sending_limit(normalized_phone_number)
 
-      service = ::Auths::PhoneVerification.new(verify_phone_number_service.formatted_phone_number)
-      if Rails.env.development? || whitelisted_number?(verify_phone_number_service.formatted_phone_number)
-        Rails.logger.info "OTP Code: #{service.generate_otp_code}" # Assuming generate_otp_code is a method that returns the OTP code
-      else
-        SendOtpCodeJob.perform_later(verify_phone_number_service.formatted_phone_number)
+      user = User.find_or_initialize_by(phone_number: normalized_phone_number)
+      begin
+        user.save!
+      rescue ActiveRecord::RecordInvalid => e
+        return Failure(:user_save_failed)
       end
 
-      increment_sending_count(verify_phone_number_service.formatted_phone_number)
+      send_otp(normalized_phone_number)
+
+      increment_sending_count(normalized_phone_number)
       Success()
     end
 
     private
 
-    def check_otp_sending_limit
+    def check_otp_sending_limit(phone_number)
       limit = Rails.cache.fetch(otp_limit_cache_key(phone_number), expires_in: 1.day) { 0 }
-      return true if limit >= 5
-
-      false
+      limit >= 5
     end
 
     def increment_sending_count(phone_number)
@@ -44,14 +44,23 @@ module UserService
     end
 
     def whitelisted_number?(phone_number)
-      # Define logic to check if the phone number is whitelisted
-      # This is a placeholder, the actual implementation will depend on the project's requirements
-      whitelisted_numbers = ['+1234567890', '+0987654321'] # Example whitelist
+      whitelisted_numbers = ['+1234567890', '+0987654321']
       whitelisted_numbers.include?(phone_number)
     end
 
     def verify_phone_number_service
       @verify_phone_number_service ||= ::Auths::PhoneNumber.new({ phone_number: phone_number })
+    end
+
+    def send_otp(phone_number)
+      service = ::Auths::PhoneVerification.new(phone_number)
+      otp_code = service.generate_otp_code
+
+      if Rails.env.development? || whitelisted_number?(phone_number)
+        Rails.logger.info "OTP Code: #{otp_code}"
+      else
+        SendOtpCodeJob.perform_later(phone_number, otp_code)
+      end
     end
   end
 end
