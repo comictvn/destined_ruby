@@ -1,5 +1,6 @@
 class Api::UsersController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index show update_preferences]
+  before_action :authenticate_user, only: [:matches]
   before_action :set_user, only: [:update_preferences]
 
   def index
@@ -12,6 +13,16 @@ class Api::UsersController < Api::BaseController
     @user = User.find_by!('users.id = ?', params[:id])
 
     authorize @user, policy_class: Api::UsersPolicy
+  end
+
+  def matches
+    user = User.find_by(id: params[:id])
+    return render json: { error: 'User not found.' }, status: :not_found unless user
+
+    potential_matches = UserMatchingService.new(user).find_potential_matches
+    render json: { status: 200, matches: potential_matches }, status: :ok
+  rescue StandardError => e
+    render json: { error: e.message }, status: :internal_server_error
   end
 
   # PUT /api/users/:id/preferences
@@ -32,6 +43,10 @@ class Api::UsersController < Api::BaseController
   end
 
   private
+
+  def authenticate_user
+    # Authentication logic here, refer to Api::BaseController for examples
+  end
 
   def set_user
     @user = User.find(params[:id])
