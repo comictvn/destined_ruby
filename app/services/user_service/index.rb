@@ -6,117 +6,69 @@ class UserService::Index
 
   def initialize(params, current_user = nil)
     @params = params
-
-    @records = Api::UsersPolicy::Scope.new(current_user, User).resolve
+    @current_user = current_user
+    @records = UserPolicy::Scope.new(current_user, User).resolve
   end
 
   def execute
-    phone_number_start_with
-
-    firstname_start_with
-
-    lastname_start_with
-
-    dob_equal
-
-    gender_equal
-
-    interests_start_with
-
-    location_start_with
-
-    email_start_with
-
-    order
-
-    paginate
+    filter_and_paginate_users
   end
 
-  def phone_number_start_with
-    return if params.dig(:users, :phone_number).blank?
+  private
 
-    @records = User.where('phone_number like ?', "%#{params.dig(:users, :phone_number)}")
+  def filter_and_paginate_users
+    filter_by_phone_number(params.dig(:users, :phone_number))
+    filter_by_first_name(params.dig(:users, :firstname))
+    filter_by_last_name(params.dig(:users, :lastname))
+    filter_by_dob(params.dig(:users, :dob))
+    filter_by_gender(params.dig(:users, :gender))
+    filter_by_interests(params.dig(:users, :interests))
+    filter_by_location(params.dig(:users, :location))
+    filter_by_email(params.dig(:users, :email))
+    order_records
+    paginate_records
   end
 
-  def firstname_start_with
-    return if params.dig(:users, :firstname).blank?
-
-    @records = if records.is_a?(Class)
-                 User.where(value.query)
-               else
-                 records.or(User.where('firstname like ?', "%#{params.dig(:users, :firstname)}"))
-               end
+  def filter_by_phone_number(phone_number)
+    @records = @records.where('phone_number LIKE ?', "%#{phone_number}%") if phone_number.present?
   end
 
-  def lastname_start_with
-    return if params.dig(:users, :lastname).blank?
-
-    @records = if records.is_a?(Class)
-                 User.where(value.query)
-               else
-                 records.or(User.where('lastname like ?', "%#{params.dig(:users, :lastname)}"))
-               end
+  def filter_by_first_name(first_name)
+    @records = @records.where('firstname LIKE ?', "%#{first_name}%") if first_name.present?
   end
 
-  def dob_equal
-    return if params.dig(:users, :dob).blank?
-
-    @records = if records.is_a?(Class)
-                 User.where(value.query)
-               else
-                 records.or(User.where('dob = ?', params.dig(:users, :dob)))
-               end
+  def filter_by_last_name(last_name)
+    @records = @records.where('lastname LIKE ?', "%#{last_name}%") if last_name.present?
   end
 
-  def gender_equal
-    return if params.dig(:users, :gender).blank?
-
-    @records = if records.is_a?(Class)
-                 User.where(value.query)
-               else
-                 records.or(User.where('gender = ?', params.dig(:users, :gender)))
-               end
+  def filter_by_dob(dob)
+    @records = @records.where('dob = ?', dob) if dob.present?
   end
 
-  def interests_start_with
-    return if params.dig(:users, :interests).blank?
-
-    @records = if records.is_a?(Class)
-                 User.where(value.query)
-               else
-                 records.or(User.where('interests like ?', "%#{params.dig(:users, :interests)}"))
-               end
+  def filter_by_gender(gender)
+    @records = @records.where('gender = ?', gender) if gender.present?
   end
 
-  def location_start_with
-    return if params.dig(:users, :location).blank?
-
-    @records = if records.is_a?(Class)
-                 User.where(value.query)
-               else
-                 records.or(User.where('location like ?', "%#{params.dig(:users, :location)}"))
-               end
+  def filter_by_interests(interests)
+    @records = @records.where('interests LIKE ?', "%#{interests}%") if interests.present?
   end
 
-  def email_start_with
-    return if params.dig(:users, :email).blank?
-
-    @records = if records.is_a?(Class)
-                 User.where(value.query)
-               else
-                 records.or(User.where('email like ?', "%#{params.dig(:users, :email)}"))
-               end
+  def filter_by_location(location)
+    @records = @records.where('location LIKE ?', "%#{location}%") if location.present?
   end
 
-  def order
-    return if records.blank?
-
-    @records = records.order('users.created_at desc')
+  def filter_by_email(email)
+    @records = @records.where('email LIKE ?', "%#{email}%") if email.present?
   end
 
-  def paginate
-    @records = User.none if records.blank? || records.is_a?(Class)
-    @records = records.page(params.dig(:pagination_page) || 1).per(params.dig(:pagination_limit) || 20)
+  def order_records
+    @records = @records.order('created_at DESC')
+  end
+
+  def paginate_records
+    page = params.dig(:pagination, :page) || 1
+    limit = params.dig(:pagination, :limit) || 20
+    @records = @records.page(page).per(limit)
   end
 end
 # rubocop:enable Style/ClassAndModuleChildren
