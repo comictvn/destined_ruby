@@ -1,16 +1,17 @@
 class Api::VerifyOtpController < Api::BaseController
-  def create
-    phone_number = ::Auths::PhoneNumber.new({ phone_number: params.dig(:phone_number),
-                                              otp_code: params.dig(:otp_code) })
-    if phone_number.valid?
-      ::Auths::PhoneVerification.new(phone_number.formatted_phone_number).verify_otp(params.dig(:otp_code))
-      head :ok, message: I18n.t('common.200')
+  def verify
+    otp_code = params[:otp_code]
+    phone_verification = ::Auths::PhoneVerification.new
+    if phone_verification.verify_otp(otp_code)
+      phone_verification.mark_as_verified
+      User.verify_user(phone_verification.user_id)
+      render json: { message: 'Phone number has been verified.' }, status: :ok
     else
-      head :unauthorized
+      render json: { error: 'OTP code does not match.' }, status: :unprocessable_entity
     end
   rescue Twilio::REST::RestError
-    head :unprocessable_entity, message: I18n.t('otp.notp_expired')
+    render json: { error: 'OTP code has expired.' }, status: :unprocessable_entity
   rescue ::Auths::PhoneVerification::VerifyDeclined
-    head :unprocessable_entity, message: I18n.t('otp.verification_declined')
+    render json: { error: 'OTP verification declined.' }, status: :unprocessable_entity
   end
 end
