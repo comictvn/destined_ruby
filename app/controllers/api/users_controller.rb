@@ -1,7 +1,7 @@
 class Api::UsersController < Api::BaseController
-  before_action :doorkeeper_authorize!, only: %i[index show update_preferences update_profile]
+  before_action :doorkeeper_authorize!, only: %i[index show update_preferences update_profile matches]
   before_action :authenticate_user, only: [:matches]
-  before_action :set_user, only: [:update_preferences, :update_profile]
+  before_action :set_user, only: [:update_preferences, :update_profile, :matches]
 
   def index
     begin
@@ -24,11 +24,28 @@ class Api::UsersController < Api::BaseController
     end
   end
 
-  # ... rest of the code remains unchanged ...
+  def matches
+    begin
+      # Validate that the user ID exists in the database
+      raise ActiveRecord::RecordNotFound unless @user.present?
+
+      # Assuming PreferencesService exists and has a method to find potential matches
+      potential_matches = PreferencesService.find_potential_matches(@user)
+      render json: { status: 200, matches: potential_matches }, status: :ok
+    rescue ActiveRecord::RecordNotFound
+      render json: { error: 'User not found.' }, status: :not_found
+    rescue => e
+      render json: { error: e.message }, status: :internal_server_error
+    end
+  end
+
+  # ... rest of the controller ...
 
   private
 
-  # ... rest of the private methods remains unchanged ...
+  def set_user
+    @user = User.find_by(id: params[:id])
+  end
 
   def filter_users(scope, params)
     scope = scope.filter_by_phone(params[:phone]) if params[:phone].present?
