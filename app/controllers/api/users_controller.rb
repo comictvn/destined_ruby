@@ -1,7 +1,7 @@
 class Api::UsersController < Api::BaseController
-  before_action :doorkeeper_authorize!, only: %i[index show update_preferences update_profile matches]
-  before_action :authenticate_user, only: [:matches, :update_preferences, :update_profile] # Ensure user is authenticated for these actions
-  before_action :set_user, only: [:update_preferences, :update_profile, :matches]
+  before_action :doorkeeper_authorize!, only: %i[index show update_preferences update_profile matches generate_matches]
+  before_action :authenticate_user, only: [:matches, :update_preferences, :update_profile, :generate_matches] # Ensure user is authenticated for these actions
+  before_action :set_user, only: [:update_preferences, :update_profile, :matches, :generate_matches]
 
   def index
     # ... existing index action ...
@@ -74,6 +74,20 @@ class Api::UsersController < Api::BaseController
     render json: { error: 'User not found.' }, status: :not_found
   rescue StandardError => e
     render json: { error: e.message }, status: :internal_server_error
+  end
+
+  def generate_matches
+    begin
+      # Validate that the user ID exists in the database
+      raise ActiveRecord::RecordNotFound unless @user.present?
+
+      potential_matches = MatchService.find_potential_matches(@user)
+      render json: { status: 200, matches: potential_matches }, status: :ok
+    rescue ActiveRecord::RecordNotFound
+      render json: { error: 'User not found.' }, status: :not_found
+    rescue => e
+      render json: { error: e.message }, status: :internal_server_error
+    end
   end
 
   # ... rest of the controller ...
