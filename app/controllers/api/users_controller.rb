@@ -1,7 +1,7 @@
 class Api::UsersController < Api::BaseController
-  before_action :doorkeeper_authorize!, only: %i[index show update_preferences update_profile matches generate_matches complete_profile]
-  before_action :authenticate_user, only: [:matches, :update_preferences, :update_profile, :generate_matches, :complete_profile] # Ensure user is authenticated for these actions
-  before_action :set_user, only: [:update_preferences, :update_profile, :matches, :generate_matches, :complete_profile]
+  before_action :doorkeeper_authorize!, only: %i[index show update_preferences update_profile matches generate_matches generate_potential_matches complete_profile]
+  before_action :authenticate_user, only: [:matches, :update_preferences, :update_profile, :generate_matches, :generate_potential_matches, :complete_profile] # Ensure user is authenticated for these actions
+  before_action :set_user, only: [:update_preferences, :update_profile, :matches, :generate_matches, :generate_potential_matches, :complete_profile]
 
   def index
     # ... existing index action ...
@@ -14,14 +14,14 @@ class Api::UsersController < Api::BaseController
 
       # Assuming MatchService exists and has a method to find potential matches
       potential_matches = MatchService.find_potential_matches(@user)
-      # Combine the new and existing code by formatting the matches
+      # Format the matches
       formatted_matches = potential_matches.map do |match|
         {
           id: match.id,
           age: match.age,
           gender: match.gender,
           location: match.location,
-          compatibility_score: match.compatibility_score # Assuming compatibility_score is a method or attribute on the match object
+          compatibility_score: match.compatibility_score
         }
       end
       render json: { status: 200, matches: formatted_matches }, status: :ok
@@ -72,7 +72,6 @@ class Api::UsersController < Api::BaseController
       result = user_profile_service.update_user_profile
 
       if result[:success]
-        # Combine the new and existing code by including preferences in the response
         render json: { status: 200, message: 'Profile updated successfully.', user: result[:user].as_json(include: [:preferences]) }, status: :ok
       else
         render json: { status: result[:error][:status], message: result[:error][:message] }, status: result[:error][:status]
@@ -93,6 +92,35 @@ class Api::UsersController < Api::BaseController
 
       potential_matches = MatchService.find_potential_matches(@user)
       render json: { status: 200, matches: potential_matches }, status: :ok
+    rescue ActiveRecord::RecordNotFound
+      render json: { error: 'User not found.' }, status: :not_found
+    rescue => e
+      render json: { error: e.message }, status: :internal_server_error
+    end
+  end
+
+  def generate_potential_matches
+    begin
+      # Ensure user is loaded and exists
+      raise ActiveRecord::RecordNotFound unless @user.present?
+
+      # Instantiate the MatchService and generate potential matches
+      match_service = MatchService.new(@user.id)
+      potential_matches = match_service.generate_potential_matches
+
+      # Format the matches for the response
+      formatted_matches = potential_matches.map do |match|
+        {
+          id: match[:user].id,
+          age: match[:user].age,
+          gender: match[:user].gender,
+          location: match[:user].location,
+          compatibility_score: match[:score]
+        }
+      end
+
+      # Render the successful response
+      render json: { status: 200, matches: formatted_matches }, status: :ok
     rescue ActiveRecord::RecordNotFound
       render json: { error: 'User not found.' }, status: :not_found
     rescue => e
@@ -147,7 +175,6 @@ class Api::UsersController < Api::BaseController
     errors << 'Invalid preferences.' unless user_profile_params[:preferences].is_a?(Hash)
 
     if errors.any?
-      # Combine the new and existing code by including user profile params in the error response
       render json: { status: 422, message: errors.join(' '), user: user_profile_params.as_json }, status: :unprocessable_entity
       return false
     end
@@ -156,7 +183,6 @@ class Api::UsersController < Api::BaseController
   end
 
   def preferences_params
-    # Combine the new and existing code by permitting the correct structure for age_range and gender
     params.require(:preferences).permit(:age_range => [], :distance, :gender => [])
   end
 
