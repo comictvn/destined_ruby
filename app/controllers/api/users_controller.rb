@@ -1,6 +1,6 @@
 class Api::UsersController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index show update_preferences update_profile matches]
-  before_action :authenticate_user, only: [:matches]
+  before_action :authenticate_user, only: [:matches, :update_preferences] # Added :update_preferences to ensure user is authenticated
   before_action :set_user, only: [:update_preferences, :update_profile, :matches]
 
   def index
@@ -37,6 +37,27 @@ class Api::UsersController < Api::BaseController
     rescue => e
       render json: { error: e.message }, status: :internal_server_error
     end
+  end
+
+  def update_preferences
+    return render json: { error: 'User not found.' }, status: :not_found unless @user
+
+    preferences_params = params.require(:preferences).permit(:age_range, :distance, :gender)
+    service = PreferencesService.new(@user, preferences_params)
+
+    if service.update_preferences
+      render json: {
+        status: 200,
+        message: 'Preferences updated successfully.',
+        preferences: service.preferences
+      }, status: :ok
+    else
+      render json: { error: 'Invalid preferences.' }, status: :unprocessable_entity
+    end
+  rescue ActionController::ParameterMissing
+    render json: { error: 'Invalid parameters.' }, status: :bad_request
+  rescue StandardError => e
+    render json: { error: e.message }, status: :internal_server_error
   end
 
   def update_profile
