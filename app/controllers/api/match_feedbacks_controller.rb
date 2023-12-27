@@ -11,7 +11,8 @@ class Api::MatchFeedbacksController < ApplicationController
       match = Match.find(match_id)
       user = User.find(user_id)
     rescue ActiveRecord::RecordNotFound => e
-      render json: { error: e.message }, status: :not_found
+      message = e.model == 'Match' ? 'Match not found.' : 'User not found.'
+      render json: { error: message }, status: :not_found
       return
     end
 
@@ -30,11 +31,11 @@ class Api::MatchFeedbacksController < ApplicationController
     # Authorize the action using MatchFeedbackPolicy
     authorize MatchFeedbackPolicy.new(@current_user, match)
 
-    # Create feedback using the service
+    # Instantiate MatchFeedbackService and call create_feedback
     begin
       feedback_service = MatchFeedbackService.new
-      result = feedback_service.create_feedback(match_id, user_id, feedback_text)
-      render json: { status: result[:status], feedback: result[:feedback] }, status: :created
+      feedback = feedback_service.create_feedback(match_id, user_id, feedback_text)
+      render json: { status: 201, feedback: feedback }, status: :created
     rescue Exceptions::BadRequest => e
       render json: { error: e.message }, status: :bad_request
     rescue Pundit::NotAuthorizedError

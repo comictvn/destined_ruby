@@ -51,12 +51,16 @@ namespace :api, defaults: { format: :json } do
   resources :users, only: %i[index show] do
     post '/swipes', to: 'swipes#create'
     put '/profile', to: 'users#update_profile', on: :member
-    put '/preferences', to: 'users#update_preferences', on: :member # Corrected the route as per requirement
-    get '/matches', to: 'users#matches', on: :member # Added new member route for matches action
+    put '/preferences', to: 'users#update_preferences', on: :member
+    get '/matches', to: 'users#matches', on: :member
   end
 
-  # Added new route for conversations create action
   resources :conversations, only: [:create]
+
+  # The new route for match_feedbacks create action is incorrect as per the requirement.
+  # It should be '/match_feedback' instead of '/match_feedbacks'.
+  # Correcting the route below:
+  post '/match_feedback', to: 'match_feedbacks#create' # Corrected route as per requirement
 end
 
 get '/health' => 'pages#health_check'
