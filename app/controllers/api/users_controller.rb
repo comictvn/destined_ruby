@@ -24,7 +24,29 @@ class Api::UsersController < Api::BaseController
   end
 
   def update_preferences
-    # ... existing update_preferences action ...
+    return render json: { error: 'User not found.' }, status: :not_found unless @user
+
+    preferences_validator = PreferencesValidator.new(params[:preferences])
+    unless preferences_validator.valid?
+      return render json: { error: 'Invalid preferences.' }, status: :unprocessable_entity
+    end
+
+    preferences_params = params.require(:preferences).permit(:age_range, :distance, :gender)
+    service = PreferencesService.new(@user, preferences_params)
+
+    if service.update_preferences
+      render json: {
+        status: 200,
+        message: 'Preferences updated successfully.',
+        preferences: service.preferences
+      }, status: :ok
+    else
+      render json: { error: 'Unable to update preferences.' }, status: :unprocessable_entity
+    end
+  rescue ActionController::ParameterMissing
+    render json: { error: 'Invalid parameters.' }, status: :bad_request
+  rescue StandardError => e
+    render json: { error: e.message }, status: :internal_server_error
   end
 
   def update_profile
