@@ -12,7 +12,44 @@ class Api::UsersController < Api::BaseController
   end
 
   def update_preferences
-    # ... existing update_preferences action ...
+    begin
+      # Ensure the user is found
+      raise ActiveRecord::RecordNotFound unless @user.present?
+
+      # Validate the preferences JSON object
+      validated_preferences = PreferencesValidator.validate!(preferences_params)
+      raise ArgumentError, 'Invalid preferences.' unless validated_preferences
+
+      # Update the user's preferences using a service or directly if service not available
+      if defined?(PreferencesService) && PreferencesService.respond_to?(:update_user_preferences)
+        update_success = PreferencesService.update_user_preferences(@user, validated_preferences)
+      else
+        @user.preferences.update!(validated_preferences)
+        update_success = true
+      end
+
+      # Update the "updated_at" timestamp in the "preferences" table to reflect the changes.
+      @user.touch(:preferences_updated_at)
+
+      if update_success
+        # Return success response
+        render json: {
+          status: 200,
+          message: 'Preferences updated successfully.',
+          preferences: @user.preferences
+        }, status: :ok
+      else
+        render json: { error: 'Unable to update preferences.' }, status: :unprocessable_entity
+      end
+    rescue ActiveRecord::RecordNotFound
+      render json: { error: 'User not found.' }, status: :not_found
+    rescue ArgumentError => e
+      render json: { error: e.message }, status: :unprocessable_entity
+    rescue ActiveRecord::RecordInvalid => e
+      render json: { error: e.message }, status: :unprocessable_entity
+    rescue => e
+      render json: { error: e.message }, status: :internal_server_error
+    end
   end
 
   def update_profile
