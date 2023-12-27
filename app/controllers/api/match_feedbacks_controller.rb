@@ -1,5 +1,6 @@
 class Api::MatchFeedbacksController < ApplicationController
   before_action :authorize_request
+  require_dependency 'match_feedback_service'
 
   def create
     match_id = params.require(:match_id)
@@ -40,6 +41,8 @@ class Api::MatchFeedbacksController < ApplicationController
       render json: { error: e.message }, status: :bad_request
     rescue Pundit::NotAuthorizedError
       render json: { error: 'User not authorized to give feedback on this match' }, status: :forbidden
+    rescue StandardError => e
+      render json: { error: e.message }, status: :internal_server_error
     end
   end
 end
