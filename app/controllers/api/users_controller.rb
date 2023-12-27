@@ -39,12 +39,56 @@ class Api::UsersController < Api::BaseController
     end
   end
 
+  def update_profile
+    if validate_user_profile_params
+      user_profile_service = UserProfileService.new(
+        @user,
+        user_profile_params[:age],
+        user_profile_params[:gender],
+        user_profile_params[:location],
+        user_profile_params[:interests],
+        user_profile_params[:preferences],
+        user_profile_params[:personality_answers]
+      )
+
+      result = user_profile_service.update_user_profile
+
+      if result[:success]
+        render json: { status: 200, message: 'Profile updated successfully.', user: result[:user].as_json }, status: :ok
+      else
+        render json: { status: result[:error][:status], message: result[:error][:message] }, status: result[:error][:status]
+      end
+    end
+  end
+
   # ... rest of the controller ...
 
   private
 
   def set_user
     @user = User.find_by(id: params[:id])
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'User not found' }, status: :not_found
+  end
+
+  def user_profile_params
+    params.require(:user).permit(:age, :gender, :location, interests: [], preferences: {}, personality_answers: [])
+  end
+
+  def validate_user_profile_params
+    errors = []
+    errors << 'Invalid age.' unless user_profile_params[:age].to_i.positive?
+    errors << 'Invalid gender.' unless User.genders.keys.include?(user_profile_params[:gender])
+    errors << 'Invalid location.' unless user_profile_params[:location].is_a?(String)
+    errors << 'Invalid interests.' unless user_profile_params[:interests].is_a?(Array) && user_profile_params[:interests].all? { |i| i.is_a?(String) }
+    errors << 'Invalid preferences.' unless user_profile_params[:preferences].is_a?(Hash)
+
+    if errors.any?
+      render json: { status: 422, message: errors.join(' ') }, status: :unprocessable_entity
+      return false
+    end
+
+    true
   end
 
   def filter_users(scope, params)
