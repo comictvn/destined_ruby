@@ -2,15 +2,31 @@ module Auths
   class PhoneNumber
     include ActiveModel::Model
 
-    attr_reader :formatted_phone_number
+    attr_accessor :phone_number
+    attr_reader :errors, :formatted_phone_number
+
+    validate :phone_number_must_be_valid
 
     def initialize(params = {})
-      @formatted_phone_number = normalize_phone_number(params[:phone_number])
+      @phone_number = params[:phone_number]
+      @errors = []
+      @formatted_phone_number = normalize_phone_number
     end
 
-    validates :formatted_phone_number,
-              presence: true,
-              format: { with: /\A(\(\+\d{1,3}\)|\+?\d+)?\d+\z/ }
+    def normalize_phone_number
+      Phonelib.parse(@phone_number).full_e164.presence
+    end
+
+    def valid?
+      super && errors.empty?
+    end
+
+    def phone_number_must_be_valid
+      normalized_number = normalize_phone_number
+      unless normalized_number && Phonelib.valid?(normalized_number)
+        errors.add(:phone_number, "is invalid")
+      end
+    end
 
     def persisted?
       false
@@ -18,8 +34,8 @@ module Auths
 
     private
 
-    def normalize_phone_number(number)
-      Phonelib.parse(number).full_e164
+    def normalize_phone_number
+      Phonelib.parse(@phone_number).full_e164.presence
     end
   end
 end

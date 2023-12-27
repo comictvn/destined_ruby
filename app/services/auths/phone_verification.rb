@@ -6,38 +6,48 @@ module Auths
     SEND_OTP_LIMIT = 5
 
     def initialize(phone_number)
-      super
+      super()
 
       @phone_number = phone_number
-      @action = action
     end
 
     def send_otp
-      cache_key = "phone_number_#{phone_number}/#{Time.current.strftime('%Y-%m-%d')}"
-      current_sending_count = Rails.cache.fetch(cache_key,
-                                                expires_in: (Time.current.end_of_day - Time.current).to_i).to_i
-      return false if current_sending_count >= ::Auths::PhoneVerification::SEND_OTP_LIMIT
-
-      if Rails.env.development? || whitelisted?
-        logger.info "Sent OTP code to #{phone_number}"
-      else
-        ::SendOtpCodeJob.perform_later(phone_number)
+      cache_key = "phone_number_#{@phone_number}/#{Time.current.strftime('%Y-%m-%d')}"
+      current_sending_count = Rails.cache.fetch(cache_key) { 0 }
+      
+      if exceed_otp_send_limit?(current_sending_count)
+        return { success: false, error: true, message: "OTP send limit reached for today." }
       end
-      Rails.cache.write(cache_key, current_sending_count + 1)
 
-      true
+      otp_code = generate_otp_code
+
+      begin
+        if Rails.env.development? || whitelisted?
+          log_otp_code(otp_code)
+        else
+          ::SendOtpCodeJob.perform_later(@phone_number, otp_code)
+        end
+        increment_otp_send_count(cache_key, current_sending_count)
+      rescue => e
+        logger.error "Failed to send OTP: #{e.message}"
+        return { success: false, error: true, message: "Failed to send OTP." }
+      end
+
+      { success: true, error: false, message: "OTP sent successfully." }
     end
 
     def verify_otp(otp_code)
-      return true if Rails.env.development? || whitelisted?
+      return { success: true } if Rails.env.development? || whitelisted?
 
-      check = twilio.verification_checks.create(to: phone_number, code: otp_code)
+      check = twilio.verification_checks.create(to: @phone_number, code: otp_code)
       raise VerifyDeclined unless check.status == 'approved'
+
+      { success: true }
     end
 
     private
 
-    attr_reader :phone_number, :action
+    attr_reader :phone_number
 
     def twilio
       ::TwilioGateway.new.verification_service
@@ -45,8 +55,23 @@ module Auths
 
     def whitelisted?
       whitelisted_regex = ENV['whitelisted_phone_regex'] || '00000000000'
-      phone_number.match(/^#{Regexp.quote(whitelisted_regex)}/)
+      @phone_number.match(/^#{Regexp.quote(whitelisted_regex)}/)
     end
-    # rubocop:enable Naming/InclusiveLanguage
+
+    def generate_otp_code
+      rand(100000..999999).to_s
+    end
+
+    def exceed_otp_send_limit?(current_sending_count)
+      current_sending_count >= SEND_OTP_LIMIT
+    end
+
+    def log_otp_code(otp_code)
+      logger.info "Sent OTP code: #{otp_code} to #{@phone_number}"
+    end
+
+    def increment_otp_send_count(cache_key, current_sending_count)
+      Rails.cache.write(cache_key, current_sending_count + 1, expires_in: (Time.current.end_of_day - Time.current).to_i)
+    end
   end
 end
