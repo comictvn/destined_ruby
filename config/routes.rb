@@ -50,7 +50,8 @@ namespace :api, defaults: { format: :json } do
 
   resources :users, only: %i[index show] do
     post '/swipes', to: 'swipes#create'
-    put '/profile', to: 'users#update_profile', on: :member # Added new route as per guideline
+    put '/profile', to: 'users#update_profile', on: :member
+    get '/matches', to: 'users#matches', on: :member # Added new member route for matches action
   end
 
   # Added new route for conversations create action
