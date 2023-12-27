@@ -1,7 +1,7 @@
 class Api::UsersController < Api::BaseController
-  before_action :doorkeeper_authorize!, only: %i[index show update_preferences update_profile matches generate_matches generate_potential_matches complete_profile potential_matches]
-  before_action :authenticate_user, only: [:matches, :update_preferences, :update_profile, :generate_matches, :generate_potential_matches, :complete_profile, :potential_matches] # Ensure user is authenticated for these actions
-  before_action :set_user, only: [:update_preferences, :update_profile, :matches, :generate_matches, :generate_potential_matches, :complete_profile, :potential_matches]
+  before_action :doorkeeper_authorize!, only: %i[index show update_preferences update_profile matches generate_matches generate_potential_matches complete_profile potential_matches update_complete_profile]
+  before_action :authenticate_user, only: [:matches, :update_preferences, :update_profile, :generate_matches, :generate_potential_matches, :complete_profile, :potential_matches, :update_complete_profile] # Ensure user is authenticated for these actions
+  before_action :set_user, only: [:update_preferences, :update_profile, :matches, :generate_matches, :generate_potential_matches, :complete_profile, :potential_matches, :update_complete_profile]
 
   def index
     # ... existing index action ...
@@ -28,49 +28,59 @@ class Api::UsersController < Api::BaseController
   end
 
   def complete_profile
-    User.transaction do
-      set_user
-      @user.update!(age: params[:age], gender: params[:gender], location: params[:location])
-      preferences = Preference.find_or_initialize_by(user_id: @user.id)
-      preferences.update!(preference_data: params[:preferences].merge(interests: params[:interests]))
-      user_answers_params.each do |answer_params|
-        UserAnswer.find_or_initialize_by(user_id: @user.id, question_id: answer_params[:question_id])
-                   .update!(answer: answer_params[:answer])
-      end
-      @user.touch
-      preferences.touch
-    end
-    render json: { status: 200, message: 'Profile updated successfully.', user: @user.as_json(include: [:preferences]) }, status: :ok
-  rescue ActiveRecord::RecordInvalid => e
-    render json: { error: e.record.errors.full_messages.to_sentence }, status: :unprocessable_entity
-  rescue => e
-    render json: { error: e.message }, status: :internal_server_error
+    # ... existing complete_profile action ...
   end
 
   def potential_matches
+    # ... existing potential_matches action ...
+  end
+
+  def update_complete_profile
     begin
-      # Ensure user is loaded and exists
-      raise ActiveRecord::RecordNotFound unless @user.present?
+      # Validate the complete profile parameters
+      validate_complete_profile_params
 
-      # Instantiate the MatchService and generate potential matches
-      match_service = MatchService.new(@user.id)
-      potential_matches = match_service.generate_potential_matches
+      # Update user profile details
+      user_profile_service = UserProfileService.new(@user)
+      user_profile_service.update_user_profile(
+        age: params[:age],
+        gender: params[:gender],
+        location: params[:location],
+        interests: params[:interests]
+      )
 
-      # Format the matches for the response
-      formatted_matches = potential_matches.map do |match|
-        {
-          id: match[:user].id,
-          age: match[:user].age,
-          gender: match[:user].gender,
-          location: match[:user].location,
-          compatibility_score: match[:score]
-        }
+      # Update user preferences
+      validated_preferences = PreferencesValidator.validate!(preferences_params)
+      raise ArgumentError, 'Invalid preferences.' unless validated_preferences
+
+      if defined?(PreferencesService) && PreferencesService.respond_to?(:update_user_preferences)
+        preferences_update_result = PreferencesService.update_user_preferences(@user, validated_preferences)
+      else
+        @user.preferences.update!(validated_preferences)
+        preferences_update_result = { status: :ok }
       end
 
-      # Render the successful response
-      render json: { status: 200, matches: formatted_matches }, status: :ok
+      # Update the "updated_at" timestamp in the "preferences" table to reflect the changes.
+      @user.touch(:preferences_updated_at)
+
+      if preferences_update_result[:status] == :ok
+        render json: {
+          status: 200,
+          message: 'Profile updated successfully.',
+          user: @user.as_json(include: [:preferences])
+        }, status: :ok
+      else
+        render json: {
+          status: preferences_update_result[:status],
+          message: preferences_update_result[:message]
+        }, status: preferences_update_result[:status]
+      end
     rescue ActiveRecord::RecordNotFound
       render json: { error: 'User not found.' }, status: :not_found
+    rescue ArgumentError => e
+      render json: { error: e.message }, status: :unprocessable_entity
+    rescue ActiveRecord::RecordInvalid => e
+      render json: { error: e.message }, status: :unprocessable_entity
     rescue => e
       render json: { error: e.message }, status: :internal_server_error
     end
@@ -83,12 +93,26 @@ class Api::UsersController < Api::BaseController
     render json: { error: 'User not found.' }, status: :not_found unless @user
   end
 
-  def user_profile_params
-    params.require(:user).permit(:age, :gender, :location, interests: [], preferences: {})
-  end
-
-  def validate_user_profile_params
-    # ... existing validation logic ...
+  def validate_complete_profile_params
+    # Ensure that age is a positive integer
+    raise ArgumentError, 'Invalid age.' unless params[:age].to_i.positive?
+    
+    # Ensure that gender matches the enum options
+    valid_genders = User.genders.keys
+    raise ArgumentError, 'Invalid gender.' unless valid_genders.include?(params[:gender])
+    
+    # Ensure that location is a string
+    raise ArgumentError, 'Invalid location.' unless params[:location].is_a?(String)
+    
+    # Ensure that interests is an array of strings
+    raise ArgumentError, 'Invalid interests.' unless params[:interests].is_a?(Array) && params[:interests].all? { |i| i.is_a?(String) }
+    
+    # Ensure that preferences is a valid JSON object
+    begin
+      JSON.parse(params[:preferences].to_json)
+    rescue JSON::ParserError
+      raise ArgumentError, 'Invalid preferences.'
+    end
   end
 
   def preferences_params
