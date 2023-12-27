@@ -1,4 +1,3 @@
-Rails.application.routes.draw do
   use_doorkeeper do
     controllers tokens: 'tokens'
 
@@ -51,6 +50,7 @@ Rails.application.routes.draw do
 
     resources :users, only: %i[index show] do
       post '/swipes', to: 'swipes#create'
+      put '/profile', to: 'users#update_profile', on: :member # Added new route as per guideline
     end
   end
 

@@ -1,6 +1,6 @@
 class Api::UsersController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index show update_preferences update_profile matches]
-  before_action :authenticate_user, only: [:matches, :update_preferences] # Added :update_preferences to ensure user is authenticated
+  before_action :authenticate_user, only: [:matches, :update_preferences, :update_profile] # Ensure user is authenticated for these actions
   before_action :set_user, only: [:update_preferences, :update_profile, :matches]
 
   def index
@@ -28,7 +28,30 @@ class Api::UsersController < Api::BaseController
   end
 
   def update_profile
-    # ... existing update_profile action ...
+    if validate_user_profile_params
+      user_profile_service = UserProfileService.new(
+        @user,
+        user_profile_params[:age],
+        user_profile_params[:gender],
+        user_profile_params[:location],
+        user_profile_params[:interests],
+        user_profile_params[:preferences]
+      )
+
+      result = user_profile_service.update_user_profile
+
+      if result[:success]
+        render json: { status: 200, message: 'Profile updated successfully.', user: result[:user].as_json }, status: :ok
+      else
+        render json: { status: result[:error][:status], message: result[:error][:message] }, status: result[:error][:status]
+      end
+    else
+      # If validation fails, the response is handled within the validate_user_profile_params method
+    end
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'User not found.' }, status: :not_found
+  rescue StandardError => e
+    render json: { error: e.message }, status: :internal_server_error
   end
 
   # ... rest of the controller ...
@@ -37,9 +60,26 @@ class Api::UsersController < Api::BaseController
 
   def set_user
     @user = User.find_by(id: params[:id])
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: 'User not found' }, status: :not_found
+    render json: { error: 'User not found.' }, status: :not_found unless @user
   end
 
-  # ... rest of the private methods ...
+  def user_profile_params
+    params.require(:user).permit(:age, :gender, :location, interests: [], preferences: {})
+  end
+
+  def validate_user_profile_params
+    errors = []
+    errors << 'Invalid age.' unless user_profile_params[:age].to_i.positive?
+    errors << 'Invalid gender.' unless User.genders.keys.include?(user_profile_params[:gender])
+    errors << 'Invalid location.' unless user_profile_params[:location].is_a?(String)
+    errors << 'Invalid interests.' unless user_profile_params[:interests].is_a?(Array) && user_profile_params[:interests].all? { |i| i.is_a?(String) }
+    errors << 'Invalid preferences.' unless user_profile_params[:preferences].is_a?(Hash)
+
+    if errors.any?
+      render json: { status: 422, message: errors.join(' ') }, status: :unprocessable_entity
+      return false
+    end
+
+    true
+  end
 end
