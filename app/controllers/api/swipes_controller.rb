@@ -13,6 +13,8 @@ class Api::SwipesController < Api::BaseController
     else
       render json: { errors: swipe.errors.full_messages }, status: :unprocessable_entity
     end
+  rescue => e
+    render json: { error: e.message }, status: :internal_server_error
   end
 
   private
