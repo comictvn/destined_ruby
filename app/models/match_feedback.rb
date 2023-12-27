@@ -7,5 +7,8 @@ class MatchFeedback < ApplicationRecord
   validates :feedback_text, presence: true
   validates :feedback_text, length: { maximum: 500 }, if: :feedback_text?
 
+  # Add new column 'feedback' validations
+  validates :feedback, presence: true
+
   # custom methods can be added here if necessary
 end

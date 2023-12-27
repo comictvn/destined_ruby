@@ -23,6 +23,7 @@ class User < ApplicationRecord
   has_many :messages, dependent: :destroy
   has_many :conversations, dependent: :destroy
   has_one :preferences, dependent: :destroy
+  has_many :user_interests, dependent: :destroy # Added new association based on updated ERD
 
   # Existing enum
   enum gender: %w[male female other], _suffix: true
