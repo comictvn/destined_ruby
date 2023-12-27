@@ -24,29 +24,29 @@ class Api::UsersController < Api::BaseController
   end
 
   def update_preferences
-    return render json: { error: 'User not found.' }, status: :not_found unless @user
+    begin
+      # Validate the preferences JSON object
+      validated_preferences = PreferencesValidator.validate!(preferences_params)
+      raise ArgumentError, 'Invalid preferences.' unless validated_preferences
 
-    preferences_validator = PreferencesValidator.new(params[:preferences])
-    unless preferences_validator.valid?
-      return render json: { error: 'Invalid preferences.' }, status: :unprocessable_entity
-    end
+      # Update the user's preferences
+      @user.update!(preferences: validated_preferences)
 
-    preferences_params = params.require(:preferences).permit(:age_range, :distance, :gender)
-    service = PreferencesService.new(@user, preferences_params)
-
-    if service.update_preferences
+      # Return success response
       render json: {
         status: 200,
         message: 'Preferences updated successfully.',
-        preferences: service.preferences
+        preferences: @user.preferences
       }, status: :ok
-    else
-      render json: { error: 'Unable to update preferences.' }, status: :unprocessable_entity
+    rescue ActiveRecord::RecordNotFound
+      render json: { error: 'User not found.' }, status: :not_found
+    rescue ArgumentError => e
+      render json: { error: e.message }, status: :unprocessable_entity
+    rescue ActiveRecord::RecordInvalid => e
+      render json: { error: e.message }, status: :unprocessable_entity
+    rescue => e
+      render json: { error: e.message }, status: :internal_server_error
     end
-  rescue ActionController::ParameterMissing
-    render json: { error: 'Invalid parameters.' }, status: :bad_request
-  rescue StandardError => e
-    render json: { error: e.message }, status: :internal_server_error
   end
 
   def update_profile
@@ -103,5 +103,9 @@ class Api::UsersController < Api::BaseController
     end
 
     true
+  end
+
+  def preferences_params
+    params.require(:preferences).permit(:age_range, :distance, :gender)
   end
 end
