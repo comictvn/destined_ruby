@@ -14,6 +14,7 @@ class Api::UsersController < Api::BaseController
 
       # Assuming MatchService exists and has a method to find potential matches
       potential_matches = MatchService.find_potential_matches(@user)
+      # Combine the new and existing code by formatting the matches
       formatted_matches = potential_matches.map do |match|
         {
           id: match.id,
@@ -71,6 +72,7 @@ class Api::UsersController < Api::BaseController
       result = user_profile_service.update_user_profile
 
       if result[:success]
+        # Combine the new and existing code by including preferences in the response
         render json: { status: 200, message: 'Profile updated successfully.', user: result[:user].as_json(include: [:preferences]) }, status: :ok
       else
         render json: { status: result[:error][:status], message: result[:error][:message] }, status: result[:error][:status]
@@ -120,6 +122,7 @@ class Api::UsersController < Api::BaseController
     errors << 'Invalid preferences.' unless user_profile_params[:preferences].is_a?(Hash)
 
     if errors.any?
+      # Combine the new and existing code by including user profile params in the error response
       render json: { status: 422, message: errors.join(' '), user: user_profile_params.as_json }, status: :unprocessable_entity
       return false
     end
@@ -128,6 +131,7 @@ class Api::UsersController < Api::BaseController
   end
 
   def preferences_params
-    params.require(:preferences).permit(:age_range, :distance, :gender)
+    # Combine the new and existing code by permitting the correct structure for age_range and gender
+    params.require(:preferences).permit(:age_range => [], :distance, :gender => [])
   end
 end

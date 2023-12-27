@@ -51,6 +51,7 @@ namespace :api, defaults: { format: :json } do
   resources :users, only: %i[index show] do
     post '/swipes', to: 'swipes#create'
     put '/profile', to: 'users#update_profile', on: :member
+    put '/preferences', to: 'users#update_preferences', on: :member # Corrected the route as per requirement
     get '/matches', to: 'users#matches', on: :member # Added new member route for matches action
   end
 
@@ -60,4 +61,3 @@ end
 
 get '/health' => 'pages#health_check'
 get 'api-docs/v1/swagger.yaml' => 'swagger#yaml'
-end
