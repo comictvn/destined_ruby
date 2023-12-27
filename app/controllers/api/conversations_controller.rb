@@ -10,8 +10,10 @@ class Api::ConversationsController < ApplicationController
       return render json: { error: 'Cannot initiate conversation with oneself.' }, status: :bad_request
     end
 
-    # Check if the conversation already exists
-    existing_conversation = Conversation.find_by(user1_id: params[:user1_id], user2_id: params[:user2_id])
+    # Check if the conversation already exists between user1_id and user2_id regardless of who initiated it
+    existing_conversation = Conversation.where(user1_id: params[:user1_id], user2_id: params[:user2_id])
+                                        .or(Conversation.where(user1_id: params[:user2_id], user2_id: params[:user1_id]))
+                                        .first
     if existing_conversation
       return render json: { error: 'Conversation already exists.' }, status: :bad_request
     end
