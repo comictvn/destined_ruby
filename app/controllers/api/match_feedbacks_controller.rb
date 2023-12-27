@@ -2,22 +2,16 @@ class Api::MatchFeedbacksController < ApplicationController
   before_action :authorize_request
 
   def create
-    match_id = params[:match_id]
-    user_id = params[:user_id]
-    feedback_text = params[:feedback_text]
+    match_id = params.require(:match_id)
+    user_id = params.require(:user_id)
+    feedback_text = params.require(:feedback_text)
 
     # Validate the existence of match_id and user_id
     begin
       match = Match.find(match_id)
-    rescue ActiveRecord::RecordNotFound
-      render json: { error: 'Match not found.' }, status: :not_found
-      return
-    end
-
-    begin
       user = User.find(user_id)
-    rescue ActiveRecord::RecordNotFound
-      render json: { error: 'User not found.' }, status: :not_found
+    rescue ActiveRecord::RecordNotFound => e
+      render json: { error: e.message }, status: :not_found
       return
     end
 
@@ -36,20 +30,15 @@ class Api::MatchFeedbacksController < ApplicationController
     # Authorize the action using MatchFeedbackPolicy
     authorize MatchFeedbackPolicy.new(@current_user, match)
 
-    # Create a new instance of MatchFeedback
-    feedback = MatchFeedback.new(match_id: match_id, user_id: user_id, feedback_text: feedback_text)
-
-    # Update the created_at timestamp
-    feedback.created_at = Time.current
-
-    if feedback.save
-      # Serialize the feedback data
-      serialized_feedback = MatchFeedbackSerializer.new(feedback).as_json
-      render json: { status: 201, feedback: serialized_feedback }, status: :created
-    else
-      render json: { errors: feedback.errors.full_messages }, status: :unprocessable_entity
+    # Create feedback using the service
+    begin
+      feedback_service = MatchFeedbackService.new
+      result = feedback_service.create_feedback(match_id, user_id, feedback_text)
+      render json: { status: result[:status], feedback: result[:feedback] }, status: :created
+    rescue Exceptions::BadRequest => e
+      render json: { error: e.message }, status: :bad_request
+    rescue Pundit::NotAuthorizedError
+      render json: { error: 'User not authorized to give feedback on this match' }, status: :forbidden
     end
-  rescue Pundit::NotAuthorizedError
-    render json: { error: 'User not authorized to give feedback on this match' }, status: :forbidden
   end
 end
