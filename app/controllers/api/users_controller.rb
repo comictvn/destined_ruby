@@ -24,8 +24,8 @@ class Api::UsersController < Api::BaseController
       if defined?(PreferencesService) && PreferencesService.respond_to?(:update_user_preferences)
         update_success = PreferencesService.update_user_preferences(@user, validated_preferences)
       else
-        @user.preferences.update!(validated_preferences)
-        update_success = true
+        preferences = @user.preferences || @user.build_preferences # Use existing preferences or build new one
+        update_success = preferences.update(validated_preferences)
       end
 
       # Update the "updated_at" timestamp in the "preferences" table to reflect the changes.
@@ -46,7 +46,7 @@ class Api::UsersController < Api::BaseController
     rescue ArgumentError => e
       render json: { error: e.message }, status: :unprocessable_entity
     rescue ActiveRecord::RecordInvalid => e
-      render json: { error: e.message }, status: :unprocessable_entity
+      render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity
     rescue => e
       render json: { error: e.message }, status: :internal_server_error
     end
@@ -118,8 +118,8 @@ class Api::UsersController < Api::BaseController
       if defined?(PreferencesService) && PreferencesService.respond_to?(:update_user_preferences)
         preferences_update_result = PreferencesService.update_user_preferences(@user, validated_preferences)
       else
-        @user.preferences.update!(validated_preferences)
-        preferences_update_result = { status: :ok }
+        preferences = @user.preferences || @user.build_preferences # Use existing preferences or build new one
+        preferences_update_result = preferences.update(validated_preferences) ? { status: :ok } : { status: :unprocessable_entity, message: 'Unable to update preferences.' }
       end
 
       # Update the "updated_at" timestamp in the "preferences" table to reflect the changes.
