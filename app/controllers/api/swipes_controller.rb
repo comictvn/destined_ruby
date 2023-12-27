@@ -36,7 +36,8 @@ class Api::SwipesController < Api::BaseController
   private
 
   def find_users
-    @swiping_user = User.find_by(id: params[:id])
+    # The swiping user is the resource owner of the doorkeeper token
+    @swiping_user = User.find_by(id: doorkeeper_token.resource_owner_id)
     @swiped_user = User.find_by(id: swipe_params[:swiped_id])
     unless @swiping_user && @swiped_user
       render json: { error: "User not found." }, status: :not_found and return
