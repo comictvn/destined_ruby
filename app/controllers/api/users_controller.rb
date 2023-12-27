@@ -1,7 +1,7 @@
 class Api::UsersController < Api::BaseController
-  before_action :doorkeeper_authorize!, only: %i[index show update_preferences update_profile matches generate_matches]
-  before_action :authenticate_user, only: [:matches, :update_preferences, :update_profile, :generate_matches] # Ensure user is authenticated for these actions
-  before_action :set_user, only: [:update_preferences, :update_profile, :matches, :generate_matches]
+  before_action :doorkeeper_authorize!, only: %i[index show update_preferences update_profile matches generate_matches complete_profile]
+  before_action :authenticate_user, only: [:matches, :update_preferences, :update_profile, :generate_matches, :complete_profile] # Ensure user is authenticated for these actions
+  before_action :set_user, only: [:update_preferences, :update_profile, :matches, :generate_matches, :complete_profile]
 
   def index
     # ... existing index action ...
@@ -100,6 +100,31 @@ class Api::UsersController < Api::BaseController
     end
   end
 
+  def complete_profile
+    if validate_user_profile_params
+      user_profile_service = UserProfileService.new(
+        @user,
+        user_profile_params[:age],
+        user_profile_params[:gender],
+        user_profile_params[:location],
+        user_profile_params[:interests],
+        user_profile_params[:preferences]
+      )
+
+      result = user_profile_service.update_user_profile
+
+      if result[:success]
+        render json: { status: 200, message: 'Profile updated successfully.', user: result[:user].as_json(include: [:preferences]) }, status: :ok
+      else
+        render json: { status: 422, message: result[:error][:message] }, status: :unprocessable_entity
+      end
+    end
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'User not found.' }, status: :not_found
+  rescue StandardError => e
+    render json: { error: e.message }, status: :internal_server_error
+  end
+
   # ... rest of the controller ...
 
   private
@@ -134,4 +159,6 @@ class Api::UsersController < Api::BaseController
     # Combine the new and existing code by permitting the correct structure for age_range and gender
     params.require(:preferences).permit(:age_range => [], :distance, :gender => [])
   end
+
+  # ... rest of the private methods ...
 end
