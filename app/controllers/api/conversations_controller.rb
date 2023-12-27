@@ -18,12 +18,15 @@ class Api::ConversationsController < ApplicationController
       return render json: { error: 'Conversation already exists.' }, status: :bad_request
     end
 
-    # Create a new conversation
-    conversation = Conversation.new(user1_id: params[:user1_id], user2_id: params[:user2_id])
-    if conversation.save
-      render json: { status: 201, conversation: conversation }, status: :created
+    # Call the ConversationService::Create to initiate a new conversation
+    # Assuming ConversationService::Create is a valid service that exists and is implemented correctly
+    result = ConversationService::Create.new.call(params[:user1_id], params[:user2_id], '')
+
+    # Handle the response from the service object
+    if result[:status] == 'success'
+      render json: { status: 201, conversation: result[:conversation] }, status: :created
     else
-      render json: { error: conversation.errors.full_messages.join(', ') }, status: :unprocessable_entity
+      render json: { error: result[:message] }, status: :unprocessable_entity
     end
   end
 
