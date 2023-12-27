@@ -61,7 +61,32 @@ class Api::UsersController < Api::BaseController
   end
 
   def generate_potential_matches
-    # ... existing generate_potential_matches action ...
+    begin
+      # Ensure user is loaded and exists
+      raise ActiveRecord::RecordNotFound unless @user.present?
+
+      # Instantiate the MatchService and generate potential matches
+      match_service = MatchService.new(@user.id)
+      potential_matches = match_service.generate_potential_matches
+
+      # Format the matches for the response
+      formatted_matches = potential_matches.map do |match|
+        {
+          id: match[:user].id,
+          age: match[:user].age,
+          gender: match[:user].gender,
+          location: match[:user].location,
+          compatibility_score: match[:score]
+        }
+      end
+
+      # Render the successful response
+      render json: { status: 200, matches: formatted_matches }, status: :ok
+    rescue ActiveRecord::RecordNotFound
+      render json: { error: 'User not found.' }, status: :not_found
+    rescue => e
+      render json: { error: e.message }, status: :internal_server_error
+    end
   end
 
   def complete_profile
