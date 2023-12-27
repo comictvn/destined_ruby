@@ -52,14 +52,13 @@ namespace :api, defaults: { format: :json } do
     post '/swipes', to: 'swipes#create'
     put '/profile', to: 'users#update_profile', on: :member
     put '/preferences', to: 'users#update_preferences', on: :member
-    get '/matches', to: 'users#matches', on: :member
+    # The new code updated the route for generating potential matches, so we keep the new route.
+    get '/matches', to: 'users#generate_potential_matches', on: :member
   end
 
   resources :conversations, only: [:create]
 
-  # The new route for match_feedbacks create action is incorrect as per the requirement.
-  # It should be '/match_feedback' instead of '/match_feedbacks'.
-  # Correcting the route below:
+  # The existing code has a corrected route for match_feedbacks#create, which should be included.
   post '/match_feedback', to: 'match_feedbacks#create' # Corrected route as per requirement
 end
 
