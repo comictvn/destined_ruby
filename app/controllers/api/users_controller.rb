@@ -3,22 +3,30 @@ class Api::UsersController < Api::BaseController
   before_action :authenticate_user, only: [:matches, :update_preferences, :update_profile, :generate_matches, :generate_potential_matches, :complete_profile] # Ensure user is authenticated for these actions
   before_action :set_user, only: [:update_preferences, :update_profile, :matches, :generate_matches, :generate_potential_matches, :complete_profile]
 
-  # ... existing index action ...
+  def index
+    # ... existing index action ...
+  end
 
-  # ... existing matches action ...
+  def matches
+    # ... existing matches action ...
+  end
 
   def update_preferences
     begin
-      # Retrieve the user's current preferences from the "preferences" table using "user_id".
-      user_id = params[:user_id]
-      updated_preferences = preferences_params # Use the existing preferences_params method to get the updated preferences
+      # Ensure the user is found
+      raise ActiveRecord::RecordNotFound unless @user.present?
 
-      # Validate the updated preferences for correct format and completeness.
-      validated_preferences = PreferencesValidator.validate!(updated_preferences)
+      # Validate the preferences JSON object
+      validated_preferences = PreferencesValidator.validate!(preferences_params)
       raise ArgumentError, 'Invalid preferences.' unless validated_preferences
 
-      # Update the user's preferences with the "updated_preferences" provided.
-      @user.update!(preferences: validated_preferences)
+      # Update the user's preferences using a service or directly if service not available
+      if defined?(PreferencesService) && PreferencesService.respond_to?(:update_user_preferences)
+        update_success = PreferencesService.update_user_preferences(@user, validated_preferences)
+      else
+        @user.preferences.update!(validated_preferences)
+        update_success = true
+      end
 
       # Update the "updated_at" timestamp in the "preferences" table to reflect the changes.
       @user.touch(:preferences_updated_at)
@@ -26,12 +34,16 @@ class Api::UsersController < Api::BaseController
       # Ensure the matching algorithm takes these updates into account when suggesting future matches.
       # This is assumed to be handled by the MatchService when it is called next time.
 
-      # User preferences update status, updated preferences data.
-      render json: {
-        status: 200,
-        message: 'Preferences updated successfully.',
-        preferences: @user.preferences
-      }, status: :ok
+      if update_success
+        # Return success response
+        render json: {
+          status: 200,
+          message: 'Preferences updated successfully.',
+          preferences: @user.preferences
+        }, status: :ok
+      else
+        render json: { error: 'Unable to update preferences.' }, status: :unprocessable_entity
+      end
     rescue ActiveRecord::RecordNotFound
       render json: { error: 'User not found.' }, status: :not_found
     rescue ArgumentError => e
@@ -43,9 +55,13 @@ class Api::UsersController < Api::BaseController
     end
   end
 
-  # ... existing update_profile action ...
+  def update_profile
+    # ... existing update_profile action ...
+  end
 
-  # ... existing generate_matches action ...
+  def generate_matches
+    # ... existing generate_matches action ...
+  end
 
   def generate_potential_matches
     begin
