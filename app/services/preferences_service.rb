@@ -11,10 +11,21 @@ class PreferencesService
     user_preferences = Preference.find_by(user_id: user_id)
     return { status: :not_found, message: 'Preferences not found' } unless user_preferences
 
-    validation_result = PreferencesValidator.new(updated_preferences).validate
-    return { status: :invalid, message: 'Invalid preferences', errors: validation_result.errors } unless validation_result.valid?
+    # Merge the updated_preferences with the existing preferences
+    merged_preferences = user_preferences.preference_data.merge(updated_preferences)
 
-    user_preferences.update(preference_data: updated_preferences, updated_at: Time.current)
+    # Validate the merged preferences
+    validation_result = PreferencesValidator.new(merged_preferences).validate
+    unless validation_result.valid?
+      return { status: :invalid, message: 'Invalid preferences', errors: validation_result.errors }
+    end
+
+    # Update the preferences record with the new merged preferences
+    begin
+      user_preferences.update!(preference_data: merged_preferences, updated_at: Time.current)
+    rescue => e
+      return { status: :error, message: 'Failed to update preferences', errors: e.message }
+    end
 
     # Enqueue the job to update the matching algorithm
     PreferencesUpdateJob.perform_later(user_id)

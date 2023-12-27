@@ -1,6 +1,7 @@
 class PreferencesValidator < ActiveModel::Validator
   REQUIRED_FIELDS = %i[preference_data].freeze
   DATA_FIELDS = %i[likes dislikes interests].freeze
+  UPDATED_PREFERENCES_FIELDS = %i[notifications email_updates].freeze # Added new fields for updated_preferences
 
   def validate(record)
     preference_data = record.preference_data
@@ -38,13 +39,28 @@ class PreferencesValidator < ActiveModel::Validator
       return
     end
 
+    # Check for the presence of new required fields in updated_preferences
+    UPDATED_PREFERENCES_FIELDS.each do |field|
+      unless updated_preferences.key?(field)
+        record.errors.add(:updated_preferences, "#{field} is required")
+      end
+    end
+
     updated_preferences.each do |key, value|
-      unless DATA_FIELDS.include?(key)
+      unless (DATA_FIELDS + UPDATED_PREFERENCES_FIELDS).include?(key)
         record.errors.add(:updated_preferences, "contains unknown field: #{key}")
       end
 
-      unless value.is_a?(Array)
-        record.errors.add(:updated_preferences, "#{key} must be an array")
+      # Validate the data type for each field in updated_preferences
+      case key
+      when *DATA_FIELDS
+        unless value.is_a?(Array)
+          record.errors.add(:updated_preferences, "#{key} must be an array")
+        end
+      when *UPDATED_PREFERENCES_FIELDS
+        unless [true, false].include?(value)
+          record.errors.add(:updated_preferences, "#{key} must be a boolean")
+        end
       end
     end
   end
