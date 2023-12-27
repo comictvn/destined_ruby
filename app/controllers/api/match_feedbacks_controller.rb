@@ -27,11 +27,20 @@ class Api::MatchFeedbacksController < ApplicationController
       return
     end
 
+    # Validate that the user is involved in the match
+    unless [match.matcher1_id, match.matcher2_id].include?(user_id.to_i)
+      render json: { error: 'User not involved in the match.' }, status: :forbidden
+      return
+    end
+
     # Authorize the action using MatchFeedbackPolicy
     authorize MatchFeedbackPolicy.new(@current_user, match)
 
     # Create a new instance of MatchFeedback
     feedback = MatchFeedback.new(match_id: match_id, user_id: user_id, feedback_text: feedback_text)
+
+    # Update the created_at timestamp
+    feedback.created_at = Time.current
 
     if feedback.save
       # Serialize the feedback data

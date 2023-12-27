@@ -22,7 +22,7 @@ class MatchFeedbackService
     if feedback.save
       # Assuming MatchFeedbackProcessingJob exists and is configured
       MatchFeedbackProcessingJob.perform_later(feedback.id)
-      return { status: :success, feedback: feedback }
+      { status: :success, feedback: feedback }
     else
       raise Exceptions::BadRequest, 'Feedback could not be saved'
     end
