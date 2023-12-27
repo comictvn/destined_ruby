@@ -5,7 +5,6 @@ class Api::SwipesController < Api::BaseController
   before_action :find_users, only: [:create]
 
   def create
-    # Assuming SwipeService::Create exists and handles swipe logic
     swipe_service = SwipeService.new
     swipe_result = swipe_service.record_swipe(@swiping_user.id, @swiped_user.id, @direction)
 
@@ -26,7 +25,7 @@ class Api::SwipesController < Api::BaseController
         end
       end
 
-      render json: { swipe_recorded: true, match_created: match_created }, status: :created
+      render json: { status: 201, message: "Swipe action recorded successfully.", swipe_recorded: true, match_created: match_created }, status: :created
     else
       render json: { errors: swipe_result[:errors] || ["Failed to record swipe."] }, status: :unprocessable_entity
     end
@@ -37,8 +36,7 @@ class Api::SwipesController < Api::BaseController
   private
 
   def find_users
-    # Updated to use params[:swiper_id] instead of params[:id] to match the requirement
-    @swiping_user = User.find_by(id: params[:swiper_id])
+    @swiping_user = User.find_by(id: params[:id])
     @swiped_user = User.find_by(id: swipe_params[:swiped_id])
     unless @swiping_user && @swiped_user
       render json: { error: "User not found." }, status: :not_found and return
@@ -53,7 +51,6 @@ class Api::SwipesController < Api::BaseController
   end
 
   def swipe_params
-    # Updated to permit :swiper_id as per the requirement
-    params.require(:swipe).permit(:swiper_id, :swiped_id, :direction)
+    params.permit(:swiped_id, :direction)
   end
 end
