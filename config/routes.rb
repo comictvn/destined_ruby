@@ -41,8 +41,8 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :verify_otp, only: [:create] do
-    end
+    # Updated route for OTP verification to match the requirement
+    post 'otp/verify', to: 'verify_otp#create', as: 'api_otp_verify'
 
     resources :send_otp_codes, only: [:create] do
     end
@@ -52,9 +52,6 @@ Rails.application.routes.draw do
 
     resources :users, only: %i[index show] do
     end
-
-    # Added new route for check_expiry action
-    get '/otp/check-expiry', to: 'otp#check_expiry'
   end
 
   get '/health' => 'pages#health_check'
