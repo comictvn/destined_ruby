@@ -1,8 +1,8 @@
 require 'sidekiq/web'
+
 Rails.application.routes.draw do
   use_doorkeeper do
     controllers tokens: 'tokens'
-
     skip_controllers :authorizations, :applications, :authorized_applications
   end
 
@@ -41,8 +41,8 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :verify_otp, only: [:create] do
-    end
+    # Updated route for OTP verification to match the requirement
+    post 'otp/verify', to: 'verify_otp#create', as: 'api_otp_verify'
 
     resources :send_otp_codes, only: [:create] do
     end
