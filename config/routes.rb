@@ -1,7 +1,8 @@
+require 'sidekiq/web'
+
 Rails.application.routes.draw do
   use_doorkeeper do
     controllers tokens: 'tokens'
-
     skip_controllers :authorizations, :applications, :authorized_applications
   end
 
@@ -46,14 +47,14 @@ Rails.application.routes.draw do
     resources :send_otp_codes, only: [:create] do
     end
 
-    # Added new route for resend OTP functionality
-    post '/otp/resend', to: 'resend_otp#create', as: 'resend_otp'
-
     resources :users_phone_registrations, only: [:create] do
     end
 
     resources :users, only: %i[index show] do
     end
+
+    # Added new route for check_expiry action
+    get '/otp/check-expiry', to: 'otp#check_expiry'
   end
 
   get '/health' => 'pages#health_check'
