@@ -29,7 +29,28 @@ module Api
       render json: { error: e.message }, status: :internal_server_error
     end
 
-    # The new code is added here to handle the new OTP request
+    def verify
+      otp_code = params.require(:otp_code)
+      user_id = current_user.id
+      otp_verifier = OtpVerifier.new
+      verification_result = otp_verifier.verify_otp(otp_code, user_id)
+
+      if verification_result[:verified]
+        render json: { status: 200, message: "OTP verified successfully." }, status: :ok
+      else
+        case verification_result[:message]
+        when 'OTP is incorrect or expired.'
+          render json: { error: "Invalid OTP. Please try again." }, status: :bad_request
+        when 'OTP has expired.'
+          render json: { error: "OTP has expired. Please request a new one." }, status: :bad_request
+        else
+          render json: { error: verification_result[:message] }, status: :internal_server_error
+        end
+      end
+    rescue StandardError => e
+      render json: { error: "Verification failed: #{e.message}" }, status: :internal_server_error
+    end
+
     def new
       phone_number = params[:phone_number]
 
