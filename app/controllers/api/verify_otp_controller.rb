@@ -1,16 +1,32 @@
 class Api::VerifyOtpController < Api::BaseController
+  # POST /api/verify_otp
   def create
-    phone_number = ::Auths::PhoneNumber.new({ phone_number: params.dig(:phone_number),
-                                              otp_code: params.dig(:otp_code) })
-    if phone_number.valid?
-      ::Auths::PhoneVerification.new(phone_number.formatted_phone_number).verify_otp(params.dig(:otp_code))
-      head :ok, message: I18n.t('common.200')
+    otp_request_id = params[:otp_request_id]
+    otp_code = params[:otp_code]
+
+    result = OtpVerifierService.new.verify(otp_request_id, otp_code)
+
+    if result[:verified]
+      render json: { verified: true, message: I18n.t('otp.verification_success') }, status: :ok
     else
-      head :unauthorized
+      render json: { verified: false, message: result[:message] }, status: :unprocessable_entity
     end
-  rescue Twilio::REST::RestError
-    head :unprocessable_entity, message: I18n.t('otp.notp_expired')
-  rescue ::Auths::PhoneVerification::VerifyDeclined
-    head :unprocessable_entity, message: I18n.t('otp.verification_declined')
+  end
+end
+
+class OtpVerifierService
+  def verify(otp_request_id, otp_code)
+    otp_request = OtpRequest.find_by(id: otp_request_id)
+    return { verified: false, message: I18n.t('otp.request_not_found') } unless otp_request
+
+    if otp_request.expires_at < Time.current
+      otp_request.update(verified: false)
+      { verified: false, message: I18n.t('otp.expired') }
+    elsif otp_request.otp_code == otp_code
+      otp_request.update(verified: true)
+      { verified: true, message: I18n.t('otp.verified') }
+    else
+      { verified: false, message: I18n.t('otp.invalid_code') }
+    end
   end
 end
