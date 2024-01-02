@@ -1,4 +1,5 @@
 class User < ApplicationRecord
+  # Existing associations
   has_many :sender_messages,
            class_name: 'Message',
            foreign_key: :sender_id, dependent: :destroy
@@ -16,11 +17,16 @@ class User < ApplicationRecord
            class_name: 'Reaction',
            foreign_key: :reacted_id, dependent: :destroy
 
+  # New associations based on the updated ERD
+  has_many :otp_requests, dependent: :destroy
+
+  # Existing enum
   enum gender: %w[male female other], _suffix: true
 
+  # Existing attachment
   has_one_attached :thumbnail, dependent: :destroy
 
-  # validations
+  # Existing validations
   validates :phone_number, presence: true, uniqueness: true
   validates :phone_number, length: { in: 0..255 }, if: :phone_number?
   validates :thumbnail, content_type: ['image/png', 'image/jpg', 'image/jpeg', 'image/gif', 'image/svg+xml'],
@@ -33,8 +39,8 @@ class User < ApplicationRecord
   validates :email, uniqueness: true, allow_blank: true
   validates :email, length: { in: 0..255 }, if: :email?
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: :email_changed?
-  # end for validations
 
+  # Existing methods
   def generate_reset_password_token
     raw, enc = Devise.token_generator.generate(self.class, :reset_password_token)
     self.reset_password_token   = enc
