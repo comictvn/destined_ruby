@@ -1,22 +1,19 @@
 class Api::OtpController < Api::BaseController
-  # POST /api/otp/request
-  def request_otp
+  include ApiErrorResponder
+
+  rescue_from PhoneNumberValidator::InvalidFormatError, with: :handle_invalid_phone_format
+  rescue_from ActiveRecord::RecordNotFound, with: :handle_phone_number_not_found
+
+  # POST /api/otp/request-new
+  def request_new_otp
     phone_number = params[:phone_number]
-    # Validate phone number format
-    unless phone_number_valid?(phone_number)
-      return render json: { error: 'Invalid phone number format.' }, status: :bad_request
-    end
+    validate_phone_number!(phone_number)
 
-    # Check if phone number is associated with a user
-    user = User.find_by(phone_number: phone_number)
-    unless user
-      return render json: { error: 'Phone number not found.' }, status: :not_found
-    end
-
-    # Request a new OTP
+    user = find_user_by_phone_number(phone_number)
     result = OtpService.new.request_new_otp(user.id)
+
     if result.success?
-      render json: { status: 200, message: 'OTP has been sent to your phone.' }, status: :ok
+      render json: { status: 200, message: 'A new OTP has been sent to your phone.' }, status: :ok
     else
       render json: { error: result.failure }, status: :internal_server_error
     end
@@ -49,6 +46,24 @@ class Api::OtpController < Api::BaseController
 
   private
 
+  def validate_phone_number!(phone_number)
+    PhoneNumberValidator.new(phone_number).validate!
+  end
+
+  def find_user_by_phone_number(phone_number)
+    User.find_by!(phone_number: phone_number)
+  end
+
+  def handle_invalid_phone_format
+    render json: { error: 'Invalid phone number format.' }, status: :bad_request
+  end
+
+  def handle_phone_number_not_found
+    render json: { error: 'Phone number not found.' }, status: :not_found
+  end
+
+  # This method is kept from the existing code for backward compatibility
+  # It uses a simple regex to validate the phone number format
   def phone_number_valid?(phone_number)
     phone_number =~ /\A\d{10}\z/
   end
