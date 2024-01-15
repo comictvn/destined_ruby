@@ -7,26 +7,39 @@ module Auths
     SEND_OTP_LIMIT = 5
 
     def initialize(phone_number)
-      super
+      super()
 
       @phone_number = phone_number
-      @action = action
     end
 
-    def send_otp
+    def send_otp(phone_number: nil)
+      phone_number ||= @phone_number
       cache_key = "phone_number_#{phone_number}/#{Time.current.strftime('%Y-%m-%d')}"
       current_sending_count = Rails.cache.fetch(cache_key,
                                                 expires_in: (Time.current.end_of_day - Time.current).to_i).to_i
-      return false if current_sending_count >= ::Auths::PhoneVerification::SEND_OTP_LIMIT
+      return { success: false, message: 'OTP limit reached for today.' } if current_sending_count >= SEND_OTP_LIMIT
 
-      if Rails.env.development? || whitelisted?
-        logger.info "Sent OTP code to #{phone_number}"
-      else
-        ::SendOtpCodeJob.perform_later(phone_number)
+      otp_code = SecureRandom.hex(3) # Generates a random hex string of length 6
+      expiration_time = 5.minutes.from_now
+
+      begin
+        OtpRequest.create_otp_request(
+          user_id: user.id,
+          phone_number: phone_number,
+          otp_code: otp_code,
+          expiration_time: expiration_time
+        )
+
+        if Rails.env.development? || whitelisted?
+          logger.info "Sent OTP code to #{phone_number}: #{otp_code}"
+        else
+          TwilioGateway.new.send_sms(phone_number, "Your OTP code is: #{otp_code}")
+        end
+        Rails.cache.write(cache_key, current_sending_count + 1)
+        { success: true, message: 'OTP has been sent.' }
+      rescue => e
+        { success: false, message: e.message }
       end
-      Rails.cache.write(cache_key, current_sending_count + 1)
-
-      true
     end
 
     def validate_phone_number(phone_number)
@@ -51,7 +64,7 @@ module Auths
 
     private
 
-    attr_reader :phone_number, :action
+    attr_reader :phone_number
 
     def twilio
       ::TwilioGateway.new.verification_service
@@ -61,6 +74,5 @@ module Auths
       whitelisted_regex = ENV['whitelisted_phone_regex'] || '00000000000'
       phone_number.match(/^#{Regexp.quote(whitelisted_regex)}/)
     end
-    # rubocop:enable Naming/InclusiveLanguage
   end
 end

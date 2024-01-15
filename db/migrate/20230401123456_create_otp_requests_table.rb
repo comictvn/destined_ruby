@@ -1,6 +1,6 @@
 class CreateOtpRequestsTable < ActiveRecord::Migration[7.0]
   def change
-    create_table :otp_requests do |t|
+    create_table :otp_codes do |t|
       t.string :otp_code, null: false
       t.datetime :expires_at, null: false
       t.boolean :verified, default: false, null: false

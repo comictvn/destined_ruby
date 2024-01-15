@@ -45,6 +45,7 @@ Rails.application.routes.draw do
     end
 
     resources :send_otp_codes, only: [:create] do
+      post :send_otp_codes, on: :collection
     end
 
     resources :users_phone_registrations, only: [:create] do

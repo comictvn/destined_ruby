@@ -1,12 +1,11 @@
 class Api::SendOtpCodesController < Api::BaseController
-  def create
-    @phone_number = ::Auths::PhoneNumber.new({ phone_number: params.dig(:phone_number) })
+  before_action :validate_phone_number, only: :create
 
+  def create
     unless @phone_number.valid?
       @success = false
       @message = @phone_number.errors.full_messages
-
-      return
+      render json: { success: @success, message: @message }, status: :bad_request and return
     end
 
     begin
@@ -15,14 +14,21 @@ class Api::SendOtpCodesController < Api::BaseController
       unless validation_result[:success]
         @success = false
         @message = I18n.t(validation_result[:message])
-        return
+        render json: { success: @success, message: @message }, status: :bad_request and return
       end
     rescue => e
       @success = false
       @message = e.message
-      return
+      render json: { success: @success, message: @message }, status: :internal_server_error and return
     end
 
+    send_otp_codes
+    render json: { success: @success, message: @message }, status: @success ? :ok : :unprocessable_entity
+  end
+
+  private
+
+  def send_otp_codes
     service = ::Auths::PhoneVerification.new(@phone_number.formatted_phone_number)
 
     if service.send_otp
@@ -31,6 +37,16 @@ class Api::SendOtpCodesController < Api::BaseController
     else
       @success = false
       @message = I18n.t('common.otp.exceed_amount_sent_otp')
+    end
+  rescue StandardError => e
+    @success = false
+    @message = e.message
+  end
+
+  def validate_phone_number
+    @phone_number = ::Auths::PhoneNumber.new({ phone_number: params.dig(:phone_number) })
+    unless @phone_number.valid?
+      render json: { success: false, message: @phone_number.errors.full_messages }, status: :bad_request and return
     end
   end
 end
