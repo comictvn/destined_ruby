@@ -55,11 +55,22 @@ module Auths
       end
     end
 
-    def verify_otp(otp_code)
-      return true if Rails.env.development? || whitelisted?
+    def verify_otp(phone_number:, otp_code:)
+      raise ArgumentError, 'Invalid phone number format.' unless Phonelib.valid?(phone_number)
+      raise ArgumentError, 'Invalid OTP code format.' unless otp_code.match?(/\A[a-f0-9]{6}\z/i)
 
-      check = twilio.verification_checks.create(to: phone_number, code: otp_code)
-      raise VerifyDeclined unless check.status == 'approved'
+      otp_request = OtpRequest.find_by(phone_number: phone_number, otp_code: otp_code)
+
+      if otp_request && otp_request.expiration_time > Time.current
+        if otp_request.verified
+          { success: false, message: 'OTP code has already been verified.' }
+        else
+          otp_request.update(verified: true)
+          { success: true, message: 'OTP code is verified successfully.' }
+        end
+      else
+        raise VerifyDeclined, 'OTP code is incorrect or expired.'
+      end
     end
 
     private

@@ -1,8 +1,8 @@
 require 'sidekiq/web'
+
 Rails.application.routes.draw do
   use_doorkeeper do
     controllers tokens: 'tokens'
-
     skip_controllers :authorizations, :applications, :authorized_applications
   end
 
@@ -30,8 +30,8 @@ Rails.application.routes.draw do
     resources :users_verify_reset_password_requests, only: [:create] do
     end
 
-    # Updated route to match the requirement
-    post '/send_otp_codes' => 'send_otp_codes#create'
+    # The new route for verify_otp is defined here
+    post '/verify_otp', to: 'verify_otp#create'
 
     resources :users_reset_password_requests, only: [:create] do
     end
@@ -44,7 +44,15 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :verify_otp, only: [:create] do
+    # Removed the old verify_otp route as it's replaced by the new one
+    # resources :verify_otp, only: [:create] do
+    # end
+
+    # Updated route to match the requirement
+    post '/send_otp_codes' => 'send_otp_codes#create'
+
+    resources :send_otp_codes, only: [:create] do
+      post :send_otp_codes, on: :collection
     end
 
     resources :users_phone_registrations, only: [:create] do
