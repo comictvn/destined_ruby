@@ -1,1 +1,1 @@
-Phonelib.default_country = "VN"
+Phonelib.default_country = "JP"

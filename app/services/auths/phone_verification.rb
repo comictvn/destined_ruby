@@ -1,5 +1,6 @@
 module Auths
   class PhoneVerification < BaseService
+    require 'phonelib'
     class VerifyDeclined < StandardError; end
 
     # limit sending otp 5 times per day
@@ -26,6 +27,19 @@ module Auths
       Rails.cache.write(cache_key, current_sending_count + 1)
 
       true
+    end
+
+    def validate_phone_number(phone_number)
+      validation = Phonelib.valid?(phone_number)
+      user_exists = User.find_by(phone_number: phone_number).present?
+
+      if validation && !user_exists
+        { success: true, message: 'Phone number is valid and not registered.' }
+      elsif !validation
+        { success: false, message: 'Invalid phone number format.' }
+      elsif user_exists
+        { success: false, message: 'Phone number already registered.' }
+      end
     end
 
     def verify_otp(otp_code)

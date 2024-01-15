@@ -24,4 +24,6 @@ ja:
         datetime_in_future: 今日の日付と時刻より後である必要があります
         invalid: は不正な値です
         date_type: は有効な日付である必要があります
+        invalid_phone_number_format: は不正な電話番号の形式です
+        phone_number_already_registered: はすでに登録されている電話番号です
         datetime_type: は有効な日時である必要があります

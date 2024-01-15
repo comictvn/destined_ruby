@@ -1,3 +1,4 @@
+
 ---
 en:
   activerecord:
@@ -24,4 +25,6 @@ en:
         datetime_in_future: must be after the date and time today
         invalid: is invalid
         date_type: must be a valid date
+        invalid_phone_number_format: 'is not a valid phone number format'
+        phone_number_already_registered: 'has already been registered'
         datetime_type: must be a valid date and time

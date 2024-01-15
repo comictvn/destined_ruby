@@ -1,3 +1,4 @@
+
 class User < ApplicationRecord
   # Existing associations
   has_many :sender_messages,
@@ -28,8 +29,8 @@ class User < ApplicationRecord
   has_one_attached :thumbnail, dependent: :destroy
 
   # Existing validations
-  validates :phone_number, presence: true, uniqueness: true
-  validates :phone_number, length: { in: 0..255 }, if: :phone_number?
+  validates :phone_number, presence: true
+  validates :phone_number, length: { in: 0..255 }, uniqueness: { message: I18n.t('activerecord.errors.messages.taken') }, if: :phone_number?
   validates :thumbnail, content_type: ['image/png', 'image/jpg', 'image/jpeg', 'image/gif', 'image/svg+xml'],
                         size: { less_than_or_equal_to: 100.megabytes }
   validates :firstname, length: { in: 0..255 }, if: :firstname?

@@ -9,6 +9,20 @@ class Api::SendOtpCodesController < Api::BaseController
       return
     end
 
+    begin
+      phone_verification_service = ::Auths::PhoneVerification.new(@phone_number.formatted_phone_number)
+      validation_result = phone_verification_service.validate_phone_number
+      unless validation_result[:success]
+        @success = false
+        @message = I18n.t(validation_result[:message])
+        return
+      end
+    rescue => e
+      @success = false
+      @message = e.message
+      return
+    end
+
     service = ::Auths::PhoneVerification.new(@phone_number.formatted_phone_number)
 
     if service.send_otp
