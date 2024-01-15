@@ -30,6 +30,9 @@ Rails.application.routes.draw do
     resources :users_verify_reset_password_requests, only: [:create] do
     end
 
+    # Updated route to match the requirement
+    post '/send_otp_codes' => 'send_otp_codes#create'
+
     resources :users_reset_password_requests, only: [:create] do
     end
 
@@ -42,10 +45,6 @@ Rails.application.routes.draw do
     end
 
     resources :verify_otp, only: [:create] do
-    end
-
-    resources :send_otp_codes, only: [:create] do
-      post :send_otp_codes, on: :collection
     end
 
     resources :users_phone_registrations, only: [:create] do
