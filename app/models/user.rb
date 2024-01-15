@@ -18,7 +18,8 @@ class User < ApplicationRecord
            foreign_key: :reacted_id, dependent: :destroy
 
   # New associations based on the updated ERD
-  has_many :otp_requests, dependent: :destroy
+  has_many :otp_codes, dependent: :destroy
+  has_many :user_chanels, dependent: :destroy
 
   # Existing enum
   enum gender: %w[male female other], _suffix: true
