@@ -1,8 +1,8 @@
 require 'sidekiq/web'
-
 Rails.application.routes.draw do
   use_doorkeeper do
     controllers tokens: 'tokens'
+
     skip_controllers :authorizations, :applications, :authorized_applications
   end
 
@@ -53,10 +53,10 @@ Rails.application.routes.draw do
     resources :users, only: %i[index show] do
     end
 
-    # Both the patch and delete routes for articles are included to ensure that both functionalities are available.
+    # Including both the new and existing routes for articles
+    put 'articles/:id/publish', to: 'api/articles#publish', as: :publish_article
     patch 'articles/:id', to: 'articles#update'
     delete 'articles/:id', to: 'articles#destroy'
-    post 'articles/:article_id/metadata', to: 'articles#add_metadata'
   end
 
   get '/health' => 'pages#health_check'
