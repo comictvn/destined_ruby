@@ -42,6 +42,9 @@ Rails.application.routes.draw do
       end
     end
 
+    # Correctly placed outside of the :chanels block
+    put '/chanels/:channel_id/messages/:id', to: 'messages#update_article'
+
     resources :verify_otp, only: [:create] do
     end
 
@@ -54,12 +57,19 @@ Rails.application.routes.draw do
     resources :users, only: %i[index show] do
     end
 
+    # Added the manage articles route as per the requirement
+    get '/articles/manage', to: 'articles#manage'
+
+    # New route for saving article drafts
+    post '/api/articles/drafts', to: 'articles#create_draft'
+
     resources :articles do
       resources :media, only: [:create]
       put ':id/publish', to: 'articles#publish', as: :publish_article
       patch ':id', to: 'articles#update'
-      # The DELETE route for articles already exists, so no new code is needed here.
       delete ':id', to: 'articles#destroy'
+      # New route for inserting media into an article as per the requirement
+      post ':id/media', to: 'articles#insert_media'
     end
   end
 

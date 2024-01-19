@@ -9,4 +9,8 @@ class Api::MediaPolicy
   def create?
     true
   end
+
+  def insert?
+    user.admin? || user.has_role?(:editor) || media.article.user_id == user.id
+  end
 end
