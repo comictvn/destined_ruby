@@ -42,8 +42,8 @@ Rails.application.routes.draw do
       end
     end
 
-    # Correctly placed outside of the :chanels block
-    put '/chanels/:channel_id/messages/:id', to: 'messages#update_article'
+    # Corrected the route for updating messages within a channel
+    put '/chanels/:channel_id/messages/:id', to: 'messages#update'
 
     resources :verify_otp, only: [:create] do
     end
@@ -66,6 +66,8 @@ Rails.application.routes.draw do
     resources :articles do
       resources :media, only: [:create]
       put ':id/publish', to: 'articles#publish', as: :publish_article
+      # Updated the route for editing articles to match the requirement
+      put ':id', to: 'articles#update'
       patch ':id', to: 'articles#update'
       delete ':id', to: 'articles#destroy'
       # New route for inserting media into an article as per the requirement

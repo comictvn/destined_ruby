@@ -8,20 +8,24 @@ class Article < ApplicationRecord
   has_many :article_tags, dependent: :destroy
 
   # Add validations for model attributes
-  validates :title, presence: true, length: { maximum: 255 }, message: ->(object, data) do
-    I18n.t('activerecord.errors.messages.blank')
+  validates :title, presence: true, length: { maximum: 200 }, message: ->(object, data) do
+    I18n.t('activerecord.errors.models.article.attributes.title.too_long', count: 200)
   end
-  validates :content, presence: true, message: ->(object, data) do
-    I18n.t('activerecord.errors.messages.blank')
+  validates :content, presence: true, length: { maximum: 10000 }, message: ->(object, data) do
+    I18n.t('activerecord.errors.models.article.attributes.content.too_long', count: 10000)
   end
-
-  # The new code introduces a validation for status only on update
-  # which conflicts with the existing validation for status.
-  # To resolve this, we combine the conditions for the status validation.
   validates :status, presence: true, inclusion: { in: %w[draft published archived] }
-  validates :status, inclusion: { in: ['published'] }, on: :update
-
   validates :user_id, presence: true
+
+  # Scope to get articles by user_id
+  scope :by_user, ->(user_id) {
+    where(user_id: user_id)
+  }
+
+  # Class method as an alternative to the scope
+  def self.for_user(user_id)
+    by_user(user_id)
+  end
 
   # ... rest of the model code ...
 end

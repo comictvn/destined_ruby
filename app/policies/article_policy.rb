@@ -11,9 +11,6 @@ class ArticlePolicy < ApplicationPolicy
   end
 
   def publish?
-    # Define the logic to determine if a user can publish the article
-    # Placeholder logic, replace with actual conditions
-    # This is a new method, so we add it without removing any existing code
     user.admin? || record.user_id == user.id
   end
 
@@ -21,11 +18,14 @@ class ArticlePolicy < ApplicationPolicy
     user.admin? || record.user_id == user.id
   end
 
+  def edit?
+    # The edit? method should ensure that the article is published and the user is the author or an admin
+    record.published? && (user.admin? || record.user_id == user.id)
+  end
+
   def destroy?
     user.admin? || record.user_id == user.id
   end
 
   # ... other methods from the existing code should be included here ...
-  # Since the task specifies not to hide any code, all other methods
-  # from the existing ArticlePolicy should be copied here verbatim.
 end
