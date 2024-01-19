@@ -3,6 +3,7 @@ module Api
     before_action :authenticate_user!, except: [:create_draft]
     before_action :doorkeeper_authorize!, except: [:create_draft, :publish]
     before_action :authorize_create_draft, only: [:create_draft]
+    before_action :set_user_and_validate, only: [:manage]
 
     def index
       user_id = params[:user_id]
@@ -68,7 +69,34 @@ module Api
       render json: { error: I18n.t('common.404') }, status: :not_found
     end
 
+    def manage
+      authorize ArticlesPolicy.new(current_user, Article), :update?
+
+      articles, total_pages = ArticleService::Index.new.manage_articles(
+        user_id: @user.id,
+        status: params[:status],
+        page: params[:page],
+        limit: params[:limit]
+      )
+
+      render json: {
+        articles: articles.map { |article| ArticleSerializer.new(article) },
+        total_pages: total_pages,
+        limit: params[:limit].to_i,
+        page: params[:page].to_i
+      }, status: :ok
+    end
+
     private
+
+    def set_user_and_validate
+      @user = User.find_by(id: params[:user_id])
+      render json: { error: 'User not found.' }, status: :bad_request and return unless @user
+      render json: { error: 'Invalid status value.' }, status: :bad_request and return unless Article.statuses.include?(params[:status])
+      page_number = params[:page].to_i
+      render json: { error: 'Invalid page number.' }, status: :bad_request and return unless page_number.positive?
+      render json: { error: 'Invalid limit value.' }, status: :bad_request and return unless params[:limit].match?(/\A\d+\z/)
+    end
 
     def draft_params
       params.require(:article).permit(:user_id, :title, :content, :status)
