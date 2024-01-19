@@ -1,5 +1,19 @@
 class Api::ArticlesController < Api::BaseController
-  before_action :doorkeeper_authorize!, only: %i[create update destroy]
+  before_action :doorkeeper_authorize!, except: [:add_metadata]
+
+  def add_metadata
+    article_id = params[:article_id]
+    tags = params[:tags]
+
+    unless article_id.present? && tags.is_a?(Array) && tags.any?
+      render json: { error: 'Invalid parameters' }, status: :bad_request
+      return
+    end
+
+    service = ArticleService::Index.new
+    message = service.add_tags_to_article(article_id, tags)
+    render json: { message: message }, status: :ok
+  end
 
   def update
     article = Article.find(params[:id])
