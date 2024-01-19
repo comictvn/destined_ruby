@@ -18,7 +18,7 @@ class User < ApplicationRecord
            foreign_key: :reacted_id, dependent: :destroy
 
   # New associations based on the updated ERD
-  has_many :otp_requests, dependent: :destroy
+  has_many :articles, dependent: :destroy
 
   # Existing enum
   enum gender: %w[male female other], _suffix: true
@@ -39,6 +39,10 @@ class User < ApplicationRecord
   validates :email, uniqueness: true, allow_blank: true
   validates :email, length: { in: 0..255 }, if: :email?
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: :email_changed?
+
+  # New validations for new columns
+  validates :username, presence: true, uniqueness: true
+  validates :username, length: { in: 0..255 }, if: :username?
 
   # Existing methods
   def generate_reset_password_token
