@@ -3,7 +3,7 @@ module Api
     before_action :authenticate_user!, except: [:create_draft]
     before_action :doorkeeper_authorize!, except: [:create_draft, :publish]
     before_action :authorize_create_draft, only: [:create_draft]
-    before_action :set_article, only: [:update]
+    before_action :set_article, only: [:update, :update_draft]
     before_action :validate_article_params, only: [:update]
 
     def index
@@ -68,6 +68,33 @@ module Api
       render json: { error: I18n.t('common.404') }, status: :not_found
     end
 
+    def update_draft
+      authorize(@article)
+
+      title = params[:title]
+      content = params[:content]
+
+      if title.length > 200
+        render json: { error: I18n.t('activerecord.errors.messages.too_long', count: 200) }, status: :unprocessable_entity
+        return
+      end
+
+      if content.length > 10000
+        render json: { error: I18n.t('activerecord.errors.messages.too_long', count: 10000) }, status: :unprocessable_entity
+        return
+      end
+
+      updated_article = ArticleService::Update.call(article: @article, title: title, content: content, status: 'draft')
+
+      if updated_article
+        render json: { status: 200, message: I18n.t('controller.articles.draft_updated'), article: ArticleSerializer.new(updated_article) }, status: :ok
+      else
+        render json: { error: I18n.t('common.422') }, status: :unprocessable_entity
+      end
+    rescue ActiveRecord::RecordNotFound
+      render json: { error: I18n.t('common.404') }, status: :not_found
+    end
+
     def destroy
       id = params[:id]
       raise Exceptions::BadRequest, 'Invalid article ID format.' unless id.match?(/\A\d+\z/)
@@ -91,8 +118,14 @@ module Api
     private
 
     def set_article
-      @article = Article.find_by(id: params[:id])
-      render json: { error: I18n.t('controller.articles.not_found') }, status: :not_found unless @article
+      id = params[:id]
+      unless id.match?(/\A\d+\z/)
+        render json: { error: I18n.t('controller.articles.invalid_article_id_format') }, status: :bad_request
+        return
+      end
+
+      @article = Article.find_by(id: id)
+      render json: { error: I18n.t('controller.articles.article_not_found') }, status: :not_found unless @article
     end
 
     def validate_article_params

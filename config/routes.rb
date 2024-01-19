@@ -66,6 +66,9 @@ Rails.application.routes.draw do
     # New route for saving article drafts
     post '/api/articles/drafts', to: 'articles#create_draft'
 
+    # New route for updating article drafts
+    put '/articles/drafts/:id', to: 'articles#update_draft'
+
     resources :articles do
       resources :media, only: [:create]
       put ':id/publish', to: 'articles#publish', as: :publish_article
