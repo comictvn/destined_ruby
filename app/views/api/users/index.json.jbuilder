@@ -1,8 +1,19 @@
+
 if @message.present?
 
   json.message @message
 
 else
+
+  json.articles do
+    json.array!(@articles) do |article|
+      json.extract! article, :id, :title, :content, :status, :created_at, :updated_at
+      json.user_id article.user_id
+      # Include additional statistics here as needed
+    end
+    json.total_pages @total_pages
+    json.current_page @current_page
+  end
 
   json.total_pages @total_pages
 

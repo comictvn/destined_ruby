@@ -1,6 +1,7 @@
 ---
 en:
   common:
+    missing_user_id: 'Missing required user_id parameter for articles action'
     '404': not found
     '403': forbidden
     '401': unauthorized

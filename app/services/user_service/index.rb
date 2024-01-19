@@ -1,5 +1,7 @@
+
 # rubocop:disable Style/ClassAndModuleChildren
 class UserService::Index
+  include ActiveRecord::Relation
   include Pundit::Authorization
 
   attr_accessor :params, :records, :query
@@ -31,6 +33,8 @@ class UserService::Index
 
     paginate
   end
+
+  private
 
   def phone_number_start_with
     return if params.dig(:users, :phone_number).blank?
@@ -117,6 +121,19 @@ class UserService::Index
   def paginate
     @records = User.none if records.blank? || records.is_a?(Class)
     @records = records.page(params.dig(:pagination_page) || 1).per(params.dig(:pagination_limit) || 20)
+  end
+
+  def collect_articles_statistics(articles)
+    article_ids = articles.map(&:id)
+    # Assuming view_count and comment_count are methods or columns available in the Article model
+    statistics = Article.where(id: article_ids).pluck(:id, :view_count, :comment_count).each_with_object({}) do |(id, view_count, comment_count), stats|
+      stats[id] = { view_count: view_count, comment_count: comment_count }
+    end
+
+    articles.map do |article|
+      article_stats = statistics[article.id] || { view_count: 0, comment_count: 0 }
+      article.attributes.merge(article_stats)
+    end
   end
 end
 # rubocop:enable Style/ClassAndModuleChildren

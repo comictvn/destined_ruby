@@ -17,5 +17,15 @@ class Article < ApplicationRecord
   validates :status, presence: true, inclusion: { in: %w[draft published archived] }
   validates :user_id, presence: true
 
-  # You can also add custom methods, scopes, etc. here
+  # Scope to get articles by user_id
+  scope :by_user, ->(user_id) {
+    where(user_id: user_id)
+  }
+
+  # Class method as an alternative to the scope
+  def self.for_user(user_id)
+    by_user(user_id)
+  end
+
+  # ... rest of the model code ...
 end
