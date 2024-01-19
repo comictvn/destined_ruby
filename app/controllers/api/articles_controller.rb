@@ -45,8 +45,33 @@ module Api
 
     def create_draft
       permitted_params = draft_params
+      if permitted_params[:status] != 'draft'
+        render_error('Invalid status value.', status: :bad_request)
+        return
+      end
+
+      unless User.exists?(permitted_params[:user_id])
+        render_error('User not found', status: :bad_request)
+        return
+      end
+
+      if permitted_params[:title].blank?
+        render_error('Title is required.', status: :bad_request)
+        return
+      end
+
+      if permitted_params[:content].blank?
+        render_error('Content is required.', status: :bad_request)
+        return
+      end
+
       result = CreateDraft.call(permitted_params)
-      render_response({ article_id: result })
+      article = Article.find(result)
+      render json: {
+        status: 200,
+        message: "Draft saved successfully.",
+        article: ArticleSerializer.new(article).as_json
+      }, status: :ok
     rescue => e
       render_error(e.message, status: :unprocessable_entity)
     end

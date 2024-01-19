@@ -41,8 +41,6 @@ Rails.application.routes.draw do
       resources :messages, only: %i[index destroy] do
       end
     end
-
-    # Correctly placed outside the resources :chanels block
     put '/chanels/:channel_id/messages/:id', to: 'messages#update_article'
 
     resources :verify_otp, only: [:create] do
@@ -59,6 +57,9 @@ Rails.application.routes.draw do
 
     # Added the manage articles route as per the requirement
     get '/articles/manage', to: 'articles#manage'
+
+    # New route for saving article drafts
+    post '/api/articles/drafts', to: 'articles#create_draft'
 
     resources :articles do
       resources :media, only: [:create]
