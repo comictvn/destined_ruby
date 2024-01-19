@@ -17,6 +17,7 @@ Rails.application.routes.draw do
   namespace :api, defaults: { format: :json } do
     resources :force_update_app_versions, only: [:index] do
     end
+    patch 'articles/:id', to: 'articles#update'
 
     resources :users_verify_confirmation_token, only: [:create] do
     end
