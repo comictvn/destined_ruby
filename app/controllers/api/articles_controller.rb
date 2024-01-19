@@ -3,7 +3,6 @@ module Api
     before_action :authenticate_user!, except: [:create_draft]
     before_action :doorkeeper_authorize!, except: [:create_draft, :publish]
     before_action :authorize_create_draft, only: [:create_draft]
-    before_action :set_user_and_validate, only: [:manage]
 
     def index
       user_id = params[:user_id]
@@ -21,13 +20,17 @@ module Api
     end
 
     def publish
-      article_id = params[:id].to_i
+      article_id = params[:id]
       status = params[:status]
 
-      if article_id <= 0
+      if article_id.blank? || !article_id.match?(/\A\d+\z/)
         render json: { error: I18n.t('controller.articles.invalid_article_id_format') }, status: :bad_request
         return
-      elsif !Article.exists?(article_id)
+      end
+
+      article_id = article_id.to_i
+
+      if article_id <= 0 || !Article.exists?(article_id)
         render json: { error: I18n.t('controller.articles.article_not_found') }, status: :not_found
         return
       end
@@ -45,33 +48,8 @@ module Api
 
     def create_draft
       permitted_params = draft_params
-      if permitted_params[:status] != 'draft'
-        render_error('Invalid status value.', status: :bad_request)
-        return
-      end
-
-      unless User.exists?(permitted_params[:user_id])
-        render_error('User not found', status: :bad_request)
-        return
-      end
-
-      if permitted_params[:title].blank?
-        render_error('Title is required.', status: :bad_request)
-        return
-      end
-
-      if permitted_params[:content].blank?
-        render_error('Content is required.', status: :bad_request)
-        return
-      end
-
       result = CreateDraft.call(permitted_params)
-      article = Article.find(result)
-      render json: {
-        status: 200,
-        message: "Draft saved successfully.",
-        article: ArticleSerializer.new(article).as_json
-      }, status: :ok
+      render_response({ article_id: result })
     rescue => e
       render_error(e.message, status: :unprocessable_entity)
     end
@@ -94,34 +72,27 @@ module Api
       render json: { error: I18n.t('common.404') }, status: :not_found
     end
 
-    def manage
-      authorize ArticlesPolicy.new(current_user, Article), :update?
+    def destroy
+      id = params[:id]
+      raise Exceptions::BadRequest, 'Invalid article ID format.' unless id.match?(/\A\d+\z/)
 
-      articles, total_pages = ArticleService::Index.new.manage_articles(
-        user_id: @user.id,
-        status: params[:status],
-        page: params[:page],
-        limit: params[:limit]
-      )
+      article = Article.find_by(id: id)
+      if article.nil?
+        render json: { error: 'Article not found.' }, status: :not_found
+        return
+      end
 
-      render json: {
-        articles: articles.map { |article| ArticleSerializer.new(article) },
-        total_pages: total_pages,
-        limit: params[:limit].to_i,
-        page: params[:page].to_i
-      }, status: :ok
+      authorize ArticlePolicy.new(current_user, article), :destroy?
+
+      ArticleService::Delete.new(id).execute
+      render json: { message: 'Article deleted successfully.' }, status: :ok
+    rescue ActiveRecord::RecordNotFound
+      render json: { error: 'Article not found.' }, status: :not_found
+    rescue Exceptions::BadRequest => e
+      render json: { error: e.message }, status: :bad_request
     end
 
     private
-
-    def set_user_and_validate
-      @user = User.find_by(id: params[:user_id])
-      render json: { error: 'User not found.' }, status: :bad_request and return unless @user
-      render json: { error: 'Invalid status value.' }, status: :bad_request and return unless Article.statuses.include?(params[:status])
-      page_number = params[:page].to_i
-      render json: { error: 'Invalid page number.' }, status: :bad_request and return unless page_number.positive?
-      render json: { error: 'Invalid limit value.' }, status: :bad_request and return unless params[:limit].match?(/\A\d+\z/)
-    end
 
     def draft_params
       params.require(:article).permit(:user_id, :title, :content, :status)
