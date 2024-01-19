@@ -53,10 +53,13 @@ Rails.application.routes.draw do
     resources :users, only: %i[index show] do
     end
 
-    # Including both the new and existing routes for articles
-    put 'articles/:id/publish', to: 'api/articles#publish', as: :publish_article
-    patch 'articles/:id', to: 'articles#update'
-    delete 'articles/:id', to: 'articles#destroy'
+    resources :articles do
+      resources :media, only: [:create]
+      # Merged the new and existing routes for articles
+      put ':id/publish', to: 'articles#publish', as: :publish_article
+      patch ':id', to: 'articles#update'
+      delete ':id', to: 'articles#destroy'
+    end
   end
 
   get '/health' => 'pages#health_check'
