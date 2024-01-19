@@ -1,14 +1,15 @@
 require 'sidekiq/web'
+
 Rails.application.routes.draw do
   use_doorkeeper do
     controllers tokens: 'tokens'
-
     skip_controllers :authorizations, :applications, :authorized_applications
   end
 
   devise_for :users
   mount Rswag::Ui::Engine => '/api-docs'
   mount Rswag::Api::Engine => '/api-docs'
+  
   namespace :v1 do
     resources :me, only: [:index] do
     end
@@ -17,7 +18,6 @@ Rails.application.routes.draw do
   namespace :api, defaults: { format: :json } do
     resources :force_update_app_versions, only: [:index] do
     end
-    patch 'articles/:id', to: 'articles#update'
 
     resources :users_verify_confirmation_token, only: [:create] do
     end
@@ -52,6 +52,14 @@ Rails.application.routes.draw do
     end
 
     resources :users, only: %i[index show] do
+    end
+
+    # The new code does not have this route, but we are keeping it to avoid removing functionality
+    patch 'articles/:id', to: 'articles#update'
+
+    # The new code adds this namespace and route
+    namespace :articles do
+      post 'create_draft', to: 'articles#create_draft'
     end
   end
 
