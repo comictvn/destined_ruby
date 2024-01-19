@@ -4,15 +4,39 @@ module Api
     before_action :doorkeeper_authorize!, except: [:create_draft, :publish]
     before_action :authorize_create_draft, only: [:create_draft]
 
+    def index
+      user_id = params[:user_id]
+
+      if user_id.blank? || !user_id.match?(/\A\d+\z/)
+        render json: { error: I18n.t('controller.articles.missing_user_id') }, status: :bad_request
+        return
+      end
+
+      articles = ArticleService::Index.new.retrieve_articles(user_id: user_id.to_i)
+
+      authorize articles, policy_class: Api::UsersPolicy
+
+      render json: articles.map { |article| ArticleSerializer.new(article) }, status: :ok
+    end
+
     def publish
-      article_id = params[:id]
+      article_id = params[:id].to_i
       status = params[:status]
 
-      authorize ArticlePolicy.new(current_user, Article.find(article_id)), :publish?
+      if article_id <= 0
+        render json: { error: I18n.t('controller.articles.invalid_article_id_format') }, status: :bad_request
+        return
+      elsif !Article.exists?(article_id)
+        render json: { error: I18n.t('controller.articles.article_not_found') }, status: :not_found
+        return
+      end
+
+      article = Article.find(article_id)
+      authorize ArticlePolicy.new(current_user, article), :publish?
 
       begin
         message = ArticleService::Publish.new.publish(article_id: article_id, status: status)
-        render json: { message: message }, status: :ok
+        render json: { message: message, article: ArticleSerializer.new(article).serializable_hash }, status: :ok
       rescue => e
         render json: { error: e.message }, status: :unprocessable_entity
       end
@@ -28,10 +52,10 @@ module Api
 
     def update
       article = Article.find(params[:id])
-      authorize(article, policy_class: Api::ArticlesPolicy)
+      authorize(article)
 
       raise Exceptions::BadRequest if params[:title].blank? || params[:content].blank?
-      raise Exceptions::BadRequest unless ['draft', 'published'].include?(params[:status])
+      raise Exceptions::BadRequest unless params[:status] == 'draft'
 
       updated_article = ArticleService::Update.call(article, article_params)
 
