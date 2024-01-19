@@ -1,3 +1,4 @@
+
 class Media < ApplicationRecord
   # Specify the table name if it's not the pluralized form of the model name
   self.table_name = 'media'

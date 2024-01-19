@@ -1,15 +1,14 @@
 require 'sidekiq/web'
-
 Rails.application.routes.draw do
   use_doorkeeper do
     controllers tokens: 'tokens'
+
     skip_controllers :authorizations, :applications, :authorized_applications
   end
 
   devise_for :users
   mount Rswag::Ui::Engine => '/api-docs'
   mount Rswag::Api::Engine => '/api-docs'
-  
   namespace :v1 do
     resources :me, only: [:index] do
     end
@@ -54,13 +53,10 @@ Rails.application.routes.draw do
     resources :users, only: %i[index show] do
     end
 
-    # The new code does not have this route, but we are keeping it to avoid removing functionality
+    # The new code has a delete route for articles, while the existing code has a patch route.
+    # Both routes should be included to ensure that both functionalities are available.
     patch 'articles/:id', to: 'articles#update'
-
-    # The new code adds this namespace and route
-    namespace :articles do
-      post 'create_draft', to: 'articles#create_draft'
-    end
+    delete 'articles/:id', to: 'articles#destroy'
   end
 
   get '/health' => 'pages#health_check'

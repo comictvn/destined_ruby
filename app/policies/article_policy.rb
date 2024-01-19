@@ -1,11 +1,21 @@
+# typed: true
+# frozen_string_literal: true
 
-class ArticlePolicy
+class ArticlePolicy < ApplicationPolicy
   attr_reader :user, :record
 
+  def initialize(user, record)
+    @user = user
+    @record = record
+  end
+
   def update?
-    # Assuming 'user' is the current user and 'record' is the article being accessed
     user.admin? || record.user_id == user.id
   end
 
-  # ... other methods ...
+  def destroy?
+    user.admin? || record.user_id == user.id
+  end
+
+  # ... other methods from the existing code should be included here ...
 end
