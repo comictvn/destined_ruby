@@ -4,21 +4,6 @@ module Api
     before_action :doorkeeper_authorize!, except: [:create_draft, :publish]
     before_action :authorize_create_draft, only: [:create_draft]
 
-    def index
-      user_id = params[:user_id]
-
-      if user_id.blank? || !user_id.match?(/\A\d+\z/)
-        render json: { error: I18n.t('controller.articles.missing_user_id') }, status: :bad_request
-        return
-      end
-
-      articles = ArticleService::Index.new.retrieve_articles(user_id: user_id.to_i)
-
-      authorize articles, policy_class: Api::UsersPolicy
-
-      render json: articles.map { |article| ArticleSerializer.new(article) }, status: :ok
-    end
-
     def publish
       article_id = params[:id]
       status = params[:status]
@@ -43,10 +28,10 @@ module Api
 
     def update
       article = Article.find(params[:id])
-      authorize(article)
+      authorize(article, policy_class: Api::ArticlesPolicy)
 
       raise Exceptions::BadRequest if params[:title].blank? || params[:content].blank?
-      raise Exceptions::BadRequest unless params[:status] == 'draft'
+      raise Exceptions::BadRequest unless ['draft', 'published'].include?(params[:status])
 
       updated_article = ArticleService::Update.call(article, article_params)
 

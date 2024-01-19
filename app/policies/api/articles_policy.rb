@@ -14,7 +14,10 @@ class ArticlesPolicy < ApplicationPolicy
   end
 
   def add_metadata?
-    # Define the conditions for authorizing the user to add metadata
     user.has_role?(:editor) || user.has_role?(:admin)
+  end
+
+  def update?
+    user.admin? || article.user_id == user.id
   end
 end
