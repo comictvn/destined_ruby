@@ -1,3 +1,4 @@
+
 class User < ApplicationRecord
   # Existing associations
   has_many :sender_messages,
@@ -54,7 +55,18 @@ class User < ApplicationRecord
   end
 
   class << self
-    def authenticate?(email, password)
+    def authenticate?(username, password)
+      user = find_by(username: username)
+      user ||= find_for_authentication(email: username)
+
+      if user.valid_password?(password)
+        return user
+      else
+        return false
+      end
+    end
+
+    def authenticate_by_email?(email, password)
       user = User.find_for_authentication(email: email)
       return false if user.blank?
 

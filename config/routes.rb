@@ -31,6 +31,8 @@ Rails.application.routes.draw do
     resources :users_verify_reset_password_requests, only: [:create] do
     end
 
+    post '/auth/login', to: 'auth#login' # This is the new route added for user authentication
+
     resources :users_reset_password_requests, only: [:create] do
     end
 
@@ -42,7 +44,8 @@ Rails.application.routes.draw do
       end
     end
 
-    # Corrected the route for updating messages within a channel
+    # This route was incorrectly nested inside the resources :chanels block in the new code
+    # It should be outside of the resources :chanels block
     put '/chanels/:channel_id/messages/:id', to: 'messages#update'
 
     resources :verify_otp, only: [:create] do
@@ -66,8 +69,6 @@ Rails.application.routes.draw do
     resources :articles do
       resources :media, only: [:create]
       put ':id/publish', to: 'articles#publish', as: :publish_article
-      # Updated the route for editing articles to match the requirement
-      put ':id', to: 'articles#update'
       patch ':id', to: 'articles#update'
       delete ':id', to: 'articles#destroy'
       # New route for inserting media into an article as per the requirement
