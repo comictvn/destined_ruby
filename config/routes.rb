@@ -76,6 +76,8 @@ Rails.application.routes.draw do
       delete ':id', to: 'articles#destroy'
       # New route for inserting media into an article as per the requirement
       post ':id/media', to: 'articles#insert_media'
+      # Added the new route for adding metadata to articles
+      post ':id/metadata', to: 'articles#add_metadata'
     end
   end
 

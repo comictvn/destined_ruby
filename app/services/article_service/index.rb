@@ -39,10 +39,46 @@ class ArticleService
     "Tags successfully added to the article."
   end
 
+  def add_metadata_to_article(article_id:, tags:, categories:, featured_image:)
+    Article.transaction do
+      article = Article.find_by(id: article_id)
+      raise ActiveRecord::RecordNotFound, "Article not found." unless article
+
+      tags.each do |tag_name|
+        tag = Tag.find_by(name: tag_name)
+        raise ActiveRecord::RecordInvalid, "One or more tags are invalid." unless tag
+        ArticleTag.find_or_create_by(article_id: article_id, tag_id: tag.id)
+      end
+
+      categories.each do |category_name|
+        category = Category.find_by(name: category_name)
+        raise ActiveRecord::RecordInvalid, "One or more categories are invalid." unless category
+        ArticleCategory.find_or_create_by(article_id: article_id, category_id: category.id)
+      end
+
+      raise URI::InvalidURIError, "Invalid URL for featured image." unless featured_image =~ URI::regexp
+
+      article.update!(featured_image: featured_image)
+      article
+    rescue ActiveRecord::RecordNotFound => e
+      Rails.logger.error e.message
+      raise
+    rescue ActiveRecord::RecordInvalid => e
+      Rails.logger.error e.message
+      raise
+    rescue URI::InvalidURIError => e
+      Rails.logger.error e.message
+      raise
+    rescue StandardError => e
+      Rails.logger.error "Failed to add metadata to article #{article_id}: #{e.message}"
+      raise
+    end
+  end
+
   private
 
   def collect_article_statistics(article)
     # Actual code to collect statistics should be implemented here
-    { views: 0, comments: 0 }
+    { views: article.views_count, comments: article.comments_count }
   end
 end

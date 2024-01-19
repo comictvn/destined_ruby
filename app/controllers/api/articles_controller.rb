@@ -1,10 +1,10 @@
 module Api
   class ArticlesController < Api::BaseController
     before_action :authenticate_user!, except: [:create_draft]
-    before_action :doorkeeper_authorize!, except: [:create_draft, :publish]
+    before_action :doorkeeper_authorize!, except: [:create_draft, :publish, :add_metadata]
     before_action :authorize_create_draft, only: [:create_draft]
-    before_action :set_article, only: [:update, :update_draft]
-    before_action :validate_article_params, only: [:update]
+    before_action :set_article, only: [:update, :update_draft, :add_metadata]
+    before_action :validate_article_params, only: [:update], if: -> { action_name == 'update' }
 
     def index
       user_id = params[:user_id]
@@ -95,6 +95,32 @@ module Api
       render json: { error: I18n.t('common.404') }, status: :not_found
     end
 
+    def add_metadata
+      tags = params[:tags]
+      categories = params[:categories]
+      featured_image = params[:featured_image]
+
+      unless Tag.tags_exist?(tags)
+        render_error('One or more tags are invalid.', status: :bad_request)
+        return
+      end
+
+      unless Category.categories_exist?(categories)
+        render_error('One or more categories are invalid.', status: :bad_request)
+        return
+      end
+
+      unless valid_url?(featured_image)
+        render_error('Invalid URL for featured image', status: :bad_request)
+        return
+      end
+
+      authorize @article, policy_class: Api::ArticlesPolicy
+
+      ArticleService.add_metadata_to_article(@article, tags, categories, featured_image)
+      render_response({ message: 'Metadata added successfully.', article: ArticleSerializer.new(@article) })
+    end
+
     def destroy
       id = params[:id]
       raise Exceptions::BadRequest, 'Invalid article ID format.' unless id.match?(/\A\d+\z/)
@@ -144,6 +170,13 @@ module Api
 
     def authorize_create_draft
       authorize :article, :create_draft?
+    end
+
+    def valid_url?(url)
+      uri = URI.parse(url)
+      uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS)
+    rescue URI::InvalidURIError
+      false
     end
   end
 end
