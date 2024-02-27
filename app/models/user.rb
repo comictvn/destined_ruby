@@ -1,5 +1,8 @@
+
 class User < ApplicationRecord
   # Existing associations
+  has_many :user_chanels, foreign_key: 'user_id', dependent: :destroy
+  has_many :messages, foreign_key: 'user_id', dependent: :destroy
   has_many :sender_messages,
            class_name: 'Message',
            foreign_key: :sender_id, dependent: :destroy
@@ -39,6 +42,10 @@ class User < ApplicationRecord
   validates :email, uniqueness: true, allow_blank: true
   validates :email, length: { in: 0..255 }, if: :email?
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: :email_changed?
+
+  # New validations
+  validates :email, presence: true
+  validates :encrypted_password, presence: true
 
   # Existing methods
   def generate_reset_password_token
