@@ -16,12 +16,11 @@ Rails.application.routes.draw do
   end
 
   namespace :api, defaults: { format: :json } do
-    resources :force_update_app_versions, only: [:index] do
+    resources :force_update_app_versions, only: [:index, :destroy] do
     end
-    post '/force_update_app_versions', to: 'force_update_app_versions#create'
-    put '/force_update_app_versions/:id', to: 'force_update_app_versions#update'
-    # The destroy action is now handled by the resources method below, so this line is removed
-    # delete '/force_update_app_versions/:id', to: 'force_update_app_versions#destroy'
+    put '/api/force_update_app_versions/:id', to: 'force_update_app_versions#update'
+    post 'force_update_app_versions', to: 'force_update_app_versions#create'
+    # The delete route for force_update_app_versions is now included in the resources method above
 
     resources :users_verify_confirmation_token, only: [:create] do
     end
@@ -57,12 +56,6 @@ Rails.application.routes.draw do
 
     resources :users, only: %i[index show] do
     end
-  end
-
-  # The following lines have been added as per the patch
-  # This line is added to handle the destroy action for force_update_app_versions
-  namespace :api do
-    resources :force_update_app_versions, only: [:destroy]
   end
 
   get '/health' => 'pages#health_check'

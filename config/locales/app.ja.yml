@@ -1,4 +1,3 @@
-
 ja:
   common:
     errors:
@@ -10,6 +9,10 @@ ja:
   force_update_app_versions:
     delete:
       success: フォースアップデートアプリバージョンが正常に削除されました。
+    update:
+      success: "強制アップデートバージョンが正常に更新されました。"
+      not_found: "強制アップデートバージョンが見つかりません。"
+      unprocessable_entity: "検証エラーのため、エンティティを処理できません。"
   phone_login:
     otp:
       send_otp_success: 認証コードを送信しました

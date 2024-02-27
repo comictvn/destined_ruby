@@ -28,6 +28,9 @@ en:
       not_found_in_database: Invalid email or password
   force_update_app_versions:
     delete:
+      success: "Force update app version updated successfully."
+      not_found: "Force update app version not found."
+      unprocessable_entity: "Unable to process entity due to validation errors."
       success: "Force update app version has been deleted successfully."
       not_found: "Force update app version not found."
       invalid_id_format: "Invalid ID format."

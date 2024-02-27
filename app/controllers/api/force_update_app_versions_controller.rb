@@ -14,9 +14,7 @@ class Api::ForceUpdateAppVersionsController < Api::BaseController
   def create
     force_update_app_version = ForceUpdateAppVersion.new(force_update_app_version_params)
     if force_update_app_version.save
-      # Merged the new and existing code by using the new JSON response and keeping the Jbuilder template as a comment for future reference if needed.
       render json: { status: I18n.t('common.created'), force_update_app_version: force_update_app_version }, status: :created
-      # render 'create.json.jbuilder', status: :created, locals: { force_update_app_version: force_update_app_version }
     else
       render json: { errors: force_update_app_version.errors.full_messages }, status: :unprocessable_entity
     end
@@ -27,25 +25,22 @@ class Api::ForceUpdateAppVersionsController < Api::BaseController
   def update
     force_update_app_version = ForceUpdateAppVersion.find(params[:id])
     if force_update_app_version.update(force_update_app_version_params)
-      render_response(force_update_app_version)
+      render json: { status: 200, message: I18n.t('force_update_app_versions.update.success'), force_update_app_version: force_update_app_version.as_json }, status: :ok
     else
-      render_error('update_failed', message: force_update_app_version.errors.full_messages.to_sentence, status: :unprocessable_entity)
+      render_error(I18n.t('force_update_app_versions.update.unprocessable_entity'), :unprocessable_entity, force_update_app_version.errors.full_messages)
     end
   rescue ActiveRecord::RecordNotFound
-    render_error('not_found', message: 'Force update app version not found.', status: :not_found)
+    render_error(I18n.t('force_update_app_versions.update.not_found'), :not_found)
   end
 
   def destroy
     force_update_app_version = ForceUpdateAppVersion.find(params[:id])
-    force_update_app_version.destroy
-    if force_update_app_version.destroyed?
-      # Kept the new code's conditional check for a destroyed record and merged the error handling from the existing code.
+    if force_update_app_version.destroy
       render_response({ message: I18n.t('force_update_app_versions.delete.success') }, status: :ok)
     else
       render_error({ message: force_update_app_version.errors.full_messages.to_sentence }, status: :unprocessable_entity)
     end
   rescue ActiveRecord::RecordNotFound => e
-    # Standardized the error message to use I18n translation as in the existing code.
     render_error({ message: I18n.t('force_update_app_versions.delete.not_found') }, status: :not_found)
   end
 
