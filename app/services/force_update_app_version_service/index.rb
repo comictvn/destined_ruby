@@ -1,5 +1,5 @@
+
 # rubocop:disable Layout/LineLength
-# rubocop:disable Style/ClassAndModuleChildren
 class ForceUpdateAppVersionService::Index
   attr_accessor :params, :records, :query
 
@@ -21,6 +21,22 @@ class ForceUpdateAppVersionService::Index
     order
 
     paginate
+  end
+
+  def create
+    existing_record = ForceUpdateAppVersion.find_by(platform: params[:platform], version: params[:version])
+    raise Exceptions::BadRequest, 'Record already exists' if existing_record
+
+    force_update_app_version = ForceUpdateAppVersion.new(params)
+    if force_update_app_version.save
+      force_update_app_version
+    else
+      raise Exceptions::UnprocessableEntity, force_update_app_version.errors.full_messages.to_sentence
+    end
+  rescue ActiveRecord::RecordInvalid => e
+    raise Exceptions::UnprocessableEntity, e.record.errors.full_messages.to_sentence
+  rescue ActiveRecord::RecordNotUnique
+    raise Exceptions::BadRequest, 'Record already exists with the same platform and version'
   end
 
   def platform_equal
@@ -69,6 +85,9 @@ class ForceUpdateAppVersionService::Index
     @records = ForceUpdateAppVersion.none if records.blank? || records.is_a?(Class)
     @records = records.page(params.dig(:pagination_page) || 1).per(params.dig(:pagination_limit) || 20)
   end
+
+  # Other methods remain unchanged...
+
 end
 # rubocop:enable Layout/LineLength
-# rubocop:enable Style/ClassAndModuleChildren
+# rubocop:disable Style/ClassAndModuleChildren

@@ -4,5 +4,6 @@ class ForceUpdateAppVersion < ApplicationRecord
   validates :force_update, inclusion: { in: [true, false] }
   validates :reason, length: { in: 0..65_535 }, if: :reason?
   validates :version, presence: true
+  validates :version, uniqueness: { scope: :platform, message: :taken_scoped }
   validates :version, length: { in: 0..255 }, if: :version?
 end

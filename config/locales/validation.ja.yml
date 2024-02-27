@@ -1,3 +1,4 @@
+
 ---
 ja:
   activerecord:
@@ -24,4 +25,5 @@ ja:
         datetime_in_future: 今日の日付と時刻より後である必要があります
         invalid: は不正な値です
         date_type: は有効な日付である必要があります
+        taken_scoped: はこのプラットフォームに既に存在しています
         datetime_type: は有効な日時である必要があります
