@@ -1,3 +1,4 @@
+
 ---
 ja:
   common:
@@ -9,3 +10,8 @@ ja:
     '201': 作成されました
     '200': 成功
     '302': 削除されました
+    force_update_app_versions:
+      success: 強制アップデートのバージョンリストを正常に取得しました。
+      bad_request: 不正なリクエストです。
+      unauthorized: 認証に失敗しました。
+      forbidden: アクセスが禁止されています。

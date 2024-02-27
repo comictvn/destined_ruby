@@ -1,25 +1,18 @@
-
 # rubocop:disable Layout/LineLength
 class ForceUpdateAppVersionService::Index
   attr_accessor :params, :records, :query
 
   def initialize(params, _current_user = nil)
     @params = params
-
     @records = ForceUpdateAppVersion
   end
 
   def execute
     platform_equal
-
     reason_start_with
-
     version_start_with
-
     force_update_equal
-
     order
-
     paginate
   end
 
@@ -85,9 +78,6 @@ class ForceUpdateAppVersionService::Index
     @records = ForceUpdateAppVersion.none if records.blank? || records.is_a?(Class)
     @records = records.page(params.dig(:pagination_page) || 1).per(params.dig(:pagination_limit) || 20)
   end
-
-  # Other methods remain unchanged...
-
 end
 # rubocop:enable Layout/LineLength
 # rubocop:disable Style/ClassAndModuleChildren
