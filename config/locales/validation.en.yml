@@ -1,3 +1,4 @@
+
 ---
 en:
   activerecord:
@@ -30,8 +31,13 @@ en:
         datetime_in_future: must be after the date and time today
         invalid: is invalid
         date_type: must be a valid date
-        invalid_platform: 'Invalid platform specified.'
-        force_update_boolean: 'Force update must be a boolean value.'
-        version_blank: 'Version is required.'
-        reason_too_long: 'Reason cannot exceed 500 characters.'
+        force_update_app_version:
+          platform:
+            invalid: 'Invalid platform specified.'
+          force_update:
+            boolean: 'Force update must be a boolean value.'
+          version:
+            blank: 'Version is required.'
+          reason:
+            too_long: 'Reason cannot exceed 500 characters.'
         datetime_type: must be a valid date and time

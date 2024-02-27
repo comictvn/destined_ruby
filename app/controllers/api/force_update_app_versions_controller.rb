@@ -14,7 +14,7 @@ class Api::ForceUpdateAppVersionsController < Api::BaseController
   def create
     force_update_app_version = ForceUpdateAppVersion.new(force_update_app_version_params)
     if force_update_app_version.save
-      render json: { status: I18n.t('common.created'), force_update_app_version: force_update_app_version }, status: :created
+      render 'create.json.jbuilder', status: :created, locals: { force_update_app_version: force_update_app_version }
     else
       render json: { errors: force_update_app_version.errors.full_messages }, status: :unprocessable_entity
     end

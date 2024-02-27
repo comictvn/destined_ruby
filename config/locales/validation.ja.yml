@@ -28,6 +28,10 @@ ja:
         datetime_in_future: 今日の日付と時刻より後である必要があります
         invalid: は不正な値です
         date_type: は有効な日付である必要があります
+        force_update_must_be_boolean: "強制更新はブール値でなければなりません。"
+        version_is_required: "バージョンは必須です。"
+        reason_for_update_is_required: "更新の理由は必須です。"
+        invalid_platform_specified: "無効なプラットフォームが指定されました。"
         datetime_type: は有効な日時である必要があります
         taken_scoped: はこのプラットフォームに既に存在しています
         invalid_platform_specified: "無効なプラットフォームが指定されました。"
