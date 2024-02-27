@@ -1,3 +1,4 @@
+
 if @message.present?
 
   json.message @message
@@ -6,6 +7,9 @@ else
 
   json.user do
     json.id @user.id
+
+    json.name @user.name if @user.name.present?
+    json.bio @user.bio if @user.bio.present?
 
     json.created_at @user.created_at
 

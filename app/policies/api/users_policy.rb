@@ -2,6 +2,10 @@ class Api::UsersPolicy < ApplicationPolicy
   def show?
     (user.is_a?(User) && record.id == user&.id)
   end
+  
+  def update?
+    user.id == record.id
+  end
 
   class Scope < Scope
     def resolve
