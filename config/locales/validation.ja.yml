@@ -3,6 +3,10 @@ ja:
   activerecord:
     errors:
       messages:
+        phone_number_blank: 電話番号を入力してください
+        phone_number_taken: この電話番号はすでに存在します
+        firstname_blank: 名を入力してください
+        lastname_blank: 姓を入力してください
         blank: を入力してください
         taken: はすでに存在します
         too_long: は%{count}文字以内で入力してください
@@ -24,4 +28,15 @@ ja:
         datetime_in_future: 今日の日付と時刻より後である必要があります
         invalid: は不正な値です
         date_type: は有効な日付である必要があります
+        message_content_blank: メッセージの内容を入力してください
+        message_chanel_blank: メッセージは有効なチャネルに属している必要があります
+        force_update_must_be_boolean: "強制更新はブール値でなければなりません。"
+        version_is_required: "バージョンは必須です。"
+        reason_for_update_is_required: "更新の理由は必須です。"
+        invalid_platform_specified: "無効なプラットフォームが指定されました。"
         datetime_type: は有効な日時である必要があります
+        taken_scoped: はこのプラットフォームに既に存在しています
+        invalid_platform_specified: "無効なプラットフォームが指定されました。"
+        force_update_must_be_boolean: "強制更新はブール値でなければなりません。"
+        version_is_required: "バージョンは必須です。"
+        reason_cannot_exceed_500_characters: "理由は500文字を超えることはできません。"

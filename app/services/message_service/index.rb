@@ -1,5 +1,6 @@
+
 # rubocop:disable Style/ClassAndModuleChildren
-class MessageService::Index
+class MessageService::Index < ApplicationService
   attr_accessor :params, :records, :query
 
   def initialize(params, _current_user = nil)
@@ -7,8 +8,10 @@ class MessageService::Index
 
     @records = Message
   end
-
+  
   def execute
+    validate_chanel_id
+
     sender_id_equal
 
     chanel_id_equal
@@ -18,6 +21,14 @@ class MessageService::Index
     order
 
     paginate
+  end
+
+  private
+
+  def validate_chanel_id
+    chanel_id = params[:chanel_id]
+    raise Exceptions::InvalidParameterError unless chanel_id.is_a?(Integer)
+    raise Exceptions::ChannelNotFoundError unless Chanel.exists?(chanel_id)
   end
 
   def sender_id_equal
@@ -53,8 +64,7 @@ class MessageService::Index
   end
 
   def paginate
-    @records = Message.none if records.blank? || records.is_a?(Class)
-    @records = records.page(params.dig(:pagination_page) || 1).per(params.dig(:pagination_limit) || 20)
+    @records = records.none? ? Message.none : records.page(params[:page] || 1).per(params[:per_page] || 20)
   end
 end
 # rubocop:enable Style/ClassAndModuleChildren

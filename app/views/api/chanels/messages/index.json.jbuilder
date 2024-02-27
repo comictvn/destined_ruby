@@ -1,4 +1,20 @@
-if @message.present?
+json.total_pages @total_pages
+json.messages @messages do |message|
+  json.id message.id
+  json.content message.content
+  json.sender_id message.sender_id
+  json.chanel_id message.chanel_id
+  json.created_at message.created_at
+  json.updated_at message.updated_at
+
+  json.sender do
+    json.id message.sender.id
+    json.firstname message.sender.firstname
+    json.lastname message.sender.lastname
+  end
+
+  json.images message.images.map { |image| url_for(image) }
+end
 
   json.message @message
 

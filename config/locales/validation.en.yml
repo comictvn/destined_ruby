@@ -1,8 +1,14 @@
+
 ---
 en:
   activerecord:
     errors:
       messages:
+        user:
+          phone_number_blank: "Phone number can't be blank"
+          phone_number_taken: "Phone number has already been taken"
+          firstname_blank: "First name can't be blank"
+          lastname_blank: "Last name can't be blank"
         blank: can't be blank
         taken: has already been taken
         too_long: is too long (maximum is %{count} characters)
@@ -15,6 +21,7 @@ en:
         less_than_or_equal_to: must be less than or equal to %{count}
         other_than: must be other than %{count}
         not_an_integer: must be an integer
+        taken_scoped: has already been taken for this platform
         file_content_type_invalid: has an invalid content type
         file_size_out_of_range: size %{file_size} is not between required range
         file_limit_out_of_range: total number is out of range
@@ -24,4 +31,16 @@ en:
         datetime_in_future: must be after the date and time today
         invalid: is invalid
         date_type: must be a valid date
+        message:
+          content_blank: "Message content can't be blank"
+          chanel_blank: "Message must be associated with a valid channel"
+        force_update_app_version:
+          platform:
+            invalid: 'Invalid platform specified.'
+          force_update:
+            boolean: 'Force update must be a boolean value.'
+          version:
+            blank: 'Version is required.'
+          reason:
+            too_long: 'Reason cannot exceed 500 characters.'
         datetime_type: must be a valid date and time

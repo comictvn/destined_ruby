@@ -1,4 +1,9 @@
 class Api::Chanels::MessagesPolicy < ApplicationPolicy
+  def index?
+    user_chanels = Chanel.joins(:user_chanels).where(user_chanels: { user_id: user.id })
+    user_chanels.exists?(record.id)
+  end
+
   def destroy?
     user_is_sender? || user_is_admin?
   end

@@ -1,3 +1,4 @@
+
 ---
 en:
   common:
@@ -25,3 +26,16 @@ en:
     passwords:
       old_password_mismatch: Incorrect current password
       not_found_in_database: Invalid email or password
+  force_update_app_versions:
+    delete:
+  messages:
+    list:
+      success: "The list of messages was successfully retrieved."
+      channel_not_found: "Channel not found."
+      channel_id_must_be_number: "Channel ID must be a number."
+      success: "Force update app version updated successfully."
+      not_found: "Force update app version not found."
+      unprocessable_entity: "Unable to process entity due to validation errors."
+      success: "Force update app version has been deleted successfully."
+      not_found: "Force update app version not found."
+      invalid_id_format: "Invalid ID format."

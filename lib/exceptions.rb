@@ -1,4 +1,3 @@
-
 # typed: strict
 module Exceptions
   class AuthenticationError < StandardError; end
@@ -8,13 +7,12 @@ module Exceptions
   class ForceUpdateAppVersionNotFound < StandardError; end
   class InvalidIDFormatError < StandardError; end
   class InvalidPlatformError < StandardError; end
-  # Resolving the conflict by renaming ForceUpdateBooleanError to ForceUpdateNotBooleanError
   class ForceUpdateNotBooleanError < StandardError; end
   class VersionBlankError < StandardError; end
   class ReasonTooLongError < StandardError; end
-  # Keeping the additional exception from the existing code
+  class ChannelNotFoundError < StandardError; end
+  class InvalidParameterError < StandardError; end
   class InvalidForceUpdateAppVersionIDError < StandardError; end
-  class ChanelNotFoundError < StandardError; end
   class MessageNotFoundError < StandardError; end
   class UnauthorizedToDeleteMessageError < StandardError; end
 end

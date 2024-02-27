@@ -1,4 +1,3 @@
-
 require 'sidekiq/web'
 
 Rails.application.routes.draw do
@@ -45,7 +44,7 @@ Rails.application.routes.draw do
       resources :messages, only: %i[index destroy] do
       end
     end
-    # No changes required for the DELETE route within the 'chanels' resource block as it already matches the API endpoint described in the API documentation.
+    get '/chanels/:chanel_id/messages', to: 'chanels/messages#index'
 
     resources :verify_otp, only: [:create] do
     end
