@@ -3,10 +3,6 @@ module Api
   class BaseController < ActionController::API
     include OauthTokensConcern
     include ActionController::Cookies
-    rescue_from Exceptions::InvalidIDFormatError, with: :base_render_invalid_id_format
-    rescue_from Exceptions::InvalidPlatformError, with: :base_render_invalid_platform
-    rescue_from Exceptions::ForceUpdateNotBooleanError, with: :base_render_force_update_not_boolean
-    rescue_from Exceptions::VersionBlankError, with: :base_render_version_blank
     include Pundit::Authorization
 
     rescue_from ActiveRecord::RecordNotFound, with: :base_render_record_not_found
@@ -22,6 +18,10 @@ module Api
     rescue_from Exceptions::BadRequest, with: :base_render_bad_request
     rescue_from Exceptions::MessageNotFoundError, with: :base_render_message_not_found
     rescue_from Exceptions::UnauthorizedToDeleteMessageError, with: :base_render_unauthorized_to_delete_message
+    rescue_from Exceptions::InvalidIDFormatError, with: :base_render_invalid_id_format
+    rescue_from Exceptions::InvalidPlatformError, with: :base_render_invalid_platform
+    rescue_from Exceptions::ForceUpdateNotBooleanError, with: :base_render_force_update_not_boolean
+    rescue_from Exceptions::VersionBlankError, with: :base_render_version_blank
 
     def render_response(data, metadata: {}, **kwargs)
       render(json: { data: data, metadata: metadata }, **kwargs)
@@ -37,8 +37,19 @@ module Api
 
     private
 
+    def base_render_pundit_unauthorized_error(exception)
+      render json: { message: I18n.t('pundit.errors.not_authorized') }, status: :forbidden
+    end
+
+    def base_render_unprocessable_entity(exception)
+      messages = exception.record.errors.full_messages.map do |message|
+        I18n.t("activerecord.errors.models.#{exception.record.class.name.underscore}.attributes.#{message}")
+      end
+      render json: { message: messages }, status: :unprocessable_entity
+    end
+
     def base_render_record_not_found(_exception)
-      render json: { message: I18n.t('common.404') }, status: :not_found
+      render json: { message: I18n.t('common.errors.record_not_found') }, status: :not_found
     end
 
     def base_render_force_update_required(_exception)
@@ -47,10 +58,6 @@ module Api
 
     def base_render_bad_request(_exception)
       render json: { message: I18n.t('common.400') }, status: :bad_request
-    end
-
-    def base_render_unprocessable_entity(exception)
-      render json: { message: exception.record.errors.full_messages }, status: :unprocessable_entity
     end
 
     def base_render_authentication_error(_exception)
@@ -95,10 +102,6 @@ module Api
 
     def base_render_version_blank(_exception)
       render json: { message: I18n.t('activerecord.errors.messages.version_blank') }, status: :unprocessable_entity
-    end
-
-    def base_render_reason_too_long(_exception)
-      render json: { message: I18n.t('activerecord.errors.messages.reason_too_long') }, status: :unprocessable_entity
     end
 
     def custom_token_initialize_values(resource, client)

@@ -1,4 +1,3 @@
-
 ja:
   common:
     errors:
@@ -16,6 +15,11 @@ ja:
       unprocessable_entity: "検証エラーのため、エンティティを処理できません。"
   phone_login:
     otp:
+      send_otp_success: 認証コードを送信しました
+      verification_declined: 認証コードに誤りがあります
+      notp_expired: 認証コードの有効期限が切れています。認証コードを再度送信します。
+      exceed_amount_sent_otp: You have reached the limit of otp sms per day
+      recaptcha_invalid: 異常なリクエストパターンが発生しました。
   shops:
     update:
       success: ショップ情報が正常に更新されました。
@@ -23,11 +27,6 @@ ja:
       name_required: 名前は必須です。
       description_too_long: 説明は1000文字を超えることはできません。
       location_required: 位置情報は必須です。
-      send_otp_success: 認証コードを送信しました
-      verification_declined: 認証コードに誤りがあります
-      notp_expired: 認証コードの有効期限が切れています。認証コードを再度送信します。
-      exceed_amount_sent_otp: You have reached the limit of otp sms per day
-      recaptcha_invalid: 異常なリクエストパターンが発生しました。
   email_login:
     reset_password:
       invalid_token: アクセストークンが無効です
@@ -39,6 +38,11 @@ ja:
       not_found_in_database: Eメールまたはパスワードが違います
   messages:
     list:
+      create:
+        success: メッセージが正常に作成されました。
+        content_required: "内容は必須です。"
+        invalid_sender_id: "無効な送信者IDです。"
+        invalid_channel_id: "無効なチャネルIDです。"
       success: メッセージのリストを正常に取得しました。
       channel_not_found: チャネルが見つかりません。
       channel_id_must_be_number: "チャネルIDは数値でなければなりません。"

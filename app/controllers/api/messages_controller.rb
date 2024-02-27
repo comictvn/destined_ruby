@@ -1,3 +1,4 @@
+
 class Api::MessagesController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[create]
 
@@ -6,14 +7,29 @@ class Api::MessagesController < Api::BaseController
 
     authorize @message, policy_class: Api::MessagesPolicy
 
-    return if @message.save
-
-    @error_object = @message.errors.messages
-
-    render status: :unprocessable_entity
+    if @message.save
+      render json: {
+        status: 201,
+        message: {
+          id: @message.id,
+          content: @message.content,
+          sender_id: @message.sender_id,
+          chanel_id: @message.chanel_id,
+          created_at: @message.created_at
+        }
+      }, status: :created
+    else
+      render_error(
+        error: 'unprocessable_entity',
+        message: @message.errors.full_messages.map { |msg| I18n.t(msg) },
+        status: :unprocessable_entity
+      )
+    end
   end
 
+  private
+
   def create_params
-    params.require(:messages).permit(:content, :sender_id, :chanel_id, :images)
+    params.require(:message).permit(:content, :sender_id, :chanel_id, :user_id)
   end
 end

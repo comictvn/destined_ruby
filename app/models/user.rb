@@ -1,4 +1,3 @@
-
 class User < ApplicationRecord
   # Existing associations
   has_many :user_chanels, foreign_key: 'user_id', dependent: :destroy
@@ -6,7 +5,6 @@ class User < ApplicationRecord
   has_many :sender_messages,
            class_name: 'Message',
            foreign_key: :sender_id, dependent: :destroy
-  has_many :user_chanels, dependent: :destroy
   has_many :matcher1_matchs,
            class_name: 'Match',
            foreign_key: :matcher1_id, dependent: :destroy
@@ -35,20 +33,21 @@ class User < ApplicationRecord
   validates :name, presence: true
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :bio, length: { maximum: 500 }, allow_blank: true
-  validates :thumbnail, content_type: ['image/png', 'image/jpg', 'image/jpeg', 'image/gif', 'image/svg+xml'],
+  validates :thumbnail, content_type: { in: ['image/png', 'image/jpg', 'image/jpeg', 'image/gif', 'image/svg+xml'], message: ->(object, data) do I18n.t('activerecord.errors.messages.file_content_type_invalid', model: object.class.to_s.downcase, value: data[:value]) end },
                         size: { less_than_or_equal_to: 100.megabytes }
   validates :firstname, length: { in: 0..255 }, allow_blank: true
   validates :lastname, length: { in: 0..255 }, allow_blank: true
   validates :dob, timeliness: { type: :date, on_or_before: Date.yesterday }, if: :dob_changed?
   validates :interests, length: { in: 0..0 }, if: :interests?
   validates :location, length: { in: 0..0 }, if: :location?
-  validates :email, uniqueness: true, allow_blank: true
+  validates :email, uniqueness: { message: I18n.t('activerecord.errors.messages.taken') }, allow_blank: true
   validates :email, length: { in: 0..255 }, if: :email?
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: :email_changed?
+  validates :confirmation_sent_at, timeliness: { type: :datetime }, allow_nil: true
+  validates :encrypted_password, presence: true
 
   # New validations
-  validates :email, presence: true
-  validates :encrypted_password, presence: true
+  # Note: The new code's validation for email presence is redundant since it's already present in the existing code.
 
   # Existing methods
   def generate_reset_password_token
