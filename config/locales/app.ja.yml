@@ -6,6 +6,10 @@ ja:
       force_update_app_version_not_found: フォースアップデートアプリバージョンが見つかりません。
       invalid_id_format: IDの形式が無効です。
       not_found: "強制アップデートアプリバージョンが見つかりません。"
+    force_update_app_versions:
+      list_success: フォースアップデートアプリバージョンのリストを正常に取得しました。
+      list_error: フォースアップデートアプリバージョンのリストを取得中にエラーが発生しました。
+      no_force_update_app_versions: フォースアップデートが必要なアプリバージョンはありません。
   force_update_app_versions:
     delete:
       success: フォースアップデートアプリバージョンが正常に削除されました。

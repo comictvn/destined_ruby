@@ -1,16 +1,12 @@
+
 json.status 200
 
 if @message.present?
   json.message @message
 else
-  json.force_update_app_versions @force_update_app_versions do |force_update_app_version|
-    json.id force_update_app_version.id
-    json.created_at force_update_app_version.created_at
-    json.updated_at force_update_app_version.updated_at
-    json.platform force_update_app_version.platform
-    json.reason force_update_app_version.reason
-    json.version force_update_app_version.version
-    json.force_update force_update_app_version.force_update
-  end
+  json.force_update_app_versions @force_update_app_versions, :id, :force_update, :version, :reason, :created_at, :updated_at, :platform
   json.total_pages @total_pages if @total_pages.present?
+  json.total_items @total_items if @total_items.present?
+  json.current_page @current_page if @current_page.present?
+  json.per_page @per_page if @per_page.present?
 end

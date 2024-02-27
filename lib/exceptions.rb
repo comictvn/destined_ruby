@@ -4,11 +4,13 @@ module Exceptions
   class BadRequest < StandardError; end
   class RecordNotFound < StandardError; end
   class ForceUpdateRequired < StandardError; end
-  class ForceUpdateAppVersionNotFound < StandardError; end
+  # Custom exception for when a force update app version record is not found
+  # Inheriting from RecordNotFound to maintain the hierarchy from the new code
+  class ForceUpdateAppVersionNotFound < RecordNotFound; end
   class InvalidIDFormatError < StandardError; end
   class InvalidPlatformError < StandardError; end
-  # Resolving the conflict by renaming ForceUpdateBooleanError to ForceUpdateNotBooleanError
-  class ForceUpdateNotBooleanError < StandardError; end
+  # Resolving the conflict by keeping the new exception name ForceUpdateBooleanError
+  class ForceUpdateBooleanError < StandardError; end
   class VersionBlankError < StandardError; end
   class ReasonTooLongError < StandardError; end
   # Keeping the additional exception from the existing code
