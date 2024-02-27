@@ -1,6 +1,13 @@
 # rubocop:disable Layout/LineLength
+# rubocop:disable Style/ClassAndModuleChildren
 class ForceUpdateAppVersionService::Index
+  include ActiveModel::Validations
   attr_accessor :params, :records, :query
+
+  validates :platform, presence: true, inclusion: { in: ForceUpdateAppVersion.platforms.keys }, if: :validation_context?
+  validates :force_update, inclusion: { in: [true, false] }, if: :validation_context?
+  validates :version, presence: true, if: :validation_context?
+  validates :reason, length: { maximum: 500 }, if: :validation_context?
 
   def initialize(params, _current_user = nil)
     @params = params
@@ -30,6 +37,25 @@ class ForceUpdateAppVersionService::Index
     raise Exceptions::UnprocessableEntity, e.record.errors.full_messages.to_sentence
   rescue ActiveRecord::RecordNotUnique
     raise Exceptions::BadRequest, 'Record already exists with the same platform and version'
+  end
+
+  def update
+    force_update_app_version = ForceUpdateAppVersion.find_by(id: params[:id])
+    return { error: I18n.t('force_update_app_version.not_found') } unless force_update_app_version
+
+    if force_update_app_version.update(update_params)
+      { force_update_app_version: force_update_app_version }
+    else
+      { errors: force_update_app_version.errors.full_messages }
+    end
+  rescue ActiveRecord::RecordNotFound
+    { error: I18n.t('force_update_app_version.not_found') }
+  end
+
+  private
+
+  def update_params
+    params.require(:force_update_app_version).permit(:platform, :force_update, :version, :reason)
   end
 
   def platform_equal
@@ -78,6 +104,10 @@ class ForceUpdateAppVersionService::Index
     @records = ForceUpdateAppVersion.none if records.blank? || records.is_a?(Class)
     @records = records.page(params.dig(:pagination_page) || 1).per(params.dig(:pagination_limit) || 20)
   end
+
+  def validation_context?
+    params[:action] == 'validate'
+  end
 end
 # rubocop:enable Layout/LineLength
-# rubocop:disable Style/ClassAndModuleChildren
+# rubocop:enable Style/ClassAndModuleChildren

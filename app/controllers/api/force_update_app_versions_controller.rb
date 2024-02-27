@@ -1,11 +1,9 @@
 class Api::ForceUpdateAppVersionsController < Api::BaseController
   def index
-    # Merged the new service call with the existing one, including the current_resource_owner
     service = ForceUpdateAppVersionService::Index.new(params.permit!, current_resource_owner)
     @force_update_app_versions = service.execute
     @total_pages = @force_update_app_versions.total_pages if @force_update_app_versions.respond_to?(:total_pages)
 
-    # Combined the new and existing response handling
     if @force_update_app_versions.present?
       render_response(@force_update_app_versions)
     else
@@ -24,6 +22,17 @@ class Api::ForceUpdateAppVersionsController < Api::BaseController
     render json: { error: e.message }, status: :internal_server_error
   end
 
+  def update
+    force_update_app_version = ForceUpdateAppVersion.find(params[:id])
+    if force_update_app_version.update(force_update_app_version_params)
+      render_response(force_update_app_version)
+    else
+      render_error('update_failed', message: force_update_app_version.errors.full_messages.to_sentence, status: :unprocessable_entity)
+    end
+  rescue ActiveRecord::RecordNotFound
+    render_error('not_found', message: 'Force update app version not found.', status: :not_found)
+  end
+
   def destroy
     force_update_app_version = ForceUpdateAppVersion.find(params[:id])
     force_update_app_version.destroy
@@ -35,6 +44,6 @@ class Api::ForceUpdateAppVersionsController < Api::BaseController
   private
 
   def force_update_app_version_params
-    params.require(:force_update_app_version).permit(:platform, :force_update, :version, :reason)
+    params.permit(:platform, :force_update, :version, :reason)
   end
 end

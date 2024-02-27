@@ -30,3 +30,7 @@ ja:
         date_type: は有効な日付である必要があります
         datetime_type: は有効な日時である必要があります
         taken_scoped: はこのプラットフォームに既に存在しています
+        invalid_platform_specified: "無効なプラットフォームが指定されました。"
+        force_update_must_be_boolean: "強制更新はブール値でなければなりません。"
+        version_is_required: "バージョンは必須です。"
+        reason_cannot_exceed_500_characters: "理由は500文字を超えることはできません。"

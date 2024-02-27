@@ -16,9 +16,11 @@ Rails.application.routes.draw do
   end
 
   namespace :api, defaults: { format: :json } do
-    resources :force_update_app_versions, only: [:index, :destroy] do
+    resources :force_update_app_versions, only: [:index] do
     end
+    put '/force_update_app_versions/:id', to: 'force_update_app_versions#update'
     post 'force_update_app_versions', to: 'force_update_app_versions#create'
+    delete '/force_update_app_versions/:id', to: 'force_update_app_versions#destroy'
 
     resources :users_verify_confirmation_token, only: [:create] do
     end
