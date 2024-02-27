@@ -16,10 +16,8 @@ Rails.application.routes.draw do
   end
 
   namespace :api, defaults: { format: :json } do
-    resources :force_update_app_versions, only: [:index] do
+    resources :force_update_app_versions, only: [:index, :destroy] do
     end
-    # The new code has a GET route for force_update_app_versions#index, which is redundant
-    # because the resources method already defines it. We'll keep the POST route from the existing code.
     post 'force_update_app_versions', to: 'force_update_app_versions#create'
 
     resources :users_verify_confirmation_token, only: [:create] do

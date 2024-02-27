@@ -1,5 +1,5 @@
 class User < ApplicationRecord
-  # Existing associations
+  # Associations and validations for User model
   has_many :sender_messages,
            class_name: 'Message',
            foreign_key: :sender_id, dependent: :destroy
@@ -29,6 +29,7 @@ class User < ApplicationRecord
   # Existing validations
   validates :phone_number, presence: true, uniqueness: true
   validates :phone_number, length: { in: 0..255 }, if: :phone_number?
+  validates :firstname, :lastname, presence: true
   validates :thumbnail, content_type: ['image/png', 'image/jpg', 'image/jpeg', 'image/gif', 'image/svg+xml'],
                         size: { less_than_or_equal_to: 100.megabytes }
   validates :firstname, length: { in: 0..255 }, if: :firstname?

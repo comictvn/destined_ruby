@@ -1,10 +1,5 @@
----
 en:
   common:
-    force_update_app_versions:
-      success: Successfully retrieved the list of force update app versions.
-      bad_request: The request was malformed.
-      internal_server_error: An unexpected error has occurred on the server.
     '404': not found
     '403': forbidden
     '401': unauthorized
@@ -13,3 +8,8 @@ en:
     '201': created
     '200': success
     '302': deleted
+    force_update_app_versions:
+      success: Successfully retrieved the list of force update app versions.
+      bad_request: The request was malformed.
+      internal_server_error: An unexpected error has occurred on the server.
+    force_update_app_version_deleted_successfully: "Force update app version has been deleted successfully."

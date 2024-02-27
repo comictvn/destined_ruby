@@ -3,6 +3,11 @@ en:
   activerecord:
     errors:
       messages:
+        user:
+          phone_number_blank: "Phone number can't be blank"
+          phone_number_taken: "Phone number has already been taken"
+          firstname_blank: "First name can't be blank"
+          lastname_blank: "Last name can't be blank"
         blank: can't be blank
         taken: has already been taken
         too_long: is too long (maximum is %{count} characters)
