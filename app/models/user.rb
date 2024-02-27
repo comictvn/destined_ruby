@@ -2,11 +2,10 @@
 class User < ApplicationRecord
   # Existing associations
   has_many :user_chanels, foreign_key: 'user_id', dependent: :destroy
-  has_many :messages, foreign_key: 'user_id', dependent: :destroy
+  has_many :messages, class_name: 'Message', foreign_key: 'message_id', dependent: :destroy
   has_many :sender_messages,
            class_name: 'Message',
            foreign_key: :sender_id, dependent: :destroy
-  has_many :user_chanels, dependent: :destroy
   has_many :matcher1_matchs,
            class_name: 'Match',
            foreign_key: :matcher1_id, dependent: :destroy
@@ -34,6 +33,7 @@ class User < ApplicationRecord
   validates :phone_number, length: { in: 0..255 }, if: :phone_number?
   validates :thumbnail, content_type: ['image/png', 'image/jpg', 'image/jpeg', 'image/gif', 'image/svg+xml'],
                         size: { less_than_or_equal_to: 100.megabytes }
+  validates :failed_attempts, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates :firstname, length: { in: 0..255 }, if: :firstname?
   validates :lastname, length: { in: 0..255 }, if: :lastname?
   validates :dob, timeliness: { type: :date, on_or_before: Date.yesterday }, if: :dob_changed?
@@ -42,6 +42,7 @@ class User < ApplicationRecord
   validates :email, uniqueness: true, allow_blank: true
   validates :email, length: { in: 0..255 }, if: :email?
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: :email_changed?
+  validates :confirmation_sent_at, timeliness: { type: :datetime }, allow_nil: true
 
   # New validations
   validates :email, presence: true

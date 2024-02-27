@@ -1,9 +1,8 @@
 class Message < ApplicationRecord
-  belongs_to :user, foreign_key: 'user_id'
-  belongs_to :chanel
+  belongs_to :chanel, class_name: 'Chanel', foreign_key: 'chanel_id'
+  belongs_to :user, class_name: 'User', foreign_key: 'user_id'
 
   validates :content, presence: true
-  validates :sender_id, presence: true
   validates :chanel_id, presence: true
   validates :user_id, presence: true
 
