@@ -9,6 +9,11 @@ class ApplicationPolicy
     @record = record
   end
 
+  def update?
+    user.id == record.user_id
+  end
+
+
   class Scope
     def initialize(user, scope)
       @user = user

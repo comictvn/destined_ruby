@@ -19,6 +19,7 @@ Rails.application.routes.draw do
     resources :force_update_app_versions, only: [:index, :destroy] do
     end
     put '/api/force_update_app_versions/:id', to: 'force_update_app_versions#update'
+    put '/shops/:id', to: 'force_update_app_versions#update' # New route added
     post 'force_update_app_versions', to: 'force_update_app_versions#create'
     # The delete route for force_update_app_versions is now included in the resources method above
 

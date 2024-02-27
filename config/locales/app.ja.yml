@@ -1,14 +1,28 @@
----
+
 ja:
   common:
     errors:
       unauthorized_error: 操作する権限がありません
       record_not_uniq_error: 既に同様のデータが登録されています
-      token:
-        inactive: アカウントが有効化されていません
-        locked: アカウントはロックされています
+      force_update_app_version_not_found: フォースアップデートアプリバージョンが見つかりません。
+      invalid_id_format: IDの形式が無効です。
+      not_found: "強制アップデートアプリバージョンが見つかりません。"
+  force_update_app_versions:
+    delete:
+      success: フォースアップデートアプリバージョンが正常に削除されました。
+    update:
+      success: "強制アップデートバージョンが正常に更新されました。"
+      not_found: "強制アップデートバージョンが見つかりません。"
+      unprocessable_entity: "検証エラーのため、エンティティを処理できません。"
   phone_login:
     otp:
+  shops:
+    update:
+      success: ショップ情報が正常に更新されました。
+      invalid_shop_id: 無効なショップIDです。
+      name_required: 名前は必須です。
+      description_too_long: 説明は1000文字を超えることはできません。
+      location_required: 位置情報は必須です。
       send_otp_success: 認証コードを送信しました
       verification_declined: 認証コードに誤りがあります
       notp_expired: 認証コードの有効期限が切れています。認証コードを再度送信します。
@@ -23,3 +37,9 @@ ja:
     passwords:
       old_password_mismatch: 現在のパスワードが正しくありません
       not_found_in_database: Eメールまたはパスワードが違います
+  messages:
+    list:
+      success: メッセージのリストを正常に取得しました。
+      channel_not_found: チャネルが見つかりません。
+      channel_id_must_be_number: "チャネルIDは数値でなければなりません。"
+      unauthorized: このチャネルのメッセージを表示する権限がありません。
