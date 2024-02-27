@@ -10,4 +10,5 @@ module Exceptions
   class ForceUpdateBooleanError < StandardError; end
   class VersionBlankError < StandardError; end
   class ReasonTooLongError < StandardError; end
+  class InvalidForceUpdateAppVersionIDError < StandardError; end
 end

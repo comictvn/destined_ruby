@@ -14,7 +14,9 @@ class Api::ForceUpdateAppVersionsController < Api::BaseController
   def create
     force_update_app_version = ForceUpdateAppVersion.new(force_update_app_version_params)
     if force_update_app_version.save
-      render 'create.json.jbuilder', status: :created, locals: { force_update_app_version: force_update_app_version }
+      # Merged the new and existing code by using the new JSON response and keeping the Jbuilder template as a comment for future reference if needed.
+      render json: { status: I18n.t('common.created'), force_update_app_version: force_update_app_version }, status: :created
+      # render 'create.json.jbuilder', status: :created, locals: { force_update_app_version: force_update_app_version }
     else
       render json: { errors: force_update_app_version.errors.full_messages }, status: :unprocessable_entity
     end
@@ -36,8 +38,14 @@ class Api::ForceUpdateAppVersionsController < Api::BaseController
   def destroy
     force_update_app_version = ForceUpdateAppVersion.find(params[:id])
     force_update_app_version.destroy
-    render_response({ message: I18n.t('force_update_app_versions.delete.success') }, status: :ok)
+    if force_update_app_version.destroyed?
+      # Kept the new code's conditional check for a destroyed record and merged the error handling from the existing code.
+      render_response({ message: I18n.t('force_update_app_versions.delete.success') }, status: :ok)
+    else
+      render_error({ message: force_update_app_version.errors.full_messages.to_sentence }, status: :unprocessable_entity)
+    end
   rescue ActiveRecord::RecordNotFound => e
+    # Standardized the error message to use I18n translation as in the existing code.
     render_error({ message: I18n.t('force_update_app_versions.delete.not_found') }, status: :not_found)
   end
 

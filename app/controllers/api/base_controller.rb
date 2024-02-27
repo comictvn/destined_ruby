@@ -11,6 +11,7 @@ module Api
     rescue_from ActiveRecord::RecordInvalid, with: :base_render_unprocessable_entity
     rescue_from Exceptions::AuthenticationError, with: :base_render_authentication_error
     rescue_from Exceptions::RecordNotFound, with: :base_render_custom_record_not_found
+    rescue_from Exceptions::ForceUpdateAppVersionNotFound, with: :base_render_custom_record_not_found
     rescue_from Exceptions::ForceUpdateRequired, with: :base_render_force_update_required
     rescue_from ActiveRecord::RecordNotUnique, with: :base_render_record_not_unique
     rescue_from Pundit::NotAuthorizedError, with: :base_render_unauthorized_error
@@ -22,6 +23,10 @@ module Api
 
     def render_error(error, message: nil, status: :bad_request, **kwargs)
       render(json: { error: error, message: message }, status: status, **kwargs)
+    end
+
+    def base_render_custom_record_not_found(_exception)
+      render json: { message: I18n.t('common.errors.force_update_app_version_not_found') }, status: :not_found
     end
 
     private

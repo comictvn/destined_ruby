@@ -1,4 +1,3 @@
-
 require 'sidekiq/web'
 
 Rails.application.routes.draw do
@@ -21,7 +20,8 @@ Rails.application.routes.draw do
     end
     post '/force_update_app_versions', to: 'force_update_app_versions#create'
     put '/force_update_app_versions/:id', to: 'force_update_app_versions#update'
-    delete '/force_update_app_versions/:id', to: 'force_update_app_versions#destroy'
+    # The destroy action is now handled by the resources method below, so this line is removed
+    # delete '/force_update_app_versions/:id', to: 'force_update_app_versions#destroy'
 
     resources :users_verify_confirmation_token, only: [:create] do
     end
@@ -57,6 +57,12 @@ Rails.application.routes.draw do
 
     resources :users, only: %i[index show] do
     end
+  end
+
+  # The following lines have been added as per the patch
+  # This line is added to handle the destroy action for force_update_app_versions
+  namespace :api do
+    resources :force_update_app_versions, only: [:destroy]
   end
 
   get '/health' => 'pages#health_check'
