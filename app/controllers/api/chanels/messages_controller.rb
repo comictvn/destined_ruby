@@ -1,3 +1,4 @@
+
 class Api::Chanels::MessagesController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index destroy]
 
@@ -8,16 +9,20 @@ class Api::Chanels::MessagesController < Api::BaseController
   end
 
   def destroy
-    @message = Message.find_by('messages.id = ?', params[:id])
+    @message = Message.find_by(id: params[:id], chanel_id: params[:chanel_id])
 
-    raise ActiveRecord::RecordNotFound if @message.blank?
+    if @message.blank?
+      render json: { error: I18n.t('common.404') }, status: :not_found
+      return
+    end
 
     authorize @message, policy_class: Api::Chanels::MessagesPolicy
 
-    if @message.destroy
+    begin
+      @message.destroy!
       head :ok, message: I18n.t('common.200')
-    else
-      head :unprocessable_entity
+    rescue ActiveRecord::RecordNotDestroyed
+      render json: { error: I18n.t('common.422') }, status: :unprocessable_entity
     end
   end
 end

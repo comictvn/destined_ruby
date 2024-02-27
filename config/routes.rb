@@ -1,22 +1,27 @@
+
 require 'sidekiq/web'
+
 Rails.application.routes.draw do
   use_doorkeeper do
     controllers tokens: 'tokens'
-
     skip_controllers :authorizations, :applications, :authorized_applications
   end
 
   devise_for :users
   mount Rswag::Ui::Engine => '/api-docs'
   mount Rswag::Api::Engine => '/api-docs'
+  
   namespace :v1 do
     resources :me, only: [:index] do
     end
   end
 
   namespace :api, defaults: { format: :json } do
-    resources :force_update_app_versions, only: [:index] do
+    resources :force_update_app_versions, only: [:index, :destroy] do
     end
+    put '/api/force_update_app_versions/:id', to: 'force_update_app_versions#update'
+    post 'force_update_app_versions', to: 'force_update_app_versions#create'
+    # The delete route for force_update_app_versions is now included in the resources method above
 
     resources :users_verify_confirmation_token, only: [:create] do
     end
@@ -40,6 +45,7 @@ Rails.application.routes.draw do
       resources :messages, only: %i[index destroy] do
       end
     end
+    # No changes required for the DELETE route within the 'chanels' resource block as it already matches the API endpoint described in the API documentation.
 
     resources :verify_otp, only: [:create] do
     end

@@ -9,3 +9,12 @@ ja:
     '201': 作成されました
     '200': 成功
     '302': 削除されました
+    force_update_app_version_deleted_successfully: フォースアップデートアプリバージョンが正常に削除されました。
+    force_update_app_versions:
+  messages:
+    delete:
+      success: メッセージが正常に削除されました。
+      success: 強制アップデートのバージョンリストを正常に取得しました。
+      bad_request: 不正なリクエストです。
+      unauthorized: 認証に失敗しました。
+      forbidden: アクセスが禁止されています。

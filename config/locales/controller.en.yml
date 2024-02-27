@@ -1,4 +1,3 @@
----
 en:
   common:
     '404': not found
@@ -9,3 +8,15 @@ en:
     '201': created
     '200': success
     '302': deleted
+    force_update_app_versions:
+      success: Successfully retrieved the list of force update app versions.
+      bad_request: The request was malformed.
+      internal_server_error: An unexpected error has occurred on the server.
+    force_update_app_version_deleted_successfully: "Force update app version has been deleted successfully."
+    messages:
+      delete:
+        success: "Message deleted successfully."
+      success: Successfully retrieved the list of force update app versions.
+      bad_request: The request was malformed.
+      internal_server_error: An unexpected error has occurred on the server.
+    force_update_app_version_deleted_successfully: "Force update app version has been deleted successfully."
