@@ -13,6 +13,11 @@ class Api::MessagesController < Api::BaseController
     render status: :unprocessable_entity
   end
 
+  def update
+    @message = Message.new(create_params)
+    @message.update!
+  end
+
   def create_params
     params.require(:messages).permit(:content, :sender_id, :chanel_id, :images)
   end
