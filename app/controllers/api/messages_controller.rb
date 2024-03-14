@@ -16,6 +16,7 @@ class Api::MessagesController < Api::BaseController
   def update
     @message = Message.new(create_params)
     @message.update!
+
   end
 
   def create_params
