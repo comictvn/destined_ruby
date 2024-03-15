@@ -1,3 +1,4 @@
+
 ---
 ja:
   activerecord:
@@ -15,6 +16,15 @@ ja:
         less_than_or_equal_to: は%{count}以下の値にしてください
         other_than: は%{count}以外の値にしてください
         not_an_integer: は整数で入力してください
+        task:
+          title:
+            blank: "タイトルは必須です。"
+          description:
+            blank: "説明は必須です。"
+          due_date:
+            invalid: "無効な期限日です。"
+          priority:
+            invalid: "無効な優先度です。"
         file_content_type_invalid: のContent Typeが不正です
         file_size_out_of_range: の容量 %{file_size} が許容範囲外です
         file_limit_out_of_range: の数が許容範囲外です
@@ -24,4 +34,13 @@ ja:
         datetime_in_future: 今日の日付と時刻より後である必要があります
         invalid: は不正な値です
         date_type: は有効な日付である必要があります
+        task:
+          title:
+            blank: "タイトルを入力してください"
+          description:
+            blank: "説明を入力してください"
+          due_date:
+            invalid: "無効な期限日です"
+          priority:
+            invalid: "無効な優先度です"
         datetime_type: は有効な日時である必要があります
