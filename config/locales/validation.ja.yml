@@ -22,9 +22,9 @@ ja:
           description:
             blank: "説明は必須です。"
           due_date:
-            invalid: "期限日の形式が正しくありません。"
+            invalid: "無効な期限日です。"
           priority:
-            invalid: "優先度の値が無効です。"
+            invalid: "無効な優先度です。"
         file_content_type_invalid: のContent Typeが不正です
         file_size_out_of_range: の容量 %{file_size} が許容範囲外です
         file_limit_out_of_range: の数が許容範囲外です

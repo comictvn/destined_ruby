@@ -9,9 +9,9 @@ class Task < ApplicationRecord
   # Enum for priority
   enum priority: { low: 0, medium: 1, high: 2, critical: 3 }
 
-  # Validations
-  validates :title, presence: true
-  validates :description, presence: true
+  # Custom Validations
+  validates :title, presence: { message: I18n.t('activerecord.errors.models.task.attributes.title.blank') }
+  validates :description, presence: { message: I18n.t('activerecord.errors.models.task.attributes.description.blank') }
   validates :due_date, presence: true
   validate :validate_priority
 
@@ -20,7 +20,7 @@ class Task < ApplicationRecord
   def validate_priority
     priorities = Task.priorities.keys
     unless priorities.include?(priority)
-      errors.add(:priority, I18n.t('activerecord.errors.messages.invalid_priority'))
+      errors.add(:priority, I18n.t('activerecord.errors.models.task.attributes.priority.invalid'))
     end
   end
 end

@@ -6,12 +6,21 @@ module Api
     rescue_from ActiveRecord::RecordInvalid, with: :handle_validation_errors
 
     def create
-      task = Task.new(task_params)
+      task_service = TaskService::Create.new(task_params)
 
-      authorize task, :create?
+      authorize task_service.task, :create?
 
-      task.save!
-      render_response(task, status: :created)
+      result = task_service.execute
+
+      if result.is_a?(Task)
+        render_response(TaskSerializer.new(result), status: :created)
+      else
+        render_error(
+          error: 'validation_error',
+          message: result,
+          status: :unprocessable_entity
+        )
+      end
     end
 
     private

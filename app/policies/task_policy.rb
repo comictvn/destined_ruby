@@ -8,7 +8,7 @@ class TaskPolicy < ApplicationPolicy
 
   def create?
     # Assuming 'admin' and 'manager' roles are allowed to create tasks
-    # This logic may change depending on the application's specific authorization requirements
-    user.role == 'admin' || user.role == 'manager'
+    # Updated logic to check for specific roles
+    ['admin', 'manager'].include?(user.role)
   end
 end
