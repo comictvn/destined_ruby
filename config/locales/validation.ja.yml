@@ -1,3 +1,4 @@
+
 ---
 ja:
   activerecord:
@@ -24,4 +25,13 @@ ja:
         datetime_in_future: 今日の日付と時刻より後である必要があります
         invalid: は不正な値です
         date_type: は有効な日付である必要があります
+        task:
+          title:
+            blank: "タイトルを入力してください"
+          description:
+            blank: "説明を入力してください"
+          due_date:
+            invalid: "無効な期限日です"
+          priority:
+            invalid: "無効な優先度です"
         datetime_type: は有効な日時である必要があります
