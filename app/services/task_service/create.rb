@@ -1,4 +1,3 @@
-
 module TaskService
   class Create
     attr_reader :attributes, :task
@@ -8,12 +7,16 @@ module TaskService
     end
 
     def execute
-      task = Task.new(attributes)
+      # Initialize a new Task object with the provided attributes
+      @task = Task.new(attributes)
 
-      if task.save
-        task
+      # Attempt to save the task and handle success or validation errors accordingly
+      if @task.save
+        # Return the task object if saved successfully
+        @task
       else
-        task.errors.full_messages
+        # Return error messages if task could not be saved
+        @task.errors.full_messages
       end
     end
   end

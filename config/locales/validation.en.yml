@@ -16,15 +16,6 @@ en:
         less_than_or_equal_to: must be less than or equal to %{count}
         other_than: must be other than %{count}
         not_an_integer: must be an integer
-        task:
-          title:
-            blank: "The title is required."
-          description:
-            blank: "The description is required."
-          due_date:
-            invalid: "Invalid due date format."
-          priority:
-            invalid: "Invalid priority value."
         file_content_type_invalid: has an invalid content type
         file_size_out_of_range: size %{file_size} is not between required range
         file_limit_out_of_range: total number is out of range
