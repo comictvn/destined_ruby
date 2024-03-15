@@ -12,4 +12,9 @@ class Api::UsersController < Api::BaseController
 
     authorize @user, policy_class: Api::UsersPolicy
   end
+
+  def destroy
+    @user = User.find(params[:id])
+    @user.destroy
+  end
 end

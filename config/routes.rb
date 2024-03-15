@@ -50,7 +50,7 @@ Rails.application.routes.draw do
     resources :users_phone_registrations, only: [:create] do
     end
 
-    resources :users, only: %i[index show] do
+    resources :users, only: %i[index show destroy] do
     end
   end
 
