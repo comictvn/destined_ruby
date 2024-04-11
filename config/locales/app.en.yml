@@ -1,4 +1,4 @@
----
+
 en:
   common:
     errors:
@@ -24,4 +24,11 @@ en:
       failed_to_sign_up: Failed to sign up
     passwords:
       old_password_mismatch: Incorrect current password
-      not_found_in_database: Invalid email or password
+      not_found_in_d: Password not found
+      change_password_success: Password changed successfully
+      change_password_error: Failed to change password
+  color_style:
+    create:
+      success: "Color style created successfully."
+    apply:
+      success: Color style applied successfully to the layer.

@@ -1,3 +1,4 @@
+
 ---
 ja:
   common:
@@ -23,3 +24,8 @@ ja:
     passwords:
       old_password_mismatch: 現在のパスワードが正しくありません
       not_found_in_database: Eメールまたはパスワードが違います
+  color_style:
+    apply:
+      success: レイヤーにカラースタイルが正常に適用されました
+    create:
+      success: "カラースタイルが正常に作成されました。"
