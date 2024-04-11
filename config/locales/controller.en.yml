@@ -11,8 +11,8 @@ en:
     '200': success
     '302': deleted
     design_file_not_found: "Design file not found."
+    color_styles_icon_display_eligible: "Color styles icon can be displayed."
+    color_styles_icon_display_ineligible: "Layer is not eligible for color styles."
     layer_not_found: "Layer not found."
     layer_not_eligible: "Layer is not eligible for color styles."
     color_styles_icon_displayed: "Color styles icon displayed successfully."
-    color_style_apply_success: "Color style successfully applied."
-    color_style_apply_error: "Color style could not be applied to the layer."

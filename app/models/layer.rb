@@ -2,9 +2,9 @@
 # typed: strict
 class Layer < ApplicationRecord
   belongs_to :design_file
-  has_many :color_styles, dependent: :destroy
+  has_many :color_styles
 
-  # Add new boolean attributes with default values and validations
+  # Boolean attributes with default values and validations
   attribute :locked, :boolean, default: false
   attribute :hidden, :boolean, default: false
 

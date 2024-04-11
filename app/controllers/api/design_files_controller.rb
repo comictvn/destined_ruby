@@ -2,15 +2,19 @@
 class Api::DesignFilesController < Api::BaseController
   before_action :doorkeeper_authorize!
 
-  def create_color_style
-    validate_color_style_params
-    design_file = DesignFile.find_by!(id: params[:fileId])
-    color_style = ColorStyle.create!(name: params[:name], color_code: params[:color_code], design_file_id: params[:fileId])
-    render_response({ id: color_style.id }, I18n.t('color_style.create.success'))
-  rescue ActiveRecord::RecordNotFound
-    raise Exceptions::DesignFileNotFound
-  rescue ActiveRecord::RecordInvalid => e
-    render_error(e.record.errors.full_messages, status: :unprocessable_entity)
+  def display_color_styles_icon
+    file_id = params[:file_id]
+    layer_id = params[:layer_id]
+    design_file = DesignFile.find(file_id)
+    layer = design_file.layers.find(layer_id)
+
+    is_eligible = !layer.locked && !layer.hidden
+    message_key = is_eligible ? 'color_styles_icon_display_eligible' : 'color_styles_icon_display_ineligible'
+
+    render_response({ display_color_styles_icon: is_eligible }, message: I18n.t("common.#{message_key}"))
+  rescue ActiveRecord::RecordNotFound => e
+    raise Exceptions::DesignFileNotFound, I18n.t('common.design_file_not_found') if e.model == 'DesignFile'
+    raise Exceptions::LayerNotFound, I18n.t('common.layer_not_found')
   end
 
   def list_color_styles
@@ -24,12 +28,5 @@ class Api::DesignFilesController < Api::BaseController
     }, status: :ok
   rescue ActiveRecord::RecordNotFound => e
     raise DesignFileNotFound
-  end
-
-  private
-
-  def validate_color_style_params
-    params.require(:name)
-    params.require(:color_code)
   end
 end
