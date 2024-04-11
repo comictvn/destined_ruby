@@ -28,5 +28,7 @@ en:
       change_password_success: Password changed successfully
       change_password_error: Failed to change password
   color_style:
+    create:
+      success: "Color style created successfully."
     apply:
       success: Color style applied successfully to the layer.
