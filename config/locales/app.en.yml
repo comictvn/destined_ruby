@@ -1,5 +1,4 @@
-atabase: Invalid email or password
----
+
 en:
   common:
     errors:
@@ -16,10 +15,6 @@ en:
       notp_expired: The verification code has expired. Send the verification code
         again
       exceed_amount_sent_otp: You have reached the limit of otp sms per day
-design_files:
-  list_color_styles:
-    success: "Color styles listed successfully."
-    not_found: "Design file not found."
       recaptcha_invalid: An unusual request pattern occurred.
   email_login:
     reset_password:
@@ -29,4 +24,9 @@ design_files:
       failed_to_sign_up: Failed to sign up
     passwords:
       old_password_mismatch: Incorrect current password
-      not_found_in_d
+      not_found_in_d: Password not found
+      change_password_success: Password changed successfully
+      change_password_error: Failed to change password
+  color_style:
+    apply:
+      success: Color style applied successfully to the layer.

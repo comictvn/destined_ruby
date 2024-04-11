@@ -24,4 +24,5 @@ ja:
         datetime_in_future: 今日の日付と時刻より後である必要があります
         invalid: は不正な値です
         date_type: は有効な日付である必要があります
+        activerecord.errors.models.color_style.attributes.color_code.invalid: は有効な16進数の色ではありません
         datetime_type: は有効な日時である必要があります

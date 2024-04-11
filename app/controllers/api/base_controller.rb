@@ -1,16 +1,20 @@
 
 # typed: ignore
 module Api
+  class ColorStyleApplicationError < StandardError; end
+
   class BaseController < ActionController::API
     include OauthTokensConcern
     include ActionController::Cookies
     include Pundit::Authorization
 
+    # =======End include module======
+
     rescue_from ActiveRecord::RecordNotFound, with: :base_render_record_not_found
-    rescue_from Exceptions::DesignFileNotFound, with: :base_render_design_file_not_found
     rescue_from ActiveRecord::RecordInvalid, with: :base_render_unprocessable_entity
     rescue_from Exceptions::AuthenticationError, with: :base_render_authentication_error
     rescue_from ActiveRecord::RecordNotUnique, with: :base_render_record_not_unique
+    rescue_from ColorStyleApplicationError, with: :base_render_color_style_application_error
     rescue_from Pundit::NotAuthorizedError, with: :base_render_unauthorized_error
     rescue_from Exceptions::BadRequest, with: :base_render_bad_request
 
@@ -26,10 +30,6 @@ module Api
 
     def base_render_record_not_found(_exception)
       render json: { message: I18n.t('common.404') }, status: :not_found
-    end
-
-    def base_render_design_file_not_found(_exception)
-      render json: { message: I18n.t('design_files.list_color_styles.not_found') }, status: :not_found
     end
 
     def base_render_bad_request(_exception)
@@ -50,6 +50,21 @@ module Api
 
     def base_render_record_not_unique
       render json: { message: I18n.t('common.errors.record_not_uniq_error') }, status: :forbidden
+    end
+
+    def apply_color_style(file_id, layer_id, color_style_id)
+      design_file = DesignFile.find(file_id)
+      layer = design_file.layers.find(layer_id)
+      color_style = design_file.color_styles.find(color_style_id)
+
+      layer.color_styles << color_style
+      render_response({ message: I18n.t('color_style.apply.success') })
+    rescue ActiveRecord::RecordNotFound => e
+      raise ColorStyleApplicationError, e.message
+    end
+
+    def base_render_color_style_application_error(exception)
+      render json: { message: exception.message }, status: :unprocessable_entity
     end
 
     def custom_token_initialize_values(resource, client)
@@ -73,5 +88,11 @@ module Api
     def current_resource_owner
       return super if defined?(super)
     end
+
+    # Add other private methods and rescue_from handlers as needed
+
+    # ...
+
+    # End of BaseController
   end
 end
