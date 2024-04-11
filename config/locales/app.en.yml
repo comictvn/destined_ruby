@@ -1,3 +1,4 @@
+atabase: Invalid email or password
 ---
 en:
   common:
@@ -15,6 +16,10 @@ en:
       notp_expired: The verification code has expired. Send the verification code
         again
       exceed_amount_sent_otp: You have reached the limit of otp sms per day
+design_files:
+  list_color_styles:
+    success: "Color styles listed successfully."
+    not_found: "Design file not found."
       recaptcha_invalid: An unusual request pattern occurred.
   email_login:
     reset_password:
@@ -24,4 +29,4 @@ en:
       failed_to_sign_up: Failed to sign up
     passwords:
       old_password_mismatch: Incorrect current password
-      not_found_in_database: Invalid email or password
+      not_found_in_d

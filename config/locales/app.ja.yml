@@ -1,3 +1,4 @@
+
 ---
 ja:
   common:
@@ -23,3 +24,7 @@ ja:
     passwords:
       old_password_mismatch: 現在のパスワードが正しくありません
       not_found_in_database: Eメールまたはパスワードが違います
+  design_files:
+    list_color_styles:
+      success: "カラースタイルが正常にリストされました。"
+      not_found: "デザインファイルが見つかりませんでした。"

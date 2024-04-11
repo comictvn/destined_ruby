@@ -2,13 +2,12 @@
 # typed: ignore
 module Api
   class BaseController < ActionController::API
+    include OauthTokensConcern
     include ActionController::Cookies
     include Pundit::Authorization
-    include OauthTokensConcern
-
-    # =======End include module======
 
     rescue_from ActiveRecord::RecordNotFound, with: :base_render_record_not_found
+    rescue_from Exceptions::DesignFileNotFound, with: :base_render_design_file_not_found
     rescue_from ActiveRecord::RecordInvalid, with: :base_render_unprocessable_entity
     rescue_from Exceptions::AuthenticationError, with: :base_render_authentication_error
     rescue_from ActiveRecord::RecordNotUnique, with: :base_render_record_not_unique
@@ -23,28 +22,14 @@ module Api
       render(json: { error: error, message: message }, status: status, **kwargs)
     end
 
-    def display_color_styles_icon(file_id, layer_id)
-      design_file = DesignFile.find_by(id: file_id)
-      unless design_file
-        return render_error('design_file_not_found', message: I18n.t('common.design_file_not_found'), status: :not_found)
-      end
-
-      layer = design_file.layers.find_by(id: layer_id)
-      unless layer
-        return render_error('layer_not_found', message: I18n.t('common.layer_not_found'), status: :not_found)
-      end
-
-      if layer.locked || layer.hidden
-        return render_error('layer_not_eligible', message: I18n.t('common.layer_not_eligible'), status: :forbidden)
-      end
-
-      render_response({ color_styles_icon_displayed: true }, message: I18n.t('common.color_styles_icon_displayed'))
-    end
-
     private
 
     def base_render_record_not_found(_exception)
       render json: { message: I18n.t('common.404') }, status: :not_found
+    end
+
+    def base_render_design_file_not_found(_exception)
+      render json: { message: I18n.t('design_files.list_color_styles.not_found') }, status: :not_found
     end
 
     def base_render_bad_request(_exception)
