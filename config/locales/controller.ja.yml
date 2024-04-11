@@ -13,3 +13,4 @@ ja:
     layer_not_found: "レイヤーが見つかりません。"
     layer_not_eligible: "レイヤーはカラースタイルに適していません。"
     color_styles_icon_displayed: "カラースタイルアイコンが正常に表示されました。"
+    design_files.list_color_styles.success: "カラースタイルが正常にリストされました。"

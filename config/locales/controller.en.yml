@@ -13,4 +13,5 @@ en:
     design_file_not_found: "Design file not found."
     layer_not_found: "Layer not found."
     layer_not_eligible: "Layer is not eligible for color styles."
+    design_files.list_color_styles.success: "Color styles listed successfully."
     color_styles_icon_displayed: "Color styles icon displayed successfully."
