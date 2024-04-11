@@ -1,3 +1,4 @@
+
 ---
 en:
   common:
@@ -9,3 +10,7 @@ en:
     '201': created
     '200': success
     '302': deleted
+    design_file_not_found: "Design file not found."
+    layer_not_found: "Layer not found."
+    layer_not_eligible: "Layer is not eligible for color styles."
+    color_styles_icon_displayed: "Color styles icon displayed successfully."

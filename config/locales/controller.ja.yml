@@ -9,3 +9,7 @@ ja:
     '201': 作成されました
     '200': 成功
     '302': 削除されました
+    design_file_not_found: "デザインファイルが見つかりません。"
+    layer_not_found: "レイヤーが見つかりません。"
+    layer_not_eligible: "レイヤーはカラースタイルに適していません。"
+    color_styles_icon_displayed: "カラースタイルアイコンが正常に表示されました。"
