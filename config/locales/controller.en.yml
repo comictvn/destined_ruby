@@ -1,6 +1,8 @@
 ---
 en:
   common:
+    layer_not_eligible: Layer is not eligible for color styles.
+    display_color_styles_icon: Color styles icon displayed successfully.
     '404': not found
     '403': forbidden
     '401': unauthorized

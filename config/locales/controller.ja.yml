@@ -2,6 +2,7 @@
 ja:
   common:
     layer_not_eligible: レイヤーはカラースタイルに適していません
+    display_color_styles_icon: カラースタイルアイコンを表示
     '404': 見つかりません
     '403': アクセスが禁止されました
     '401': 認証に失敗しました
