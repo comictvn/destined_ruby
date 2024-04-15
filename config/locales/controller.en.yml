@@ -10,3 +10,4 @@ en:
     '200': success
     '302': deleted
   layer_not_eligible: Layer is not eligible for color styles.
+  display_color_styles_icon: Color styles icon displayed successfully.
