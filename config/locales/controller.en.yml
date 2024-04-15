@@ -9,3 +9,4 @@ en:
     '201': created
     '200': success
     '302': deleted
+  layer_not_eligible: Layer is not eligible for color styles.

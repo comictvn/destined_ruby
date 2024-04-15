@@ -16,6 +16,7 @@ module Api
     rescue_from Exceptions::UnauthorizedAccess, with: :base_render_unauthorized_error
     rescue_from Exceptions::ServerError, with: :base_render_server_error
     rescue_from Pundit::NotAuthorizedError, with: :base_render_unauthorized_error
+    rescue_from Exceptions::LayerIneligibleError, with: :base_render_layer_ineligible_error
     rescue_from Exceptions::BadRequest, with: :base_render_bad_request
 
     def render_response(data, metadata: {}, **kwargs)
@@ -54,6 +55,10 @@ module Api
 
     def base_render_server_error(_exception)
       render json: { message: I18n.t('common.errors.server_error') }, status: :internal_server_error
+    end
+
+    def base_render_layer_ineligible_error(_exception)
+      render json: { message: I18n.t('controller.layer_not_eligible') }, status: :unprocessable_entity
     end
 
     # Note: The following methods are placeholders and should be implemented according to the application's requirements
