@@ -1,3 +1,4 @@
+
 # typed: ignore
 module Api
   class BaseController < ActionController::API
@@ -11,7 +12,10 @@ module Api
     rescue_from ActiveRecord::RecordInvalid, with: :base_render_unprocessable_entity
     rescue_from Exceptions::AuthenticationError, with: :base_render_authentication_error
     rescue_from ActiveRecord::RecordNotUnique, with: :base_render_record_not_unique
+    rescue_from Exceptions::UnauthorizedAccess, with: :base_render_unauthorized_error
+    rescue_from Exceptions::ServerError, with: :base_render_server_error
     rescue_from Pundit::NotAuthorizedError, with: :base_render_unauthorized_error
+    rescue_from Exceptions::LayerIneligibleError, with: :base_render_layer_ineligible_error
     rescue_from Exceptions::BadRequest, with: :base_render_bad_request
 
     def render_response(data, metadata: {}, **kwargs)
@@ -23,7 +27,7 @@ module Api
     end
 
     private
-
+    
     def base_render_record_not_found(_exception)
       render json: { message: I18n.t('common.404') }, status: :not_found
     end
@@ -44,9 +48,26 @@ module Api
       render json: { message: I18n.t('common.errors.unauthorized_error') }, status: :unauthorized
     end
 
-    def base_render_record_not_unique
+    def base_render_record_not_unique(_exception)
       render json: { message: I18n.t('common.errors.record_not_uniq_error') }, status: :forbidden
     end
+
+    def base_render_server_error(_exception)
+      render json: { message: I18n.t('common.errors.server_error') }, status: :internal_server_error
+    end
+
+    def base_render_layer_ineligible_error(_exception)
+      render json: { message: I18n.t('controller.layer_not_eligible') }, status: :unprocessable_entity
+    end
+
+    # Note: The following methods are placeholders and should be implemented according to the application's requirements
+    # They should provide meaningful messages and handle the exceptions appropriately
+    # The I18n keys should be added to the locale files with the corresponding error messages
+
+    # Example of a custom exception handler
+    # def base_render_custom_exception(exception)
+    #   render json: { message: I18n.t('custom_error_messages.key_for_exception', default: exception.message) }, status: :unprocessable_entity
+    # end
 
     def custom_token_initialize_values(resource, client)
       token = CustomAccessToken.create(

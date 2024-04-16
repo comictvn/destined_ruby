@@ -1,3 +1,4 @@
+
 require_relative 'boot'
 
 require 'rails/all'
@@ -11,6 +12,8 @@ module KevinJuly
     config.active_record.default_timezone = :local
     config.i18n.default_locale = :en
     config.i18n.available_locales = %i[en ja]
++   # Ensure all necessary paths are included for autoloading
++   config.autoload_paths += %W(#{config.root}/extras)
     config.paths.add 'lib', eager_load: true
     config.generators do |g|
       g.test_framework :rspec

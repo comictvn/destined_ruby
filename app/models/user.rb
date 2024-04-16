@@ -1,5 +1,6 @@
+
 class User < ApplicationRecord
-  # Existing associations
+  # Associations and validations
   has_many :sender_messages,
            class_name: 'Message',
            foreign_key: :sender_id, dependent: :destroy
@@ -29,6 +30,7 @@ class User < ApplicationRecord
   # Existing validations
   validates :phone_number, presence: true, uniqueness: true
   validates :phone_number, length: { in: 0..255 }, if: :phone_number?
+  validates :phone_number, format: { with: /\A\+\d{10,15}\z/, message: I18n.t('activerecord.errors.messages.invalid') }, if: :phone_number_changed?
   validates :thumbnail, content_type: ['image/png', 'image/jpg', 'image/jpeg', 'image/gif', 'image/svg+xml'],
                         size: { less_than_or_equal_to: 100.megabytes }
   validates :firstname, length: { in: 0..255 }, if: :firstname?
@@ -36,9 +38,9 @@ class User < ApplicationRecord
   validates :dob, timeliness: { type: :date, on_or_before: Date.yesterday }, if: :dob_changed?
   validates :interests, length: { in: 0..0 }, if: :interests?
   validates :location, length: { in: 0..0 }, if: :location?
-  validates :email, uniqueness: true, allow_blank: true
+  validates :email, uniqueness: { message: I18n.t('activerecord.errors.messages.taken') }, allow_blank: true
   validates :email, length: { in: 0..255 }, if: :email?
-  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: :email_changed?
+  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP, message: I18n.t('activerecord.errors.messages.invalid') }, if: :email_changed?
 
   # Existing methods
   def generate_reset_password_token
