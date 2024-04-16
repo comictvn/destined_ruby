@@ -2,13 +2,13 @@
 module Api
   class DesignFilesController < BaseController
     before_action :set_design_file, only: [:list_color_styles]
-    rescue_from ActiveRecord::RecordNotFound, with: :design_file_not_found
-    rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
+    before_action :set_layer_and_color_style, only: [:apply_color_style_to_layer]
+    rescue_from Exceptions::DesignFileNotFoundError, with: :design_file_not_found
 
     # GET /design_files/:design_file_id/color_styles
     def list_color_styles
       color_styles = @design_file.color_styles.select(:id, :name, :color_code)
-      render_response(color_styles, status: :ok, message: I18n.t('design_files.color_styles.list.success'))
+      render_response(color_styles)
     end
 
     # POST /design_files/:design_file_id/color_styles
@@ -26,6 +26,18 @@ module Api
       render_error('bad_request', message: e.message, status: :unprocessable_entity)
     end
 
+    # PUT /design_files/:design_file_id/layers/:layer_id/color_styles/:color_style_id
+    def apply_color_style_to_layer
+      if @layer.design_file_id != @color_style.design_file_id
+        render_error('forbidden', message: I18n.t('layers.apply_color_style_to_layer.layer_not_found_or_mismatch'), status: :forbidden)
+      else
+        @layer.update!(color_style_id: @color_style.id)
+        render_response({ layer_id: @layer.id, color_style_id: @color_style.id }, message: I18n.t('layers.apply_color_style_to_layer.success'))
+      end
+    rescue ActiveRecord::RecordInvalid => e
+      render_error('unprocessable_entity', message: e.record.errors.full_messages, status: :unprocessable_entity)
+    end
+
     private
 
     def color_style_params
@@ -41,12 +53,17 @@ module Api
       render_error('forbidden', message: e.message, status: :forbidden)
     end
 
-    def design_file_not_found
-      render_error('not_found', message: I18n.t('design_files.color_styles.not_found'), status: :not_found)
+    def set_layer_and_color_style
+      @layer = Layer.find_by(id: params[:layer_id])
+      @color_style = ColorStyle.find_by(id: params[:color_style_id])
+      unless @layer && @color_style
+        missing_record = @layer.nil? ? 'layer' : 'color_style'
+        render_error('not_found', message: I18n.t("layers.apply_color_style_to_layer.#{missing_record}_not_found"), status: :not_found)
+      end
     end
 
-    def user_not_authorized
-      render_error('forbidden', message: I18n.t('common.403'), status: :forbidden)
+    def design_file_not_found
+      render_error('not_found', message: I18n.t('design_files.color_styles.not_found'), status: :not_found)
     end
   end
 end
