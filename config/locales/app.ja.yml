@@ -23,3 +23,9 @@ ja:
     passwords:
       old_password_mismatch: 現在のパスワードが正しくありません
       not_found_in_database: Eメールまたはパスワードが違います
+  apply_color_style_to_layer:
+    success: "レイヤーにカラースタイルが正常に適用されました。"
+    error:
+      not_found: "要求されたアイテムが見つかりませんでした。"
+      access_denied: "この操作を実行する権限がありません。"
+      mismatch: "カラースタイルはレイヤーと同じデザインファイルに属していません。"

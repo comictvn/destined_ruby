@@ -1,5 +1,4 @@
-atabase: Invalid email or password
----
+
 en:
   common:
     errors:
@@ -30,3 +29,9 @@ en:
     passwords:
       old_password_mismatch: Incorrect current password
       not_found_in_d
+  apply_color_style_to_layer:
+    success: "Color style successfully applied to layer."
+    error:
+      not_found: "The requested item was not found."
+      access_denied: "You do not have permission to perform this action."
+      mismatch: "The color style does not belong to the same design file as the layer."
