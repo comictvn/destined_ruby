@@ -9,13 +9,12 @@ class Layer < ApplicationRecord
 
   # Determines if the layer is eligible for color style application
   def eligible_for_color_styles?
-    # Replace with actual attribute checks if different
+    # Check if the layer has properties such as 'locked' or 'hidden' that would make it ineligible
     locked = self.locked # Assuming 'locked' is an attribute of Layer
     hidden = self.hidden # Assuming 'hidden' is an attribute of Layer
 
-    if locked || hidden # If the layer is locked or hidden, it is not eligible for color styles
-      # Raise a custom exception with a translated error message
-      raise Exceptions::LayerIneligibleError.new(I18n.t('controller.layers.layer_not_eligible'))
+    if locked || hidden # If the layer is locked or hidden, it is not eligible
+      raise Exceptions::LayerIneligibleError.new(I18n.t('common.layer_not_eligible'))
     else
       true
     end

@@ -7,5 +7,6 @@ module Exceptions
   class RecordNotFound < StandardError; end
   class UnauthorizedAccess < StandardError; end
   class ServerError < StandardError; end
-  class LayerIneligibleError < StandardError; end  # Custom exception for ineligible layers
+  class LayerIneligibleError < StandardError
+  end
 end
