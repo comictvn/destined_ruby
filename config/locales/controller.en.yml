@@ -1,4 +1,4 @@
----
+
 en:
   common:
     '404': not found
@@ -9,3 +9,8 @@ en:
     '201': created
     '200': success
     '302': deleted
+  design_files:
+    color_styles:
+      success: The list of color styles was successfully retrieved.
+      not_found: Design file not found.
+      unauthorized: The user is not authenticated.

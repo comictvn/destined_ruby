@@ -1,3 +1,4 @@
+
 ---
 ja:
   common:
@@ -11,4 +12,9 @@ ja:
     '201': 作成されました
     '200': 成功
     '302': 削除されました
+  design_files:
+    color_styles:
+      success: カラースタイルが正常に取得されました
+      not_found: デザインファイルが見つかりません
+      unauthorized: このデザインファイルへのアクセスは許可されていません
   layer_not_eligible: レイヤーはカラースタイルに適していません
