@@ -12,5 +12,5 @@ en:
   design_files:
     color_styles:
       list:
-        success: Color styles listed successfully.
-        not_found: Design file not found or access denied.
+        success: "Color styles listed successfully."
+        not_found: "Design file not found or access denied."
