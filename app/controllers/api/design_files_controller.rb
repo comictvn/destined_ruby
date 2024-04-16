@@ -11,14 +11,15 @@ module Api
       render_response(color_styles)
     end
 
-    # POST /design_files/:design_file_id/color_styles (Updated to match the provided plan)
+    # POST /design_files/:design_file_id/color_styles
     def create_color_style
-      service = ColorStyleCreationService.new(color_style_params)
-      if service.call
-        render json: { message: I18n.t('common.errors.color_style_creation_success') }, status: :created
-      else
-        render json: { error: I18n.t('common.errors.color_style_creation_failure') }, status: :unprocessable_entity
-      end
+      service = ColorStyleCreationService.new(
+        name: color_style_params[:name],
+        color_code: color_style_params[:color_code],
+        design_file_id: color_style_params[:design_file_id]
+      )
+      result = service.call
+      render_response({ group_id: result[:group_id], color_style_ids: result[:color_style_ids] }, :created)
     rescue Exceptions::DesignFileNotFoundError
       render_error('not_found', message: I18n.t('design_files.color_styles.not_found'), status: :not_found)
     rescue Exceptions::GroupCreationError => e
@@ -27,27 +28,25 @@ module Api
       render_error('group_association_error', message: e.message, status: :unprocessable_entity)
     rescue Exceptions::InvalidGroupNameError => e
       render_error('invalid_group_name', message: e.message, status: :unprocessable_entity)
-    rescue StandardError => e
-      render json: { error: I18n.t('common.errors.unauthorized_error') }, status: :unauthorized if e.is_a?(AccessDeniedError)
-      # Handle other exceptions similarly
+    rescue Exceptions::BadRequest => e
+      render_error('bad_request', message: e.message, status: :unprocessable_entity)
     end
 
     # PUT /design_files/:design_file_id/layers/:layer_id/color_styles/:color_style_id
     def apply_color_style_to_layer
-      if @layer.design_file_id != @color_style.design_file_id
-        render_error('forbidden', message: I18n.t('layers.apply_color_style_to_layer.layer_not_found_or_mismatch'), status: :forbidden)
+      if @layer.nil? || @color_style.nil? || @layer.design_file_id != @color_style.design_file_id
+        render_error(I18n.t('layers.apply_color_style_to_layer.layer_not_found_or_mismatch'), :not_found)
+      elsif @layer.update(color_style: @color_style)
+        render_response({ layer_id: @layer.id, color_style_id: @color_style.id }, :ok, I18n.t('layers.apply_color_style_to_layer.success'))
       else
-        @layer.update!(color_style_id: @color_style.id)
-        render_response({ layer_id: @layer.id, color_style_id: @color_style.id }, message: I18n.t('layers.apply_color_style_to_layer.success'))
+        render_error(@layer.errors.full_messages, :unprocessable_entity)
       end
-    rescue ActiveRecord::RecordInvalid => e
-      render_error('unprocessable_entity', message: e.record.errors.full_messages, status: :unprocessable_entity)
     end
 
     private
 
     def color_style_params
-      params.require(:color_style).permit(:name, :color_code, :design_file_id)
+      params.permit(:name, :color_code, :design_file_id)
     end
 
     def set_design_file
@@ -62,10 +61,6 @@ module Api
     def set_layer_and_color_style
       @layer = Layer.find_by(id: params[:layer_id])
       @color_style = ColorStyle.find_by(id: params[:color_style_id])
-      unless @layer && @color_style
-        missing_record = @layer.nil? ? 'layer' : 'color_style'
-        render_error('not_found', message: I18n.t("layers.apply_color_style_to_layer.#{missing_record}_not_found"), status: :not_found)
-      end
     end
 
     def design_file_not_found
