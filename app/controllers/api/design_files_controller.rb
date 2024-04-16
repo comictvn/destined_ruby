@@ -3,6 +3,7 @@ module Api
   class DesignFilesController < BaseController
     before_action :set_design_file, only: [:list_color_styles]
     before_action :set_layer_and_color_style, only: [:apply_color_style_to_layer]
+    rescue_from ActiveRecord::RecordNotFound, with: :design_file_not_found
     rescue_from Exceptions::DesignFileNotFoundError, with: :design_file_not_found
 
     # GET /design_files/:design_file_id/color_styles
@@ -10,7 +11,7 @@ module Api
       color_styles = @design_file.color_styles.select(:id, :name, :color_code)
       render_response(color_styles)
     end
-
+    
     # POST /design_files/:design_file_id/color_styles
     def create_color_style
       service = ColorStyleCreationService.new(
@@ -57,6 +58,12 @@ module Api
       render_error('not_found', message: e.message, status: :not_found)
     rescue Pundit::NotAuthorizedError => e
       render_error('forbidden', message: e.message, status: :forbidden)
+    rescue ActiveRecord::RecordNotFound => e
+      render_error('not_found', message: I18n.t('design_files.color_styles.list.not_found'), status: :not_found)
+    rescue Pundit::NotAuthorizedError => e
+      render_error('forbidden', message: I18n.t('design_files.color_styles.list.access_denied'), status: :forbidden)
+    end
+
     end
 
     def set_layer_and_color_style

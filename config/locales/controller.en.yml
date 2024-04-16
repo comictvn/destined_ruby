@@ -15,6 +15,9 @@ en:
       list:
         success: "Color styles listed successfully."
         not_found: "Design file not found or access denied."
+      apply_color_style_to_layer:
+        success: "Color style successfully applied to layer."
+        color_style_not_found: "Color style not found."
   layers:
     apply_color_style_to_layer:
       success: "Color style successfully applied to layer."
