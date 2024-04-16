@@ -1,3 +1,4 @@
+
 ---
 en:
   common:
@@ -14,3 +15,5 @@ en:
       list:
         success: "Color styles listed successfully."
         not_found: "Design file not found or access denied."
+      group_creation_success: "Color style group created successfully."
+      group_creation_error: "Error occurred while creating color style group."

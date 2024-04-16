@@ -41,6 +41,13 @@ class ColorStyleCreationService < BaseService
   end
 
   def handle_group_association(color_style)
-    # Placeholder for group association logic based on name naming convention
+    group_name = extract_group_name(color_style.name)
+    layer = Layer.find_or_create_by(name: group_name, design_file_id: design_file_id)
+    color_style.layer = layer
+    color_style
+  end
+
+  def extract_group_name(name)
+    # Logic to extract group name from the "name" attribute
   end
 end

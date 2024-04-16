@@ -7,7 +7,7 @@ en:
       access_denied: "Access denied to the design file"
       color_styles_list_success: "Color styles listed successfully"
       color_styles_list_failure: "Failed to list color styles"
-      unauthorized_error: Unauthorized
+      unauthorized_error: "You are not authorized to perform this action."
       record_not_uniq_error: Record not uniq
       token:
         group_creation_success: "Group created successfully"

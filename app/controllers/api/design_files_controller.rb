@@ -12,21 +12,22 @@ module Api
 
     # POST /design_files/:design_file_id/color_styles
     def create_color_style
-      validate_color_style_params
-      design_file = DesignFile.find_by(id: params[:design_file_id])
-      raise Exceptions::DesignFileNotFoundError unless design_file && can_modify_design_file?(design_file)
+      color_style = ColorStyle.new(color_style_params)
+      color_style_service = ColorStyleCreationService.new(
+        name: color_style_params[:name],
+        color_code: color_style_params[:color_code],
+        design_file_id: color_style_params[:design_file_id]
+      )
+      color_style = color_style_service.handle_group_association(color_style)
 
-      color_style = design_file.color_styles.create!(color_style_params)
-      render_response(color_style, :created)
+      if color_style.save
+        render json: color_style, status: :created
+      else
+        render json: color_style.errors, status: :unprocessable_entity
+      end
     end
 
     private
-
-    def validate_color_style_params
-      params.require(:name)
-      params.require(:color_code)
-      params.require(:design_file_id)
-    end
 
     def color_style_params
       params.permit(:name, :color_code, :design_file_id)

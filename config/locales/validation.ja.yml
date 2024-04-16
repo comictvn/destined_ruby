@@ -13,8 +13,6 @@ ja:
               invalid_format: 'カラーコードの形式が不正です'
             design_file_id:
               blank: 'デザインファイルIDを入力してください'
-    errors:
-      models:
         user:
           attributes:
             email:
@@ -27,6 +25,11 @@ ja:
               too_long: 'パスワードは%{count}文字以内で入力してください'
             password_confirmation:
               confirmation: 'パスワードが一致しません'
+        layer:
+          attributes:
+            name:
+              taken: 'このレイヤー名は既に使用されています'
+    errors:
       messages:
         blank: 'を入力してください'
         taken: 'はすでに存在します'

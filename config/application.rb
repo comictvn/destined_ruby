@@ -10,6 +10,7 @@ module KevinJuly
     config.time_zone = 'Africa/Abidjan'
     config.active_record.default_timezone = :local
     config.autoload_paths += %W(#{config.root}/extras)
+    config.autoload_paths += %W(#{config.root}/lib)
     config.i18n.default_locale = :en
     config.i18n.available_locales = %i[en ja]
     config.paths.add 'lib', eager_load: true

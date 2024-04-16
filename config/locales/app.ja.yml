@@ -2,7 +2,7 @@
 ja:
   common:
     errors:
-      unauthorized_error: 操作する権限がありません
+      unauthorized_error: "この操作を実行する権限がありません。"
       record_not_uniq_error: 既に同様のデータが登録されています
       group_creation_success: "グループが正常に作成されました"
       group_creation_failure: "グループの作成または検索に失敗しました"

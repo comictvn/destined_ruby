@@ -45,7 +45,7 @@ class User < ApplicationRecord
                         size: { less_than_or_equal_to: 5.megabytes }
   validates :interests, length: { in: 0..0 }, if: :interests?
   validates :location, length: { in: 0..0 }, if: :location?
-  validates :email, uniqueness: true, allow_blank: true
+  validates :email, uniqueness: { message: I18n.t('validation.errors.email_uniqueness') }, allow_blank: true
   validates :email, length: { in: 0..255 }, if: :email?
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: :email_changed?
 
