@@ -14,13 +14,10 @@ en:
       success: The list of color styles was successfully retrieved.
       not_found: Design file not found.
       unauthorized: The user is not authenticated.
+      layer_not_found: Layer not found within the design file.
+      color_style_not_found: Color style not found.
+      layer_color_style_mismatch: Layer and color style must belong to the same design file.
     layers:
-      apply_color_style:
-        success: "Color style was successfully applied to the layer."
-        layer_not_found: "Layer not found within the design file."
-        color_style_not_found: "Color style not found."
-        bad_request: "The layer and color style do not belong to the same design file."
       display_color_styles_icon:
         success: "Color styles icon displayed successfully."
-        error: "Error displaying color styles icon."
         layer_not_eligible: "Layer is not eligible for color styles."
