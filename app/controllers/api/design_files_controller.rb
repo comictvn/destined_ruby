@@ -3,6 +3,7 @@ module Api
   class DesignFilesController < BaseController
     before_action :set_design_file, only: [:list_color_styles]
     rescue_from Exceptions::DesignFileNotFoundError, with: :design_file_not_found
+    before_action :validate_access_level, only: [:list_color_styles]
 
     # GET /design_files/:design_file_id/color_styles
     def list_color_styles
@@ -22,26 +23,6 @@ module Api
 
     private
 
-    # PATCH /design_files/apply_color_style_to_layer
-    def apply_color_style_to_layer
-      layer = Layer.find(params[:layer_id])
-      color_style = ColorStyle.find(params[:color_style_id])
-
-      raise Exceptions::DesignFileNotFoundError unless layer.design_file_id == color_style.design_file_id
-
-      layer.update!(color_style: color_style)
-
-      # TODO: Implement undo/redo functionality
-
-      render_response({ layer_id: layer.id, color_style_id: color_style.id })
-    rescue ActiveRecord::RecordNotFound => e
-      render_error('not_found', message: e.message, status: :not_found)
-    rescue Exceptions::DesignFileNotFoundError => e
-      render_error('design_file_not_found', message: I18n.t('design_files.color_styles.layer_not_found_or_mismatch'), status: :not_found)
-    end
-
-    # Other private methods...
-
     def validate_color_style_params
       params.require(:name)
       params.require(:color_code)
@@ -59,6 +40,10 @@ module Api
       render_error('not_found', message: e.message, status: :not_found)
     rescue Pundit::NotAuthorizedError => e
       render_error('forbidden', message: e.message, status: :forbidden)
+    end
+
+    def validate_access_level
+      render_error(I18n.t('controller.design_files.unauthorized_access'), status: :unauthorized) unless current_user.has_access_to?(@design_file.access_level)
     end
 
     def design_file_not_found

@@ -1,18 +1,20 @@
 
 # typed: true
 class ColorStyleCreationService < BaseService
-  attr_reader :name, :color_code, :design_file_id
+  attr_reader :name, :color_code, :design_file_id, :user
 
-  def initialize(name:, color_code:, design_file_id:)
+  def initialize(name:, color_code:, design_file_id:, user:)
     @name = name
     @color_code = color_code
     @design_file_id = design_file_id
+    @user = user
   end
 
   def call
     validate_parameters
     design_file = find_design_file
     check_user_access(design_file)
+    validate_access_level!(design_file)
     color_style = create_color_style(design_file)
     handle_group_association(color_style)
     color_style
@@ -36,18 +38,17 @@ class ColorStyleCreationService < BaseService
     # Placeholder for user access level check
   end
 
+  def validate_access_level!(design_file)
+    unless user.has_access_to?(design_file.access_level)
+      raise Exceptions::AccessDeniedError, I18n.t('common.errors.access_denied')
+    end
+  end
+
   def create_color_style(design_file)
     design_file.color_styles.create!(name: name, color_code: color_code)
   end
 
   def handle_group_association(color_style)
-    group_name = extract_group_name(color_style.name)
-    layer = Layer.find_or_create_by(name: group_name, design_file_id: design_file_id)
-    color_style.layer = layer
-    color_style
-  end
-
-  def extract_group_name(name)
-    # Logic to extract group name from the "name" attribute
+    # Placeholder for group association logic based on name naming convention
   end
 end
