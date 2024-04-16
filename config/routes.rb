@@ -1,5 +1,6 @@
 
 require 'sidekiq/web'
+
 Rails.application.routes.draw do
   use_doorkeeper do
     controllers tokens: 'tokens'
@@ -54,9 +55,8 @@ Rails.application.routes.draw do
     resources :users, only: %i[index show destroy] do
     end
 
-    resources :design_files, only: [] do
-      get ':fileId/color-styles', to: 'design_files#list_color_styles', on: :collection
-    end
+    # Route for displaying color styles icon
+    get '/design-files/:file_id/layers/:layer_id/color-style-icon', to: 'design_files#display_color_styles_icon'
 
   end
 

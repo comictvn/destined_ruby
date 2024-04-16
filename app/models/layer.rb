@@ -8,12 +8,16 @@ class Layer < ApplicationRecord
   validates :design_file_id, presence: true
 
   # Determines if the layer is eligible for color style application
-  def eligible_for_color_styles?    
+  def eligible_for_color_styles?
     # Placeholder logic for eligibility check
     # This method should contain the actual logic to check if the layer is eligible
-    eligible = true # This should be replaced with the actual eligibility condition
+    # Assuming 'locked' and 'hidden' attributes exist on the Layer model
+    # and determine the eligibility of the layer for color styles.
+    eligible = !self.locked && !self.hidden
 
-    raise Exceptions::LayerIneligibleError, I18n.t('common.layer_not_eligible') unless eligible
+    unless eligible
+      raise Exceptions::LayerIneligibleError, I18n.t('common.errors.layer_not_eligible')
+    end
 
     eligible
   end
