@@ -16,5 +16,5 @@ en:
       unauthorized: The user is not authenticated.
     layers:
       display_color_styles_icon:
-        success: "Color style icon display is available."
-        layer_not_eligible: "Layer is not eligible for color style icon display."
+        success: "Color styles icon is displayed."
+        layer_ineligible: "Layer is not eligible for color styles."

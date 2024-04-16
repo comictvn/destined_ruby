@@ -12,14 +12,15 @@ module Api
 
       begin
         design_file = DesignFile.find(fileId)
-        layer = design_file.layers.find(layerId)
+        layer = design_file.layers.find_by!(id: layerId)
+
         if layer.eligible_for_color_styles?
-          render_response({ display_color_styles_icon: true }, message: I18n.t('design_files.layers.display_color_styles_icon.success'))
+          render json: { display_icon: true, message: I18n.t('design_files.layers.display_color_styles_icon.success') }, status: :ok
         end
-      rescue Exceptions::LayerIneligibleError => e
-        render_layer_ineligible_error(e)
-      rescue ActiveRecord::RecordNotFound => e
-        render_error('server_error', message: e.message, status: :internal_server_error)
+      rescue Exceptions::LayerIneligibleError => exception
+        render_error(:unprocessable_entity, exception.message)
+      rescue ActiveRecord::RecordNotFound => exception
+        render_error(:not_found, exception.message)
       end
     end
 
@@ -27,7 +28,7 @@ module Api
       fileId = params[:fileId]
 
       begin
-        design_file = current_user.design_files.find(fileId)
+        design_file = DesignFile.find_by!(user: current_user, id: fileId)
         color_styles = design_file.color_styles.select(:id, :name, :color_code)
 
         render_response({ status: 200, colorStyles: color_styles })
