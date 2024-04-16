@@ -1,8 +1,9 @@
 
 module Api
   class DesignFilesController < BaseController
-    before_action :set_design_file, only: [:list_color_styles]
+    before_action :set_design_file, only: [:list_color_styles, :create_color_style]
     rescue_from Exceptions::DesignFileNotFoundError, with: :design_file_not_found
+    rescue_from Exceptions::BadRequest, with: :bad_request
 
     # GET /design_files/:design_file_id/color_styles
     def list_color_styles
@@ -17,22 +18,18 @@ module Api
         color_code: color_style_params[:color_code],
         design_file_id: params[:design_file_id]
       )
-      result = service.call
-      if result[:group_id]
-        render_response({ group_id: result[:group_id], color_style_ids: result[:color_style_ids] }, :created)
-      else
-        render_response({ color_style_id: result[:color_style_id] }, :created)
-      end
-    rescue Exceptions::DesignFileNotFoundError
-      render_error('not_found', message: I18n.t('design_files.color_styles.not_found'), status: :not_found)
-    rescue Exceptions::BadRequest => e
-      render_error('bad_request', message: e.message, status: :unprocessable_entity)
+      color_style = service.call
+      render_response(color_style, :created)
+    rescue Exceptions::ColorStyleInvalidInputError => e
+      render_error('invalid_input', message: e.message, status: :unprocessable_entity)
+    rescue Exceptions::AccessDeniedError => e
+      render_error('access_denied', message: e.message, status: :forbidden)
     end
 
     private
 
     def color_style_params
-      params.permit(:name, :color_code, :design_file_id)
+      params.require(:color_style).permit(:name, :color_code)
     end
 
     def set_design_file
@@ -46,6 +43,10 @@ module Api
 
     def design_file_not_found
       render_error('not_found', message: I18n.t('design_files.color_styles.not_found'), status: :not_found)
+    end
+
+    def bad_request(exception)
+      render_error('bad_request', message: exception.message, status: :bad_request)
     end
   end
 end

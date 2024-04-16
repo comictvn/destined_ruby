@@ -6,8 +6,5 @@ module Exceptions
   class InvalidColorCodeFormatError < StandardError; end
   class AccessDeniedError < StandardError; end
   class InvalidAccessLevelError < StandardError; end
-
-  class GroupNamingError < StandardError; end
-  class GroupCreationError < StandardError; end
-end
+  class ColorStyleInvalidInputError < StandardError; end
 end
