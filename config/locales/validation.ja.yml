@@ -4,6 +4,17 @@ ja:
   activerecord:
     errors:
       models:
+        color_style:
+          attributes:
+            name:
+              blank: '名前を入力してください'
+            color_code:
+              blank: 'カラーコードを入力してください'
+              invalid_format: 'カラーコードの形式が不正です'
+            design_file_id:
+              blank: 'デザインファイルIDを入力してください'
+    errors:
+      models:
         user:
           attributes:
             email:

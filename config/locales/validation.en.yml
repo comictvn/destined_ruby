@@ -4,6 +4,14 @@ en:
   activerecord:
     errors:
       models:
+        color_style:
+          attributes:
+            name:
+              blank: "Name can't be blank"
+            color_code:
+              blank: "Color code can't be blank"
+              invalid_format: "Color code is not a valid hex color"
+      models:
         user:
           attributes:
             email:
