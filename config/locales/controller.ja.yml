@@ -20,6 +20,7 @@ ja:
       unauthorized: このデザインファイルへのアクセスは許可されていません
   layer_not_eligible: レイヤーはカラースタイルに適していません
   layers:
+    display_color_styles_icon: カラースタイルアイコンを表示する
     apply_color_style:
       success: "レイヤーにカラースタイルが正常に適用されました。"
       layer_not_found: "デザインファイル内にレイヤーが見つかりません。"
