@@ -12,6 +12,7 @@ ja:
     '201': 作成されました
     '200': 成功
     display_color_styles_icon_success: カラースタイルアイコンが表示されました
+    display_color_styles_icon_eligible: カラースタイルアイコンが表示可能です
     '302': 削除されました
   design_files:
     color_styles:
@@ -21,6 +22,7 @@ ja:
   layer_not_eligible: レイヤーはカラースタイルに適していません
   layers:
     display_color_styles_icon: カラースタイルアイコンを表示する
+    display_color_styles_icon_eligible: カラースタイルアイコンを表示できます
     apply_color_style:
       success: "レイヤーにカラースタイルが正常に適用されました。"
       layer_not_found: "デザインファイル内にレイヤーが見つかりません。"

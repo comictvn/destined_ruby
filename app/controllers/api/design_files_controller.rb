@@ -13,12 +13,12 @@ module Api
       begin
         design_file = DesignFile.find(fileId)
         layer = design_file.layers.find(layerId)
-        
-        # Checks if the layer is eligible for color styles
-        check_layer_eligibility(layer)
-        
-        render_response({ display_color_styles_icon: true }, message: I18n.t('controller.display_color_styles_icon'))
-      rescue => e
+        if layer.eligible_for_color_styles?
+          render_response({ display_color_styles_icon: true }, message: I18n.t('design_files.layers.display_color_styles_icon.success'))
+        end
+      rescue Exceptions::LayerIneligibleError => e
+        render_layer_ineligible_error(e)
+      rescue ActiveRecord::RecordNotFound => e
         render_error('server_error', message: e.message, status: :internal_server_error)
       end
     end
@@ -65,7 +65,7 @@ module Api
     end
 
     def render_not_found_error(exception)
-      render_error('not_found', message: I18n.t('common.404', default: exception.message), status: :not_found)
+      render_error('not_found', message: I18n.t('common.404'), status: :not_found)
     end
 
     # Checks if the layer is eligible for color styles
