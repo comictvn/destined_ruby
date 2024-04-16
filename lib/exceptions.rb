@@ -6,4 +6,5 @@ module Exceptions
   class InvalidColorCodeFormatError < StandardError; end
   class AccessDeniedError < StandardError; end  # This class handles unauthorized access attempts to design files.
   class InvalidAccessLevelError < StandardError; end
+  class ColorStyleInvalidInputError < StandardError; end  # This class handles invalid input errors for color style creation.
 end

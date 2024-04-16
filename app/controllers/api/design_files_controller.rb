@@ -15,7 +15,7 @@ module Api
     def create_color_style
       service = ColorStyleCreationService.new(
         name: color_style_params[:name],
-        color_code: color_style_params[:color_code],
+        color_code: color_style_params[:color_code].upcase, # Ensure color code is uppercase
         design_file_id: color_style_params[:design_file_id]
       )
       color_style = service.call
@@ -23,7 +23,15 @@ module Api
     rescue Exceptions::DesignFileNotFoundError
       render_error('not_found', message: I18n.t('design_files.color_styles.not_found'), status: :not_found)
     rescue Exceptions::BadRequest => e
-      render_error('bad_request', message: e.message, status: :unprocessable_entity)
+      render_error('bad_request', message: e.message, status: :bad_request)
+    rescue Exceptions::ColorStyleInvalidInputError => e
+      render_error('unprocessable_entity', message: e.message, status: :unprocessable_entity)
+    rescue Exceptions::AccessDeniedError => e
+      render_error('forbidden', message: e.message, status: :forbidden)
+    rescue Exceptions::InvalidAccessLevelError => e
+      render_error('forbidden', message: e.message, status: :forbidden)
+    rescue StandardError => e
+      render_error('internal_server_error', message: e.message, status: :internal_server_error)
     end
 
     # PUT /design_files/:design_file_id/layers/:layer_id/color_styles/:color_style_id

@@ -7,10 +7,10 @@ en:
         color_style:
           attributes:
             name:
-              blank: "Custom error message for blank name"
+              blank: "Name can't be blank"
             color_code:
-              blank: "Custom error message for blank color code"
-              invalid_format: "Custom error message for invalid color code format"
+              blank: "Color code can't be blank"
+              invalid_format: "Color code format is invalid"
         user:
           attributes:
             email:

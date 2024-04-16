@@ -7,12 +7,12 @@ ja:
         color_style:
           attributes:
             name:
-              blank: '名前を入力してください'
+              blank: '名前を入力してください。'
             color_code:
-              blank: 'カラーコードを入力してください'
-              invalid: 'カラーコードの形式が不正です'
+              blank: 'カラーコードを入力してください。'
+              invalid: 'カラーコードの形式が不正です。'
             design_file_id:
-              blank: 'デザインファイルIDを入力してください'
+              blank: 'デザインファイルIDを入力してください。'
         user:
           attributes:
             email:
