@@ -11,6 +11,7 @@ ja:
     '422': 処理できません
     '201': 作成されました
     '200': 成功
+    display_color_styles_icon_success: カラースタイルアイコンが表示されました
     '302': 削除されました
   design_files:
     color_styles:

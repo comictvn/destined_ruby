@@ -4,6 +4,7 @@ module Api
   class DesignFilesController < BaseController
     before_action :authenticate_user!
     rescue_from Exceptions::LayerIneligibleError, with: :render_layer_ineligible_error
+    rescue_from ActiveRecord::RecordNotFound, with: :render_not_found_error
 
     def display_color_styles_icon
       fileId = params[:fileId]
@@ -17,10 +18,8 @@ module Api
         check_layer_eligibility(layer)
         
         render_response({ display_color_styles_icon: true }, message: I18n.t('controller.display_color_styles_icon'))
-      rescue ActiveRecord::RecordNotFound => e
-        render_error('not_found', message: I18n.t('common.errors.record_not_found'), status: :not_found)
       rescue => e
-        render_error('server_error', message: I18n.t('common.errors.server_error'), status: :internal_server_error)
+        render_error('server_error', message: e.message, status: :internal_server_error)
       end
     end
 
@@ -28,12 +27,10 @@ module Api
       fileId = params[:fileId]
 
       begin
-        design_file = DesignFile.find(fileId)
+        design_file = current_user.design_files.find(fileId)
         color_styles = design_file.color_styles.select(:id, :name, :color_code)
 
         render_response({ status: 200, colorStyles: color_styles })
-      rescue ActiveRecord::RecordNotFound => e
-        render_error('not_found', message: I18n.t('design_files.color_styles.not_found'), status: :not_found)
       rescue => e
         render_error('server_error', message: I18n.t('common.errors.server_error'), status: :internal_server_error)
       end
@@ -54,8 +51,6 @@ module Api
         layer.update!(color_style_id: colorStyleId)
 
         render_response({ status: 200, layer: layer.as_json.merge(colorStyleId: colorStyleId) }, message: I18n.t('design_files.layers.apply_color_style.success'))
-      rescue ActiveRecord::RecordNotFound => e
-        render_error('not_found', message: e.message, status: :not_found)
       rescue Exceptions::BadRequest => e
         render_error('bad_request', message: e.message, status: :bad_request)
       rescue ActiveRecord::RecordInvalid => e
@@ -67,6 +62,10 @@ module Api
 
     def render_layer_ineligible_error(exception)
       render_error('layer_ineligible', message: I18n.t('controller.layer_not_eligible', default: exception.message), status: :unprocessable_entity)
+    end
+
+    def render_not_found_error(exception)
+      render_error('not_found', message: I18n.t('common.404', default: exception.message), status: :not_found)
     end
 
     # Checks if the layer is eligible for color styles
@@ -90,4 +89,5 @@ end
 # app/models/exceptions.rb
 module Exceptions
   class LayerIneligibleError < StandardError; end
+  class BadRequest < StandardError; end
 end

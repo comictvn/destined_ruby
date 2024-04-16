@@ -20,3 +20,6 @@ en:
         layer_not_found: "Layer not found within the design file."
         color_style_not_found: "Color style not found."
         bad_request: "The layer and color style do not belong to the same design file."
+      display_color_styles_icon:
+        success: "Color styles icon displayed successfully."
+        layer_not_eligible: "Layer is not eligible for color styles."
