@@ -14,13 +14,7 @@ en:
       success: The list of color styles was successfully retrieved.
       not_found: Design file not found.
       unauthorized: The user is not authenticated.
-      create:
-        success: "Color style created successfully."
-        error:
-          invalid_parameters: "Invalid parameters provided."
-          design_file_not_found: "Design file not found."
-          unauthorized: "Unauthorized to create color style."
     layers:
       display_color_styles_icon:
-        success: "Color styles icon displayed successfully."
-        layer_not_eligible: "Layer is not eligible for color styles."
+        success: "Color style icon display is available."
+        layer_not_eligible: "Layer is not eligible for color style icon display."

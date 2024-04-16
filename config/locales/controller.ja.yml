@@ -11,14 +11,10 @@ ja:
     '422': 処理できません
     '201': 作成されました
     '200': 成功
+    design_files.layers.display_color_styles_icon.success: 'カラースタイルアイコンの表示が可能です。'
+    design_files.layers.display_color_styles_icon.layer_not_eligible: 'レイヤーはカラースタイルアイコンの表示に適していません。'
     display_color_styles_icon_success: カラースタイルアイコンが表示されました
     display_color_styles_icon_eligible: カラースタイルアイコンが表示可能です
-    create:
-      success: "カラースタイルが正常に作成されました。"
-      error:
-        invalid_parameters: "無効なパラメータが提供されました。"
-        design_file_not_found: "デザインファイルが見つかりません。"
-        unauthorized: "カラースタイルを作成する権限がありません。"
     '302': 削除されました
   design_files:
     color_styles:
