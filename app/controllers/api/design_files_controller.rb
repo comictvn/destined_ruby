@@ -23,25 +23,8 @@ module Api
       end
     end
 
-    def apply_color_style_to_layer
-      design_file = DesignFile.find(params[:fileId])
-      layer = design_file.layers.find(params[:layerId])
-      color_style = ColorStyle.find(params[:colorStyleId])
-
-      if layer.eligible_for_color_styles? && layer.color_style_belongs_to_same_design_file(color_style)
-        layer.update!(color_style: color_style)
-        render json: { message: I18n.t('design_files.apply_color_style_to_layer.success'), layer: layer }, status: :ok
-      else
-        render json: { error: I18n.t('design_files.apply_color_style_to_layer.error.layer_ineligible') }, status: :unprocessable_entity
-      end
-    rescue ActiveRecord::RecordNotFound => e
-      render json: { error: e.message }, status: :not_found
-    rescue => e
-      render json: { error: I18n.t('design_files.apply_color_style_to_layer.error.color_style_application_error') }, status: :internal_server_error
-    end
-
     def create_color_style
-      fileId = params[:fileId]
+      fileId = params[:fileId].to_i
       name = params[:name]
       color_code = params[:color_code]
 
@@ -49,7 +32,12 @@ module Api
         color_style = ColorStyleCreationService.new(name, color_code, fileId, current_user).call
         render json: { status: 201, colorStyle: { id: color_style.id, name: color_style.name, color_code: color_style.color_code, design_file_id: color_style.design_file_id } }, status: :created
       rescue StandardError => e
-        render_error(e)
+        case e
+        when Exceptions::BadRequest
+          render json: { message: e.message }, status: :bad_request
+        when Exceptions::UnauthorizedAccess
+          render json: { message: e.message }, status: :forbidden
+        else render json: { message: e.message }, status: :internal_server_error
       end
     end
 
@@ -58,7 +46,7 @@ module Api
     private
 
     def render_layer_ineligible_error(exception)
-      render json: { message: exception.message }, status: :unprocessable_entity
+      render json: { message: exception.message }, status: :forbidden
     end
 
     def render_not_found_error(exception)
@@ -80,11 +68,6 @@ class Layer < ApplicationRecord
   def eligible_for_color_styles?
     # Placeholder for actual eligibility logic
     true
-  end
-
-  def color_style_belongs_to_same_design_file(color_style)
-    # Placeholder for actual logic to check if the color style belongs to the same design file
-    self.design_file_id == color_style.design_file_id
   end
 end
 
@@ -111,10 +94,4 @@ class ColorStyleCreationService
     # Placeholder for the actual implementation logic
     # This should create a color style and return the created object
   end
-end
-
-# Assuming the ColorStyle model is defined elsewhere in the application:
-# app/models/color_style.rb
-class ColorStyle < ApplicationRecord
-  # ... other code ...
 end

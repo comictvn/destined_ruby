@@ -19,11 +19,6 @@ en:
         name_required: "Color style name is required."
         invalid_color_code: "Invalid color code format."
         file_not_found_or_access_denied: "Design file not found or access denied."
-      apply_color_style_to_layer:
-        success: "Color style successfully applied to layer."
-        error:
-          layer_ineligible: "Layer is not eligible for color styles."
-          color_style_application_error: "Error applying color style to layer."
       display_color_styles_icon:
         success: "Color styles icon is displayed."
         layer_ineligible: "Layer is not eligible for color styles."

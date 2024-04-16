@@ -12,16 +12,16 @@ class ColorStyleCreationService
   def call
     validate_input_parameters
     design_file = find_design_file
-    check_user_permission(design_file, user)
+    check_user_permission(design_file)
     color_style = create_color_style(design_file)
     handle_grouping(color_style)
     color_style
   rescue ActiveRecord::RecordInvalid => e
-    raise Exceptions::BadRequest, e.record.errors.full_messages.to_sentence
+    raise Exceptions::UnprocessableEntity, e.record.errors.full_messages.to_sentence
   rescue ActiveRecord::RecordNotFound
-    raise Exceptions::RecordNotFound, I18n.t('activerecord.errors.messages.record_not_found')
+    raise Exceptions::NotFound, I18n.t('activerecord.errors.messages.record_not_found')
   rescue Exceptions::UnauthorizedAccess
-    raise Exceptions::UnauthorizedAccess, I18n.t('common.errors.unauthorized_error')
+    raise Exceptions::Forbidden, I18n.t('common.errors.unauthorized_error')
   end
 
   private
@@ -39,21 +39,15 @@ class ColorStyleCreationService
   end
   
   def find_design_file
-    DesignFile.find_by!(id: design_file_id)
+    DesignFile.find(design_file_id)
   end
   
-  def check_user_permission(design_file, user)
-    raise Exceptions::UnauthorizedAccess unless user.can_edit?(design_file)
+  def check_user_permission(design_file)
+    raise Exceptions::UnauthorizedAccess unless design_file.access_level == 'edit' && design_file.user_id == user.id
   end
   
   def create_color_style(design_file)
-    color_style = design_file.color_styles.new(name: name, color_code: color_code)
-    if color_style.valid?
-      color_style.save!
-      return color_style
-    else
-      raise Exceptions::BadRequest.new(color_style.errors.full_messages.to_sentence)
-    end
+    design_file.color_styles.create!(name: name, color_code: color_code)
   end
   
   def handle_grouping(color_style)
@@ -63,8 +57,6 @@ class ColorStyleCreationService
     end
   end
 
-  # ... other private methods ...
-  
   def extract_group_name
     match_data = name.match(/\A(?<group_name>[a-zA-Z0-9_]+):/)
     match_data[:group_name] if match_data
