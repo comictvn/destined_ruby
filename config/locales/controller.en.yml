@@ -11,9 +11,6 @@ en:
     '302': deleted
   design_files:
     color_styles:
-      list_success: "The list of color styles was successfully retrieved."
-      list_not_found: "Design file not found."
-      list_unauthorized: "User does not have access to the design file."
       success: The list of color styles was successfully retrieved.
       not_found: "Design file not found."
       unauthorized: The user is not authenticated.
@@ -22,5 +19,10 @@ en:
         success: "Color styles icon is displayed."
         layer_ineligible: "Layer is not eligible for color styles."
         # Add new I18n translation keys for display_color_styles_icon action
+        apply_color_style:
+          success: "Color style successfully applied to the layer."
+          layer_not_found: "Layer not found within the design file."
+          color_style_not_found: "Color style not found."
+          bad_request: "Layer and color style do not belong to the same design file."
         icon_displayed: "Color styles icon is now visible next to the Fill property."
         ineligible_layer_error: "The layer is not eligible for color style application."
