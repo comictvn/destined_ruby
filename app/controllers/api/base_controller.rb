@@ -1,3 +1,4 @@
+
 # typed: ignore
 module Api
   class BaseController < ActionController::API
@@ -13,6 +14,8 @@ module Api
     rescue_from ActiveRecord::RecordNotUnique, with: :base_render_record_not_unique
     rescue_from Pundit::NotAuthorizedError, with: :base_render_unauthorized_error
     rescue_from Exceptions::BadRequest, with: :base_render_bad_request
+    rescue_from Exceptions::DesignFileNotFoundError, with: :base_render_design_file_not_found
+    rescue_from Exceptions::AccessDeniedError, with: :base_render_access_denied
 
     def render_response(data, metadata: {}, **kwargs)
       render(json: { data: data, metadata: metadata }, **kwargs)
@@ -42,6 +45,14 @@ module Api
 
     def base_render_unauthorized_error(_exception)
       render json: { message: I18n.t('common.errors.unauthorized_error') }, status: :unauthorized
+    end
+
+    def base_render_design_file_not_found(_exception)
+      render json: { message: I18n.t('common.errors.design_file_not_found') }, status: :not_found
+    end
+
+    def base_render_access_denied(_exception)
+      render json: { message: I18n.t('common.errors.access_denied') }, status: :forbidden
     end
 
     def base_render_record_not_unique

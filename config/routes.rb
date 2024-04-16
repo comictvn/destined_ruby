@@ -1,3 +1,4 @@
+
 require 'sidekiq/web'
 Rails.application.routes.draw do
   use_doorkeeper do
@@ -52,6 +53,9 @@ Rails.application.routes.draw do
 
     resources :users, only: %i[index show destroy] do
     end
+
+    # Added route from the patch
+    get 'design_files/:design_file_id/color_styles', to: 'design_files#list_color_styles'
   end
 
   get '/health' => 'pages#health_check'

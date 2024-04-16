@@ -1,7 +1,12 @@
+atabase: Invalid email or password
 ---
 en:
   common:
     errors:
+      design_file_not_found: "Design file not found"
+      access_denied: "Access denied to the design file"
+      color_styles_list_success: "Color styles listed successfully"
+      color_styles_list_failure: "Failed to list color styles"
       unauthorized_error: Unauthorized
       record_not_uniq_error: Record not uniq
       token:
@@ -24,4 +29,4 @@ en:
       failed_to_sign_up: Failed to sign up
     passwords:
       old_password_mismatch: Incorrect current password
-      not_found_in_database: Invalid email or password
+      not_found_in_d

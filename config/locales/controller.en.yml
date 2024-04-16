@@ -1,11 +1,16 @@
 ---
 en:
   common:
+    success: success
+    created: created
+    deleted: deleted
     '404': not found
     '403': forbidden
     '401': unauthorized
     '500': internal server error
     '422': unprocessable
-    '201': created
-    '200': success
-    '302': deleted
+  design_files:
+    color_styles:
+      list:
+        success: Color styles listed successfully.
+        not_found: Design file not found or access denied.

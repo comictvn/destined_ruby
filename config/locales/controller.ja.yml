@@ -1,3 +1,4 @@
+
 ---
 ja:
   common:
@@ -9,3 +10,9 @@ ja:
     '201': 作成されました
     '200': 成功
     '302': 削除されました
+  design_files:
+    color_styles:
+      list:
+        success: カラースタイルのリストを取得しました
+        not_found: 指定されたデザインファイルが見つかりません
+        access_denied: このデザインファイルへのアクセス権がありません

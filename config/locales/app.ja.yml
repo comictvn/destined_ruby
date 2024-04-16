@@ -1,4 +1,4 @@
----
+
 ja:
   common:
     errors:
@@ -12,7 +12,7 @@ ja:
       send_otp_success: 認証コードを送信しました
       verification_declined: 認証コードに誤りがあります
       notp_expired: 認証コードの有効期限が切れています。認証コードを再度送信します。
-      exceed_amount_sent_otp: You have reached the limit of otp sms per day
+      exceed_amount_sent_otp: 1日のOTP SMSの上限に達しました
       recaptcha_invalid: 異常なリクエストパターンが発生しました。
   email_login:
     reset_password:
