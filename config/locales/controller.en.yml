@@ -19,6 +19,7 @@ en:
         name_required: "Color style name is required."
         invalid_color_code: "Invalid color code format."
         file_not_found_or_access_denied: "Design file not found or access denied."
+        layer_not_found: "Layer not found within the design file."
       display_color_styles_icon:
         success: "Color styles icon is displayed."
         layer_ineligible: "Layer is not eligible for color styles."

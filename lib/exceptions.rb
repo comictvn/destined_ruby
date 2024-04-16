@@ -6,10 +6,11 @@ module Exceptions
   class RecordNotFound < StandardError; end
   class UnauthorizedAccess < StandardError; end
   class ServerError < StandardError; end
-  class LayerIneligibleError < StandardError; end
-  class ColorStyleApplicationError < StandardError
+  # Custom exception class for ineligible layers
+  class LayerIneligibleError < StandardError
     def initialize(message = nil)
       super(message)
     end
   end
+  # Other custom exceptions can be added here
 end

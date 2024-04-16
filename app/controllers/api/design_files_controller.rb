@@ -5,6 +5,7 @@ module Api
     before_action :authenticate_user!
     rescue_from Exceptions::LayerIneligibleError, with: :render_layer_ineligible_error
     rescue_from ActiveRecord::RecordNotFound, with: :render_not_found_error
+    rescue_from Exceptions::UnauthorizedAccess, with: :render_unauthorized_access_error
 
     def display_color_styles_icon
       fileId = params[:fileId]
@@ -12,32 +13,17 @@ module Api
 
       begin
         design_file = DesignFile.find(fileId)
+        # Check if the user has access to the design file
+        raise Exceptions::UnauthorizedAccess unless design_file.access_level == 'public' # Assuming 'public' is a valid access level
+
         layer = design_file.layers.find(layerId)
-        if layer.eligible_for_color_styles?
-          render json: { display_icon: true, message: I18n.t('design_files.layers.display_color_styles_icon.icon_displayed') }, status: :ok
-        end
+        layer.eligible_for_color_styles? # This will raise an exception if the layer is not eligible
+
+        render json: { status: 200, displayColorStyleIcon: true }, status: :ok
       rescue Exceptions::LayerIneligibleError => exception
         render_layer_ineligible_error(exception)
       rescue ActiveRecord::RecordNotFound => exception
         render_not_found_error(exception)
-      end
-    end
-
-    def create_color_style
-      fileId = params[:fileId].to_i
-      name = params[:name]
-      color_code = params[:color_code]
-
-      begin
-        color_style = ColorStyleCreationService.new(name, color_code, fileId, current_user).call
-        render json: { status: 201, colorStyle: { id: color_style.id, name: color_style.name, color_code: color_style.color_code, design_file_id: color_style.design_file_id } }, status: :created
-      rescue StandardError => e
-        case e
-        when Exceptions::BadRequest
-          render json: { message: e.message }, status: :bad_request
-        when Exceptions::UnauthorizedAccess
-          render json: { message: e.message }, status: :forbidden
-        else render json: { message: e.message }, status: :internal_server_error
       end
     end
 
@@ -46,16 +32,20 @@ module Api
     private
 
     def render_layer_ineligible_error(exception)
-      render json: { message: exception.message }, status: :forbidden
+      render json: { status: 422, message: exception.message }, status: :unprocessable_entity
     end
 
     def render_not_found_error(exception)
       message = exception.model == 'DesignFile' ? I18n.t('design_files.color_styles.not_found') : I18n.t('common.404')
-      render json: { message: message }, status: :not_found
+      render json: { status: 404, message: message }, status: :not_found
+    end
+
+    def render_unauthorized_access_error(exception)
+      render json: { status: 403, message: exception.message }, status: :forbidden
     end
 
     def render_error(exception)
-      render json: { message: exception.message }, status: :unprocessable_entity
+      render json: { status: 422, message: exception.message }, status: :unprocessable_entity
     end
   end
 end
@@ -67,7 +57,8 @@ class Layer < ApplicationRecord
 
   def eligible_for_color_styles?
     # Placeholder for actual eligibility logic
-    true
+    # If not eligible, raise an exception
+    raise Exceptions::LayerIneligibleError, "Layer is not eligible for color styles" unless true
   end
 end
 

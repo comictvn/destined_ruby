@@ -11,7 +11,7 @@ ja:
     '422': 処理できません
     '201': 作成されました
     '200': 成功
-    display_color_styles_icon_success: カラースタイルアイコンが表示されました
+    display_color_styles_icon_success: カラースタイルアイコンが正常に表示されました
     display_color_styles_icon_eligible: カラースタイルアイコンが表示可能です
     '302': 削除されました
   design_files:
@@ -19,17 +19,12 @@ ja:
       success: カラースタイルが正常に取得されました
       not_found: デザインファイルが見つかりません
       unauthorized: このデザインファイルへのアクセスは許可されていません
-      create:
-        success: "新しいカラースタイルが正常に作成されました。"
-        name_required: "カラースタイル名は必須です。"
-        invalid_color_code: "無効なカラーコード形式です。"
-        file_not_found_or_access_denied: "デザインファイルが見つからないか、アクセスが拒否されました。"
     layers:
       display_color_styles_icon:
         success: "カラースタイルアイコンが表示されます。"
-        ineligible: "このレイヤーはカラースタイルアイコンを表示するのに適していません。"
+        ineligible: "レイヤーはカラースタイルアイコンを表示する資格がありません。"
       apply_color_style: # No changes needed as the keys and texts are already correct.
   layer_not_eligible: レイヤーはカラースタイルに適していません
   layers:
     display_color_styles_icon: カラースタイルアイコンを表示する
-    display_color_styles_icon_eligible: カラースタイルアイコンを表示できます
+    display_color_styles_icon_eligible: カラースタイルアイコンを表示することができます
