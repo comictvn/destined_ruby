@@ -3,8 +3,20 @@
 module Api
   class DesignFilesController < BaseController
     before_action :authenticate_user!
+    before_action :set_design_file, only: [:list_color_styles]
     rescue_from Exceptions::LayerIneligibleError, with: :render_layer_ineligible_error
     rescue_from ActiveRecord::RecordNotFound, with: :render_not_found_error
+    rescue_from Exceptions::UnauthorizedAccess, with: :render_unauthorized_access_error
+
+    def list_color_styles
+      begin
+        authorize_access_to_design_file!
+        color_styles = @design_file.color_styles.select(:id, :name, :color_code)
+        render json: { status: 200, colorStyles: color_styles }, status: :ok
+      rescue Exceptions::UnauthorizedAccess => exception
+        render_unauthorized_access_error(exception)
+      end
+    end
 
     def display_color_styles_icon
       fileId = params[:fileId]
@@ -13,8 +25,9 @@ module Api
       begin
         design_file = DesignFile.find(fileId)
         layer = design_file.layers.find_by!(id: layerId)
-        layer.eligible_for_color_styles?
-        render json: { display_icon: true, message: I18n.t('design_files.layers.display_color_styles_icon.success') }, status: :ok
+        if layer.eligible_for_color_styles?
+          render json: { display_icon: true, message: I18n.t('design_files.layers.display_color_styles_icon.success') }, status: :ok
+        end
       rescue Exceptions::LayerIneligibleError => exception
         render_layer_ineligible_error(exception)
       rescue ActiveRecord::RecordNotFound => exception
@@ -22,59 +35,17 @@ module Api
       end
     end
 
-    def list_color_styles
-      fileId = params[:fileId]
-
-      begin
-        design_file = DesignFile.find_by!(user: current_user, id: fileId)
-        color_styles = design_file.color_styles.select(:id, :name, :color_code)
-
-        render_response({ status: 200, colorStyles: color_styles })
-      rescue => e
-        render_error('server_error', message: I18n.t('common.errors.server_error'), status: :internal_server_error)
-      end
-    end
-
-    def apply_color_style_to_layer
-      fileId = params[:fileId]
-      layerId = params[:layerId]
-      colorStyleId = params[:colorStyleId]
-
-      begin
-        design_file = DesignFile.find(fileId)
-        layer = design_file.layers.find(layerId)
-        color_style = ColorStyle.find(colorStyleId)
-
-        raise Exceptions::BadRequest, I18n.t('design_files.layers.apply_color_style.bad_request') unless design_file.id == color_style.design_file_id
-
-        layer.update!(color_style_id: colorStyleId)
-
-        render_response({ status: 200, layer: layer.as_json.merge(colorStyleId: colorStyleId) }, message: I18n.t('design_files.layers.apply_color_style.success'))
-      rescue Exceptions::BadRequest => e
-        render_error('bad_request', message: e.message, status: :bad_request)
-      rescue ActiveRecord::RecordInvalid => e
-        render_error('unprocessable_entity', message: e.record.errors.full_messages, status: :unprocessable_entity)
-      end
-    end
-
-    def create_color_style
-      fileId = params[:fileId]
-      name = params[:name]
-      color_code = params[:color_code]
-
-      begin
-        color_style = ColorStyleCreationService.new(name, color_code, fileId).call
-        render json: { status: 201, colorStyle: color_style }, status: :created
-      rescue Exceptions::BadRequest => e
-        render_error('bad_request', message: I18n.t('design_files.color_styles.create.error.invalid_parameters'), status: :bad_request)
-      rescue ActiveRecord::RecordNotFound => e
-        render_error('not_found', message: I18n.t('design_files.color_styles.create.error.design_file_not_found'), status: :not_found)
-      rescue Exceptions::UnauthorizedAccess => e
-        render_error('unauthorized', message: I18n.t('design_files.color_styles.create.error.unauthorized'), status: :unauthorized)
-      end
-    end
+    # ... other actions ...
 
     private
+
+    def set_design_file
+      @design_file = DesignFile.find(params[:fileId])
+    end
+
+    def authorize_access_to_design_file!
+      raise Exceptions::UnauthorizedAccess unless @design_file.access_level == 'edit'
+    end
 
     def render_layer_ineligible_error(exception)
       render json: { message: I18n.t('design_files.layers.display_color_styles_icon.layer_ineligible') }, status: :unprocessable_entity
@@ -85,9 +56,8 @@ module Api
       render json: { message: message }, status: :not_found
     end
 
-    # Checks if the layer is eligible for color styles
-    def check_layer_eligibility(layer)
-      raise Exceptions::LayerIneligibleError unless layer.eligible_for_color_styles?
+    def render_unauthorized_access_error(exception)
+      render json: { message: I18n.t('common.unauthorized_access') }, status: :unauthorized
     end
   end
 end
@@ -107,7 +77,7 @@ end
 module Exceptions
   class LayerIneligibleError < StandardError; end
   class BadRequest < StandardError; end
-  class UnauthorizedAccess < StandardError; end # Assuming this is defined as it's used in the patch
+  class UnauthorizedAccess < StandardError; end
 end
 
 # Assuming the ColorStyleCreationService is defined elsewhere in the application:
