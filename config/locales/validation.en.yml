@@ -23,7 +23,6 @@ en:
               too_long: "Password is too long (maximum is %{count} characters)"
       messages:
         blank: can't be blank
-        layer_name_uniqueness: "Layer name must be unique within the same design file"
         taken: has already been taken
         too_long: is too long (maximum is %{count} characters)
         too_short: is too short (minimum is %{count} characters)
