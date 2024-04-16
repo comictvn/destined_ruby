@@ -13,17 +13,22 @@ ja:
     '200': 成功
     display_color_styles_icon_success: カラースタイルアイコンが表示されました
     display_color_styles_icon_eligible: カラースタイルアイコンが表示可能です
+    apply_color_style_to_layer:
+      success: "レイヤーにカラースタイルが正常に適用されました。"
+      error:
+        layer_ineligible: "レイヤーはカラースタイルの適用資格がありません。"
+        color_style_application_error: "レイヤーへのカラースタイルの適用中にエラーが発生しました。"
     '302': 削除されました
   design_files:
     color_styles:
       success: カラースタイルが正常に取得されました
       not_found: デザインファイルが見つかりません
       unauthorized: このデザインファイルへのアクセスは許可されていません
-  layers:
-    display_color_styles_icon:
-      success: "カラースタイルアイコンが表示されます。"
-      ineligible: "このレイヤーはカラースタイルアイコンを表示するのに適していません。"
-    apply_color_style: # No changes needed as the keys and texts are already correct.
+    layers:
+      display_color_styles_icon:
+        success: "カラースタイルアイコンが表示されます。"
+        ineligible: "このレイヤーはカラースタイルアイコンを表示するのに適していません。"
+      apply_color_style: # No changes needed as the keys and texts are already correct.
   layer_not_eligible: レイヤーはカラースタイルに適していません
   layers:
     display_color_styles_icon: カラースタイルアイコンを表示する

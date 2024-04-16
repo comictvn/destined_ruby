@@ -23,21 +23,21 @@ module Api
       end
     end
 
-    def list_color_styles
-      fileId = params[:fileId]
+    def apply_color_style_to_layer
+      design_file = DesignFile.find(params[:fileId])
+      layer = design_file.layers.find(params[:layerId])
+      color_style = ColorStyle.find(params[:colorStyleId])
 
-      begin
-        design_file = DesignFile.find(fileId)
-        # Assuming there is a method to check user access level for the design file
-        if design_file.access_level == 'edit'
-          color_styles = design_file.color_styles.select(:id, :name, :color_code)
-          render_response({ colorStyles: color_styles }, status: :ok, message: I18n.t('design_files.color_styles.success'))
-        else
-          base_render_unauthorized_error
-        end
-      rescue ActiveRecord::RecordNotFound => exception
-        base_render_record_not_found(exception)
+      if layer.eligible_for_color_styles? && layer.color_style_belongs_to_same_design_file(color_style)
+        layer.update!(color_style: color_style)
+        render json: { message: I18n.t('design_files.apply_color_style_to_layer.success'), layer: layer }, status: :ok
+      else
+        render json: { error: I18n.t('design_files.apply_color_style_to_layer.error.layer_ineligible') }, status: :unprocessable_entity
       end
+    rescue ActiveRecord::RecordNotFound => e
+      render json: { error: e.message }, status: :not_found
+    rescue => e
+      render json: { error: I18n.t('design_files.apply_color_style_to_layer.error.color_style_application_error') }, status: :internal_server_error
     end
 
     def create_color_style
@@ -69,18 +69,6 @@ module Api
     def render_error(exception)
       render json: { message: exception.message }, status: :unprocessable_entity
     end
-
-    def render_response(data, status:, message:)
-      render json: data.merge(message: message), status: status
-    end
-
-    def base_render_unauthorized_error
-      render json: { message: I18n.t('common.unauthorized') }, status: :unauthorized
-    end
-
-    def base_render_record_not_found(exception)
-      render_not_found_error(exception)
-    end
   end
 end
 
@@ -92,6 +80,11 @@ class Layer < ApplicationRecord
   def eligible_for_color_styles?
     # Placeholder for actual eligibility logic
     true
+  end
+
+  def color_style_belongs_to_same_design_file(color_style)
+    # Placeholder for actual logic to check if the color style belongs to the same design file
+    self.design_file_id == color_style.design_file_id
   end
 end
 
@@ -118,4 +111,10 @@ class ColorStyleCreationService
     # Placeholder for the actual implementation logic
     # This should create a color style and return the created object
   end
+end
+
+# Assuming the ColorStyle model is defined elsewhere in the application:
+# app/models/color_style.rb
+class ColorStyle < ApplicationRecord
+  # ... other code ...
 end

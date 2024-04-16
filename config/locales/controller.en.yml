@@ -12,7 +12,6 @@ en:
   design_files:
     color_styles:
       success: The list of color styles was successfully retrieved.
-      list_success: "Available color styles have been listed successfully."
       not_found: "Design file not found."
       unauthorized: The user is not authenticated.
       create:
@@ -20,6 +19,11 @@ en:
         name_required: "Color style name is required."
         invalid_color_code: "Invalid color code format."
         file_not_found_or_access_denied: "Design file not found or access denied."
+      apply_color_style_to_layer:
+        success: "Color style successfully applied to layer."
+        error:
+          layer_ineligible: "Layer is not eligible for color styles."
+          color_style_application_error: "Error applying color style to layer."
       display_color_styles_icon:
         success: "Color styles icon is displayed."
         layer_ineligible: "Layer is not eligible for color styles."
@@ -29,6 +33,5 @@ en:
       display_color_styles_icon:
         success: "Color styles icon is displayed."
         layer_ineligible: "Layer is not eligible for color styles."
-        # Add new I18n translation keys for display_color_styles_icon action
         icon_displayed: "Color styles icon is now visible next to the Fill property."
         ineligible_layer_error: "The layer is not eligible for color style application."
