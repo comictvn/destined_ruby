@@ -1,4 +1,5 @@
-
+atabase: Invalid email or password
+---
 en:
   common:
     errors:
@@ -9,6 +10,12 @@ en:
       unauthorized_error: Unauthorized
       record_not_uniq_error: Record not uniq
       token:
+        group_creation_success: "Group created successfully"
+        group_creation_failure: "Failed to create or find the group"
+        group_creation_invalid_name: "Invalid group name format"
+        group_add_color_style_success: "Color style added to group successfully"
+        group_add_color_style_failure: "Failed to add color style to group"
+        group_name_not_provided: "Group name not provided"
         inactive: Your account is not activated yet
         locked: Your account is locked
     400: Bad Request
@@ -29,9 +36,3 @@ en:
     passwords:
       old_password_mismatch: Incorrect current password
       not_found_in_d
-  apply_color_style_to_layer:
-    success: "Color style successfully applied to layer."
-    error:
-      not_found: "The requested item was not found."
-      access_denied: "You do not have permission to perform this action."
-      mismatch: "The color style does not belong to the same design file as the layer."

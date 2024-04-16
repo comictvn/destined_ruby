@@ -4,6 +4,12 @@ ja:
     errors:
       unauthorized_error: 操作する権限がありません
       record_not_uniq_error: 既に同様のデータが登録されています
+      group_creation_success: "グループが正常に作成されました"
+      group_creation_failure: "グループの作成または検索に失敗しました"
+      group_creation_invalid_name: "無効なグループ名の形式です"
+      group_add_color_style_success: "カラースタイルがグループに正常に追加されました"
+      group_add_color_style_failure: "カラースタイルをグループに追加できませんでした"
+      group_name_not_provided: "グループ名が提供されていません"
       token:
         inactive: アカウントが有効化されていません
         locked: アカウントはロックされています
@@ -23,9 +29,3 @@ ja:
     passwords:
       old_password_mismatch: 現在のパスワードが正しくありません
       not_found_in_database: Eメールまたはパスワードが違います
-  apply_color_style_to_layer:
-    success: "レイヤーにカラースタイルが正常に適用されました。"
-    error:
-      not_found: "要求されたアイテムが見つかりませんでした。"
-      access_denied: "この操作を実行する権限がありません。"
-      mismatch: "カラースタイルはレイヤーと同じデザインファイルに属していません。"
