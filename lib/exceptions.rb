@@ -5,5 +5,6 @@ module Exceptions
   class DesignFileNotFoundError < StandardError; end
   class InvalidColorCodeFormatError < StandardError; end
   class AccessDeniedError < StandardError; end
-  class GroupCreationError < StandardError; end
+  class LayerNotFoundError < StandardError; end
+  class ColorStyleMismatchError < StandardError; end
 end

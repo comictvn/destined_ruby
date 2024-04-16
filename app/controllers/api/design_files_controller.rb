@@ -12,22 +12,41 @@ module Api
 
     # POST /design_files/:design_file_id/color_styles
     def create_color_style
-      color_style = ColorStyle.new(color_style_params)
-      color_style_service = ColorStyleCreationService.new(
-        name: color_style_params[:name],
-        color_code: color_style_params[:color_code],
-        design_file_id: color_style_params[:design_file_id]
-      )
-      color_style = color_style_service.handle_group_association(color_style)
+      validate_color_style_params
+      design_file = DesignFile.find_by(id: params[:design_file_id])
+      raise Exceptions::DesignFileNotFoundError unless design_file && can_modify_design_file?(design_file)
 
-      if color_style.save
-        render json: color_style, status: :created
-      else
-        render json: color_style.errors, status: :unprocessable_entity
-      end
+      color_style = design_file.color_styles.create!(color_style_params)
+      render_response(color_style, :created)
     end
 
     private
+
+    # PATCH /design_files/apply_color_style_to_layer
+    def apply_color_style_to_layer
+      layer = Layer.find(params[:layer_id])
+      color_style = ColorStyle.find(params[:color_style_id])
+
+      raise Exceptions::DesignFileNotFoundError unless layer.design_file_id == color_style.design_file_id
+
+      layer.update!(color_style: color_style)
+
+      # TODO: Implement undo/redo functionality
+
+      render_response({ layer_id: layer.id, color_style_id: color_style.id })
+    rescue ActiveRecord::RecordNotFound => e
+      render_error('not_found', message: e.message, status: :not_found)
+    rescue Exceptions::DesignFileNotFoundError => e
+      render_error('design_file_not_found', message: I18n.t('design_files.color_styles.layer_not_found_or_mismatch'), status: :not_found)
+    end
+
+    # Other private methods...
+
+    def validate_color_style_params
+      params.require(:name)
+      params.require(:color_code)
+      params.require(:design_file_id)
+    end
 
     def color_style_params
       params.permit(:name, :color_code, :design_file_id)

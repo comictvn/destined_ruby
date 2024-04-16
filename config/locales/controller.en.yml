@@ -15,5 +15,8 @@ en:
       list:
         success: "Color styles listed successfully."
         not_found: "Design file not found or access denied."
-      group_creation_success: "Color style group created successfully."
-      group_creation_error: "Error occurred while creating color style group."
+  layers:
+    apply_color_style_to_layer:
+      success: "Color style successfully applied to layer."
+      color_style_not_found: "Color style not found."
+      layer_not_found_or_mismatch: "Layer not found or does not match the design file."

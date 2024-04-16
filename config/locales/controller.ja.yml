@@ -11,10 +11,12 @@ ja:
     '200': 成功
     '302': 削除されました
   design_files:
+    apply_color_style_to_layer:
+      success: "レイヤーにカラースタイルが正常に適用されました。"
+      color_style_not_found: "カラースタイルが見つかりません。"
+      layer_not_found_or_mismatch: "レイヤーが見つからないか、デザインファイルと一致しません。"
     color_styles:
       list:
         success: カラースタイルのリストを取得しました
         success: "カラースタイルが正常にリストされました。"
         not_found: "デザインファイルが見つからないか、アクセスが拒否されました。"
-      group_creation_success: "カラースタイルグループが正常に作成されました。"
-      group_creation_error: "カラースタイルグループの作成中にエラーが発生しました。"
