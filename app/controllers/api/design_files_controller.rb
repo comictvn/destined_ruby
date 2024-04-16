@@ -5,7 +5,10 @@ module Api
     before_action :authenticate_user!
     rescue_from Exceptions::LayerIneligibleError, with: :render_layer_ineligible_error
 
-    def display_color_styles_icon(fileId, layerId)
+    def display_color_styles_icon
+      fileId = params[:fileId]
+      layerId = params[:layerId]
+
       begin
         design_file = DesignFile.find(fileId)
         layer = design_file.layers.find(layerId)
