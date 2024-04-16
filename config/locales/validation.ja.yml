@@ -7,12 +7,15 @@ ja:
         color_style:
           attributes:
             name:
-              blank: '名前を入力してください。'
+              blank: '名前を入力してください'
             color_code:
-              blank: 'カラーコードを入力してください。'
-              invalid: 'カラーコードの形式が不正です。'
+              blank: 'カラーコードを入力してください'
+              invalid_group_naming: 'グループの命名規則に従っていません'
+              group_already_exists: '指定されたデザインファイルIDでグループが既に存在します'
+              group_creation_failed: 'グループの作成に失敗しました'
+              invalid: 'カラーコードの形式が不正です'
             design_file_id:
-              blank: 'デザインファイルIDを入力してください。'
+              blank: 'デザインファイルIDを入力してください'
         user:
           attributes:
             email:

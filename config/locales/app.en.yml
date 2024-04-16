@@ -1,11 +1,5 @@
 
-database: Invalid email or password
----
 en:
-  color_styles:
-    create_success: "Color style created successfully"
-    create_failure: "Failed to create color style"
-    validation_failure: "Validation failed for color style"
   common:
     errors:
       unauthorized_access: "You do not have access to this resource."
@@ -14,6 +8,7 @@ en:
       access_denied: "Access denied to the design file"
       color_styles_list_success: "Color styles listed successfully"
       color_styles_list_failure: "Failed to list color styles"
+      unauthorized_error: Unauthorized
       record_not_uniq_error: Record not uniq
       token:
         group_creation_success: "Group created successfully"

@@ -7,10 +7,11 @@ en:
         color_style:
           attributes:
             name:
-              blank: "Name can't be blank"
+              blank: "Custom error message for blank name"
+              invalid_group_naming: "Name does not follow the group naming convention (e.g., 'Primary/Blue', 'Secondary/Green')"
             color_code:
-              blank: "Color code can't be blank"
-              invalid_format: "Color code format is invalid"
+              blank: "Custom error message for blank color code"
+              invalid_format: "Custom error message for invalid color code format"
         user:
           attributes:
             email:
