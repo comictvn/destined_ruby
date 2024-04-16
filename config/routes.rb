@@ -1,3 +1,4 @@
+
 require 'sidekiq/web'
 Rails.application.routes.draw do
   use_doorkeeper do
@@ -54,7 +55,8 @@ Rails.application.routes.draw do
     end
 
     resources :design_files, only: [] do
-      resources :color_styles, only: [:create]
+      get ':fileId/color-styles', to: 'design_files#list_color_styles', on: :collection
+      patch ':fileId/layers/:layerId/color-styles/:colorStyleId', to: 'design_files#apply_color_style_to_layer'
     end
 
   end
