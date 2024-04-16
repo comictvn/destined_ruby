@@ -12,6 +12,12 @@ ja:
       group_add_color_style_success: "カラースタイルがグループに正常に追加されました"
       group_add_color_style_failure: "カラースタイルをグループに追加できませんでした"
       group_name_not_provided: "グループ名が提供されていません"
+      color_styles_list_success: "カラースタイルのリストを正常に取得しました。"
+      color_styles_list_failure: "カラースタイルのリストの取得に失敗しました。"
+      color_style_creation_success: "カラースタイルが正常に作成されました。"
+      color_style_creation_failure: "カラースタイルの作成に失敗しました。"
+      color_style_invalid_input: "無効な入力パラメータです。"
+      color_style_access_denied: "カラースタイルへのアクセスが拒否されました。"
       token:
         inactive: アカウントが有効化されていません
         locked: アカウントはロックされています
