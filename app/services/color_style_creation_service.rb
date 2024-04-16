@@ -18,6 +18,37 @@ class ColorStyleCreationService < BaseService
     color_style
   end
 
+  def name_indicates_group?
+    # The naming convention for a group is "GroupName/ColorStyleName"
+    # We use a regular expression to check if the name follows this convention
+    !!(name =~ %r{\A[^/]+/[^/]+\z})
+  end
+
+  def associate_with_group(color_style)
+    group_name, style_name = name.split('/')
+    # Find or create the group with the given name and design_file_id
+    group = ColorStyle.find_or_create_by(name: group_name, design_file_id: design_file_id)
+    # Update the color style's name to the style name and associate it with the group
+    color_style.update(name: style_name, layer_id: group.id)
+  end
+
+  def handle_group_association(color_style)
+    if name_indicates_group?
+      associate_with_group(color_style)
+      # Return the group ID and all associated color style IDs
+      group = ColorStyle.find_by(name: name.split('/').first, design_file_id: design_file_id)
+      {
+        group_id: group.id,
+        color_style_ids: group.layers.map(&:color_styles).flatten.map(&:id)
+      }
+    else
+      # If no group is indicated, return the color style ID
+      { color_style_id: color_style.id }
+    end
+  rescue ActiveRecord::RecordInvalid => e
+    raise Exceptions::BadRequest.new(e.record.errors.full_messages.to_sentence)
+  end
+
   private
 
   def validate_parameters

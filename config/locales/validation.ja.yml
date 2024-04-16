@@ -6,6 +6,12 @@ ja:
       models:
         color_style:
           attributes:
+            group_naming_error: 'グループ名の命名規則に従っていません'
+            group_creation_error: 'グループの作成に失敗しました'
+    errors:
+      models:
+        color_style:
+          attributes:
             name:
               blank: '名前を入力してください'
             color_code:

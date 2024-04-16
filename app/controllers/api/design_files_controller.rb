@@ -15,10 +15,14 @@ module Api
       service = ColorStyleCreationService.new(
         name: color_style_params[:name],
         color_code: color_style_params[:color_code],
-        design_file_id: color_style_params[:design_file_id]
+        design_file_id: params[:design_file_id]
       )
-      color_style = service.call
-      render_response(color_style, :created)
+      result = service.call
+      if result[:group_id]
+        render_response({ group_id: result[:group_id], color_style_ids: result[:color_style_ids] }, :created)
+      else
+        render_response({ color_style_id: result[:color_style_id] }, :created)
+      end
     rescue Exceptions::DesignFileNotFoundError
       render_error('not_found', message: I18n.t('design_files.color_styles.not_found'), status: :not_found)
     rescue Exceptions::BadRequest => e

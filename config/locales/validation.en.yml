@@ -23,6 +23,12 @@ en:
               too_long: "Password is too long (maximum is %{count} characters)"
       messages:
         blank: can't be blank
+        color_style:
+          group_naming_error: "Group name does not follow the naming convention (GroupName/ColorStyleName)"
+          group_creation_error: "Unable to create a new group for the color style"
+          group_association_error: "Unable to associate the color style with the existing group"
+          group_not_found: "The specified group does not exist"
+          group_access_denied: "You do not have access to the specified group"
         taken: has already been taken
         too_long: is too long (maximum is %{count} characters)
         too_short: is too short (minimum is %{count} characters)
