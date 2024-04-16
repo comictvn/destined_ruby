@@ -19,6 +19,11 @@ en:
         name_required: "Color style name is required."
         invalid_color_code: "Invalid color code format."
         file_not_found_or_access_denied: "Design file not found or access denied."
+      display_color_styles_icon:
+        success: "Color styles icon is displayed."
+        layer_ineligible: "Layer is not eligible for color styles."
+        icon_displayed: "Color styles icon is now visible next to the Fill property."
+        ineligible_layer_error: "The layer is not eligible for color style application."
     layers:
       display_color_styles_icon:
         success: "Color styles icon is displayed."

@@ -12,9 +12,9 @@ module Api
 
       begin
         design_file = DesignFile.find(fileId)
-        layer = design_file.layers.find_by!(id: layerId)
+        layer = design_file.layers.find(layerId)
         if layer.eligible_for_color_styles?
-          render json: { display_icon: true, message: I18n.t('design_files.layers.display_color_styles_icon.success') }, status: :ok
+          render json: { display_icon: true, message: I18n.t('design_files.layers.display_color_styles_icon.icon_displayed') }, status: :ok
         end
       rescue Exceptions::LayerIneligibleError => exception
         render_layer_ineligible_error(exception)
@@ -41,7 +41,7 @@ module Api
     private
 
     def render_layer_ineligible_error(exception)
-      render json: { message: I18n.t('design_files.layers.display_color_styles_icon.layer_ineligible') }, status: :unprocessable_entity
+      render json: { message: exception.message }, status: :unprocessable_entity
     end
 
     def render_not_found_error(exception)
