@@ -39,15 +39,21 @@ class ColorStyleCreationService
   end
   
   def find_design_file
-    DesignFile.find(design_file_id)
+    DesignFile.find_by!(id: design_file_id)
   end
   
   def check_user_permission(design_file, user)
-    raise Exceptions::UnauthorizedAccess unless design_file.access_level == 'edit' && design_file.user_id == user.id
+    raise Exceptions::UnauthorizedAccess unless user.can_edit?(design_file)
   end
   
   def create_color_style(design_file)
-    design_file.color_styles.create!(name: name, color_code: color_code)
+    color_style = design_file.color_styles.new(name: name, color_code: color_code)
+    if color_style.valid?
+      color_style.save!
+      return color_style
+    else
+      raise Exceptions::BadRequest.new(color_style.errors.full_messages.to_sentence)
+    end
   end
   
   def handle_grouping(color_style)

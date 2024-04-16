@@ -12,6 +12,7 @@ en:
   design_files:
     color_styles:
       success: The list of color styles was successfully retrieved.
+      list_success: "Available color styles have been listed successfully."
       not_found: "Design file not found."
       unauthorized: The user is not authenticated.
       create:

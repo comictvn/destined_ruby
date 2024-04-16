@@ -23,6 +23,23 @@ module Api
       end
     end
 
+    def list_color_styles
+      fileId = params[:fileId]
+
+      begin
+        design_file = DesignFile.find(fileId)
+        # Assuming there is a method to check user access level for the design file
+        if design_file.access_level == 'edit'
+          color_styles = design_file.color_styles.select(:id, :name, :color_code)
+          render_response({ colorStyles: color_styles }, status: :ok, message: I18n.t('design_files.color_styles.success'))
+        else
+          base_render_unauthorized_error
+        end
+      rescue ActiveRecord::RecordNotFound => exception
+        base_render_record_not_found(exception)
+      end
+    end
+
     def create_color_style
       fileId = params[:fileId]
       name = params[:name]
@@ -51,6 +68,18 @@ module Api
 
     def render_error(exception)
       render json: { message: exception.message }, status: :unprocessable_entity
+    end
+
+    def render_response(data, status:, message:)
+      render json: data.merge(message: message), status: status
+    end
+
+    def base_render_unauthorized_error
+      render json: { message: I18n.t('common.unauthorized') }, status: :unauthorized
+    end
+
+    def base_render_record_not_found(exception)
+      render_not_found_error(exception)
     end
   end
 end

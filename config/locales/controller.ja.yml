@@ -19,11 +19,11 @@ ja:
       success: カラースタイルが正常に取得されました
       not_found: デザインファイルが見つかりません
       unauthorized: このデザインファイルへのアクセスは許可されていません
-    layers:
-      display_color_styles_icon:
-        success: "カラースタイルアイコンが表示されます。"
-        ineligible: "このレイヤーはカラースタイルアイコンを表示するのに適していません。"
-      apply_color_style: # No changes needed as the keys and texts are already correct.
+  layers:
+    display_color_styles_icon:
+      success: "カラースタイルアイコンが表示されます。"
+      ineligible: "このレイヤーはカラースタイルアイコンを表示するのに適していません。"
+    apply_color_style: # No changes needed as the keys and texts are already correct.
   layer_not_eligible: レイヤーはカラースタイルに適していません
   layers:
     display_color_styles_icon: カラースタイルアイコンを表示する
