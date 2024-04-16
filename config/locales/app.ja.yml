@@ -1,9 +1,25 @@
----
+
 ja:
   common:
     errors:
+      unauthorized_access: "このリソースにアクセスする権限がありません。"
+      access_denied: "権限が不十分なためアクセスが拒否されました。"
       unauthorized_error: 操作する権限がありません
       record_not_uniq_error: 既に同様のデータが登録されています
+      group_creation_success: "グループが正常に作成されました"
+      group_creation_failure: "グループの作成または検索に失敗しました"
+      group_creation_invalid_name: "無効なグループ名の形式です"
+      group_add_color_style_success: "カラースタイルがグループに正常に追加されました"
+      group_add_color_style_failure: "カラースタイルをグループに追加できませんでした"
+      color_style_creation_success: "カラースタイルが正常に作成されました。"
+      color_style_creation_failure: "カラースタイルの作成に失敗しました。"
+      group_name_not_provided: "グループ名が提供されていません"
+      color_styles_list_success: "カラースタイルのリストを正常に取得しました。"
+      color_styles_list_failure: "カラースタイルのリストの取得に失敗しました。"
+      color_style_creation_success: "カラースタイルが正常に作成されました。"
+      color_style_creation_failure: "カラースタイルの作成に失敗しました。"
+      color_style_invalid_input: "無効な入力パラメータです。"
+      color_style_access_denied: "カラースタイルへのアクセスが拒否されました。"
       token:
         inactive: アカウントが有効化されていません
         locked: アカウントはロックされています
@@ -12,7 +28,7 @@ ja:
       send_otp_success: 認証コードを送信しました
       verification_declined: 認証コードに誤りがあります
       notp_expired: 認証コードの有効期限が切れています。認証コードを再度送信します。
-      exceed_amount_sent_otp: You have reached the limit of otp sms per day
+      exceed_amount_sent_otp: 1日のOTP SMSの上限に達しました
       recaptcha_invalid: 異常なリクエストパターンが発生しました。
   email_login:
     reset_password:

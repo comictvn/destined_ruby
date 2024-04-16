@@ -1,4 +1,10 @@
+
 class User < ApplicationRecord
+  # Include default devise modules. Others available are:
+  # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
+  devise :database_authenticatable, :registerable,
+         :recoverable, :rememberable, :validatable
+
   # Existing associations
   has_many :sender_messages,
            class_name: 'Message',
@@ -23,20 +29,23 @@ class User < ApplicationRecord
   # Existing enum
   enum gender: %w[male female other], _suffix: true
 
+  # New validations based on business logic
+  validates :firstname, presence: true, length: { maximum: 50 }
+  validates :lastname, presence: true, length: { maximum: 50 }
+  validates :gender, inclusion: { in: genders.keys }
+  validates :dob, presence: true
+
   # Existing attachment
   has_one_attached :thumbnail, dependent: :destroy
 
   # Existing validations
   validates :phone_number, presence: true, uniqueness: true
   validates :phone_number, length: { in: 0..255 }, if: :phone_number?
-  validates :thumbnail, content_type: ['image/png', 'image/jpg', 'image/jpeg', 'image/gif', 'image/svg+xml'],
-                        size: { less_than_or_equal_to: 100.megabytes }
-  validates :firstname, length: { in: 0..255 }, if: :firstname?
-  validates :lastname, length: { in: 0..255 }, if: :lastname?
-  validates :dob, timeliness: { type: :date, on_or_before: Date.yesterday }, if: :dob_changed?
+  validates :thumbnail, content_type: ['image/png', 'image/jpg', 'image/jpeg'],
+                        size: { less_than_or_equal_to: 5.megabytes }
   validates :interests, length: { in: 0..0 }, if: :interests?
   validates :location, length: { in: 0..0 }, if: :location?
-  validates :email, uniqueness: true, allow_blank: true
+  validates :email, uniqueness: { message: I18n.t('validation.errors.email_uniqueness') }, allow_blank: true
   validates :email, length: { in: 0..255 }, if: :email?
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: :email_changed?
 

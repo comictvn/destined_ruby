@@ -23,4 +23,8 @@ class ApplicationPolicy
 
     attr_reader :user, :scope
   end
+
+  def create_color_style?
+    record.access_level == 'edit' && user.present?
+  end
 end
