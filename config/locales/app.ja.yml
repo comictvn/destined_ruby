@@ -11,6 +11,8 @@ ja:
       group_creation_invalid_name: "無効なグループ名の形式です"
       group_add_color_style_success: "カラースタイルがグループに正常に追加されました"
       group_add_color_style_failure: "カラースタイルをグループに追加できませんでした"
+      color_style_creation_success: "カラースタイルが正常に作成されました。"
+      color_style_creation_failure: "カラースタイルの作成に失敗しました。"
       group_name_not_provided: "グループ名が提供されていません"
       color_styles_list_success: "カラースタイルのリストを正常に取得しました。"
       color_styles_list_failure: "カラースタイルのリストの取得に失敗しました。"

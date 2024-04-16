@@ -12,6 +12,7 @@ class ColorStyle < ApplicationRecord
   private
 
   def group_naming_convention
-    errors.add(:name, I18n.t('activerecord.errors.models.color_style.attributes.name.invalid_group_naming')) unless name.include?('/')
+    return if name.include?('/')
+    errors.add(:name, I18n.t('validation.color_style.invalid_group_name'))
   end
 end

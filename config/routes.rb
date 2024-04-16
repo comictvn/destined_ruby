@@ -56,10 +56,11 @@ Rails.application.routes.draw do
 
     resources :design_files, only: [] do
       post 'group_color_styles', on: :member
+      post 'create_color_style', on: :member
     end
     # Added route from the patch
-    get 'design_files/:design_file_id/color_styles', to: 'design_files#list_color_styles'
     put 'design_files/:design_file_id/layers/:layer_id/color_styles/:color_style_id', to: 'design_files#apply_color_style_to_layer'
+    get 'design_files/:design_file_id/color_styles', to: 'design_files#list_color_styles'
   end
 
   get '/health' => 'pages#health_check'

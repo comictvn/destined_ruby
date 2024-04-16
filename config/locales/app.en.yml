@@ -8,6 +8,8 @@ en:
       access_denied: "Access denied to the design file"
       color_styles_list_success: "Color styles listed successfully"
       color_styles_list_failure: "Failed to list color styles"
+      color_style_creation_success: "Color style was successfully created."
+      color_style_creation_failure: "Failed to create color style."
       unauthorized_error: Unauthorized
       record_not_uniq_error: Record not uniq
       token:
