@@ -13,14 +13,12 @@ module Api
       begin
         design_file = DesignFile.find(fileId)
         layer = design_file.layers.find_by!(id: layerId)
-
-        if layer.eligible_for_color_styles?
-          render json: { display_icon: true, message: I18n.t('design_files.layers.display_color_styles_icon.success') }, status: :ok
-        end
+        layer.eligible_for_color_styles?
+        render json: { display_icon: true, message: I18n.t('design_files.layers.display_color_styles_icon.success') }, status: :ok
       rescue Exceptions::LayerIneligibleError => exception
-        render_error(:unprocessable_entity, exception.message)
+        render_layer_ineligible_error(exception)
       rescue ActiveRecord::RecordNotFound => exception
-        render_error(:not_found, exception.message)
+        render_not_found_error(exception)
       end
     end
 
@@ -79,11 +77,12 @@ module Api
     private
 
     def render_layer_ineligible_error(exception)
-      render_error('layer_ineligible', message: I18n.t('controller.layer_not_eligible', default: exception.message), status: :unprocessable_entity)
+      render json: { message: I18n.t('design_files.layers.display_color_styles_icon.layer_ineligible') }, status: :unprocessable_entity
     end
 
     def render_not_found_error(exception)
-      render_error('not_found', message: I18n.t('common.404'), status: :not_found)
+      message = exception.model == 'DesignFile' ? I18n.t('design_files.color_styles.not_found') : I18n.t('common.404')
+      render json: { message: message }, status: :not_found
     end
 
     # Checks if the layer is eligible for color styles

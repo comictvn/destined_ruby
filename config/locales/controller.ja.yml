@@ -2,7 +2,7 @@
 ---
 ja:
   common:
-    layer_not_eligible: このレイヤーはカラースタイルを適用することができません
+    layer_not_eligible: レイヤーはカラースタイルに適していません
     display_color_styles_icon: カラースタイルアイコンを表示
     '404': 見つかりません
     '403': アクセスが禁止されました
@@ -11,11 +11,6 @@ ja:
     '422': 処理できません
     '201': 作成されました
     '200': 成功
-    design_files:
-      layers:
-        display_color_styles_icon:
-          success: "カラースタイルアイコンが表示されます。"
-          layer_ineligible: "レイヤーはカラースタイルに適していません。"
     display_color_styles_icon_success: カラースタイルアイコンが表示されました
     display_color_styles_icon_eligible: カラースタイルアイコンが表示可能です
     '302': 削除されました
@@ -24,12 +19,15 @@ ja:
       success: カラースタイルが正常に取得されました
       not_found: デザインファイルが見つかりません
       unauthorized: このデザインファイルへのアクセスは許可されていません
+    layers:
+      display_color_styles_icon:
+        success: "カラースタイルアイコンが表示されます。"
+      apply_color_style:
+        success: "レイヤーにカラースタイルが正常に適用されました。"
+        layer_not_found: "デザインファイル内にレイヤーが見つかりません。"
+        color_style_not_found: "カラースタイルが見つかりません。"
+        bad_request: "レイヤーとカラースタイルは同じデザインファイルに属していません。"
   layer_not_eligible: レイヤーはカラースタイルに適していません
   layers:
     display_color_styles_icon: カラースタイルアイコンを表示する
     display_color_styles_icon_eligible: カラースタイルアイコンを表示できます
-    apply_color_style:
-      success: "レイヤーにカラースタイルが正常に適用されました。"
-      layer_not_found: "デザインファイル内にレイヤーが見つかりません。"
-      color_style_not_found: "カラースタイルが見つかりません。"
-      bad_request: "レイヤーとカラースタイルは同じデザインファイルに属していません。"

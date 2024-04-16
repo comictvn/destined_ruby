@@ -11,7 +11,7 @@ class Layer < ApplicationRecord
   # Determines if the layer is eligible for color style application
   def eligible_for_color_styles?
     # Replace with actual attribute checks if different
-    raise Exceptions::LayerIneligibleError, I18n.t('design_files.layers.display_color_styles_icon.layer_ineligible') if locked || hidden
+    raise Exceptions::LayerIneligibleError, I18n.t('common.layer_not_eligible') if locked || hidden
     else
       true
     end

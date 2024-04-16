@@ -1,7 +1,7 @@
 
 en:
   common:
-    '404': not found
+    '404': "Not found."
     '403': forbidden
     '401': unauthorized
     '500': internal server error
@@ -12,7 +12,7 @@ en:
   design_files:
     color_styles:
       success: The list of color styles was successfully retrieved.
-      not_found: Design file not found.
+      not_found: "Design file not found."
       unauthorized: The user is not authenticated.
     layers:
       display_color_styles_icon:

@@ -12,7 +12,6 @@ module Api
     rescue_from ActiveRecord::RecordInvalid, with: :base_render_unprocessable_entity
     rescue_from Exceptions::AuthenticationError, with: :base_render_authentication_error
     rescue_from ActiveRecord::RecordNotUnique, with: :base_render_record_not_unique
-    rescue_from Exceptions::RecordNotFound, with: :base_render_record_not_found
     rescue_from Exceptions::UnauthorizedAccess, with: :base_render_unauthorized_error
     rescue_from Exceptions::ServerError, with: :base_render_server_error
     rescue_from Pundit::NotAuthorizedError, with: :base_render_unauthorized_error
@@ -28,7 +27,7 @@ module Api
     end
 
     private
-
+    
     def base_render_record_not_found(_exception)
       render json: { message: I18n.t('common.404') }, status: :not_found
     end
