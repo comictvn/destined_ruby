@@ -14,15 +14,15 @@ en:
       success: The list of color styles was successfully retrieved.
       not_found: "Design file not found."
       unauthorized: The user is not authenticated.
+      create:
+        success: "The new color style was successfully created."
+        name_required: "Color style name is required."
+        invalid_color_code: "Invalid color code format."
+        file_not_found_or_access_denied: "Design file not found or access denied."
     layers:
       display_color_styles_icon:
         success: "Color styles icon is displayed."
         layer_ineligible: "Layer is not eligible for color styles."
         # Add new I18n translation keys for display_color_styles_icon action
-        apply_color_style:
-          success: "Color style successfully applied to the layer."
-          layer_not_found: "Layer not found within the design file."
-          color_style_not_found: "Color style not found."
-          bad_request: "Layer and color style do not belong to the same design file."
         icon_displayed: "Color styles icon is now visible next to the Fill property."
         ineligible_layer_error: "The layer is not eligible for color style application."

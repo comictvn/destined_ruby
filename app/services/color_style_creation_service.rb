@@ -8,7 +8,7 @@ class ColorStyleCreationService
     @design_file_id = design_file_id
     @user = user
   end
-
+  
   def call
     validate_input_parameters
     design_file = find_design_file
@@ -17,7 +17,7 @@ class ColorStyleCreationService
     handle_grouping(color_style)
     color_style
   rescue ActiveRecord::RecordInvalid => e
-    raise Exceptions::BadRequest, e.record.errors.full_messages.join(', ')
+    raise Exceptions::BadRequest, e.record.errors.full_messages.to_sentence
   rescue ActiveRecord::RecordNotFound
     raise Exceptions::RecordNotFound, I18n.t('activerecord.errors.messages.record_not_found')
   rescue Exceptions::UnauthorizedAccess
@@ -25,7 +25,7 @@ class ColorStyleCreationService
   end
 
   private
-
+  
   def validate_input_parameters
     raise Exceptions::BadRequest, I18n.t('activerecord.errors.messages.invalid') unless valid_name? && valid_color_code?
   end
@@ -33,23 +33,23 @@ class ColorStyleCreationService
   def valid_name?
     name.present? && name.match(/\A[a-zA-Z0-9_ ]+\z/)
   end
-
+  
   def valid_color_code?
     color_code.present? && color_code.match(/\A#(?:[0-9a-fA-F]{3}){1,2}\z/i)
   end
-
+  
   def find_design_file
     DesignFile.find(design_file_id)
   end
-
+  
   def check_user_permission(design_file, user)
     raise Exceptions::UnauthorizedAccess unless design_file.access_level == 'edit' && design_file.user_id == user.id
   end
-
+  
   def create_color_style(design_file)
     design_file.color_styles.create!(name: name, color_code: color_code)
   end
-
+  
   def handle_grouping(color_style)
     if group_name = extract_group_name
       group = ColorGroup.find_or_create_by!(name: group_name)
@@ -57,6 +57,8 @@ class ColorStyleCreationService
     end
   end
 
+  # ... other private methods ...
+  
   def extract_group_name
     match_data = name.match(/\A(?<group_name>[a-zA-Z0-9_]+):/)
     match_data[:group_name] if match_data

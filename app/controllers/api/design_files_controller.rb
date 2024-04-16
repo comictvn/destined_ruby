@@ -3,10 +3,8 @@
 module Api
   class DesignFilesController < BaseController
     before_action :authenticate_user!
-    before_action :set_design_file_and_layer, only: [:apply_color_style_to_layer]
     rescue_from Exceptions::LayerIneligibleError, with: :render_layer_ineligible_error
     rescue_from ActiveRecord::RecordNotFound, with: :render_not_found_error
-    rescue_from Exceptions::BadRequest, with: :render_bad_request_error
 
     def display_color_styles_icon
       fileId = params[:fileId]
@@ -25,43 +23,22 @@ module Api
       end
     end
 
-    # PATCH /design-files/:fileId/layers/:layerId/color-styles/:colorStyleId
-    def apply_color_style_to_layer
-      color_style_id = params[:colorStyleId]
+    def create_color_style
+      fileId = params[:fileId]
+      name = params[:name]
+      color_code = params[:color_code]
 
-      # Validate that the color_style_id exists in the color_styles table
-      color_style = ColorStyle.find_by(id: color_style_id)
-      raise Exceptions::BadRequest, I18n.t('design_files.layers.apply_color_style.color_style_not_found') unless color_style
-
-      # Check if the layer is associated with the same design file as the color style
-      raise Exceptions::BadRequest, I18n.t('design_files.layers.apply_color_style.bad_request') unless @layer.design_file_id == color_style.design_file_id
-
-      # Update the layer's record in the layers table to reference the color_style_id
-      @layer.update!(color_style_id: color_style_id)
-
-      # Placeholder for undo/redo functionality
-      # TODO: Implement undo/redo functionality
-
-      # Return a confirmation of the color style application to the layer
-      render json: {
-        status: 200,
-        layer: {
-          id: @layer.id,
-          fileId: @layer.design_file_id,
-          colorStyleId: color_style_id,
-          updatedAt: @layer.updated_at.iso8601
-        }
-      }, status: :ok
+      begin
+        color_style = ColorStyleCreationService.new(name, color_code, fileId, current_user).call
+        render json: { status: 201, colorStyle: { id: color_style.id, name: color_style.name, color_code: color_style.color_code, design_file_id: color_style.design_file_id } }, status: :created
+      rescue StandardError => e
+        render_error(e)
+      end
     end
 
     # ... other actions ...
 
     private
-
-    def set_design_file_and_layer
-      @design_file = DesignFile.find(params[:fileId])
-      @layer = @design_file.layers.find(params[:layerId])
-    end
 
     def render_layer_ineligible_error(exception)
       render json: { message: I18n.t('design_files.layers.display_color_styles_icon.layer_ineligible') }, status: :unprocessable_entity
@@ -72,8 +49,8 @@ module Api
       render json: { message: message }, status: :not_found
     end
 
-    def render_bad_request_error(exception)
-      render json: { message: exception.message }, status: :bad_request
+    def render_error(exception)
+      render json: { message: exception.message }, status: :unprocessable_entity
     end
   end
 end
@@ -93,11 +70,23 @@ end
 module Exceptions
   class LayerIneligibleError < StandardError; end
   class BadRequest < StandardError; end
-  class UnauthorizedAccess < StandardError; end # Assuming this is defined as it's used in the patch
+  class UnauthorizedAccess < StandardError; end
 end
 
 # Assuming the ColorStyleCreationService is defined elsewhere in the application:
 # app/services/color_style_creation_service.rb
 class ColorStyleCreationService
   # ... other code ...
+
+  def initialize(name, color_code, design_file_id, user)
+    @name = name
+    @color_code = color_code
+    @design_file_id = design_file_id
+    @user = user
+  end
+
+  def call
+    # Placeholder for the actual implementation logic
+    # This should create a color style and return the created object
+  end
 end
