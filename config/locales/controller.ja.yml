@@ -17,6 +17,5 @@ ja:
       layer_not_found_or_mismatch: "レイヤーが見つからないか、デザインファイルと一致しません。"
     color_styles:
       list:
-        success: カラースタイルのリストを取得しました
-        success: "カラースタイルが正常にリストされました。"
+        success: "カラースタイルが正常に一覧表示されました。"
         not_found: "デザインファイルが見つからないか、アクセスが拒否されました。"

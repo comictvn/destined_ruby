@@ -1,14 +1,14 @@
 
 module Api
   class DesignFilesController < BaseController
-    before_action :set_design_file, only: [:list_color_styles, :create_color_style]
-    rescue_from Exceptions::DesignFileNotFoundError, with: :design_file_not_found
-    rescue_from Exceptions::BadRequest, with: :bad_request
+    before_action :set_design_file, only: [:list_color_styles]
+    rescue_from ActiveRecord::RecordNotFound, with: :design_file_not_found
+    rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
     # GET /design_files/:design_file_id/color_styles
     def list_color_styles
       color_styles = @design_file.color_styles.select(:id, :name, :color_code)
-      render_response(color_styles)
+      render_response(color_styles, status: :ok, message: I18n.t('design_files.color_styles.list.success'))
     end
 
     # POST /design_files/:design_file_id/color_styles
@@ -16,20 +16,20 @@ module Api
       service = ColorStyleCreationService.new(
         name: color_style_params[:name],
         color_code: color_style_params[:color_code],
-        design_file_id: params[:design_file_id]
+        design_file_id: color_style_params[:design_file_id]
       )
       color_style = service.call
       render_response(color_style, :created)
-    rescue Exceptions::ColorStyleInvalidInputError => e
-      render_error('invalid_input', message: e.message, status: :unprocessable_entity)
-    rescue Exceptions::AccessDeniedError => e
-      render_error('access_denied', message: e.message, status: :forbidden)
+    rescue Exceptions::DesignFileNotFoundError
+      render_error('not_found', message: I18n.t('design_files.color_styles.not_found'), status: :not_found)
+    rescue Exceptions::BadRequest => e
+      render_error('bad_request', message: e.message, status: :unprocessable_entity)
     end
 
     private
 
     def color_style_params
-      params.require(:color_style).permit(:name, :color_code)
+      params.permit(:name, :color_code, :design_file_id)
     end
 
     def set_design_file
@@ -45,8 +45,8 @@ module Api
       render_error('not_found', message: I18n.t('design_files.color_styles.not_found'), status: :not_found)
     end
 
-    def bad_request(exception)
-      render_error('bad_request', message: exception.message, status: :bad_request)
+    def user_not_authorized
+      render_error('forbidden', message: I18n.t('common.403'), status: :forbidden)
     end
   end
 end
