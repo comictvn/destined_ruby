@@ -1,3 +1,4 @@
+
 require 'sidekiq/web'
 Rails.application.routes.draw do
   use_doorkeeper do
@@ -15,8 +16,7 @@ Rails.application.routes.draw do
   end
 
   namespace :api, defaults: { format: :json } do
-    resources :force_update_app_versions, only: [:index] do
-    end
+    get 'force_update_app_versions', to: 'force_update_app_versions#index'
 
     resources :users_verify_confirmation_token, only: [:create] do
     end
