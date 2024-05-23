@@ -1,5 +1,6 @@
 require 'sidekiq/web'
 Rails.application.routes.draw do
+  resources :tests
   resources :todos
   use_doorkeeper do
     controllers tokens: 'tokens'
