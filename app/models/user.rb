@@ -13,6 +13,8 @@ class User < ApplicationRecord
   has_many :reacter_reactions,
            class_name: 'Reaction',
            foreign_key: :reacter_id, dependent: :destroy
+  has_many :blogs, foreign_key: 'user_id', dependent: :destroy
+  has_many :gift_cards, foreign_key: 'user_id', dependent: :destroy
   has_many :reacted_reactions,
            class_name: 'Reaction',
            foreign_key: :reacted_id, dependent: :destroy
@@ -39,6 +41,8 @@ class User < ApplicationRecord
   validates :email, uniqueness: true, allow_blank: true
   validates :email, length: { in: 0..255 }, if: :email?
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: :email_changed?
+  validates :email, presence: true
+  validates :encrypted_password, presence: true
 
   # Existing methods
   def generate_reset_password_token
