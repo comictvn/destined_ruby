@@ -1,0 +1,1 @@
+There is no code provided in the "Current Code" section to apply the patch to. Please provide the original code that needs to be patched.
