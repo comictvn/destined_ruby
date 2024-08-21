@@ -1,5 +1,6 @@
 class User < ApplicationRecord
   # Existing associations
+  belongs_to :team_member
   has_many :sender_messages,
            class_name: 'Message',
            foreign_key: :sender_id, dependent: :destroy
@@ -7,6 +8,9 @@ class User < ApplicationRecord
   has_many :matcher1_matchs,
            class_name: 'Match',
            foreign_key: :matcher1_id, dependent: :destroy
+  has_many :blogs
+  has_many :gift_cards
+  has_many :user_chanels
   has_many :matcher2_matchs,
            class_name: 'Match',
            foreign_key: :matcher2_id, dependent: :destroy
