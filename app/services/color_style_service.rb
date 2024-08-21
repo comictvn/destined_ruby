@@ -12,11 +12,12 @@ class ColorStyleService < BaseService
       
       # Iterate over each design file and update the color value
       design_files.each do |design_file|
-        # Here you would implement the logic to update the color value within the design file.
-        # This is a placeholder for the actual implementation, which would depend on how
-        # the color values are stored and used within the design files.
-        # For example, if design files have a method to update colors, it could look like this:
-        # design_file.update_color(color_style.name, new_color)
+        # Update the color value within the design file
+        # Assuming that the design files have a column named 'color_value' that stores the color styles
+        # and that the color styles are uniquely named, we can directly update the color_value.
+        if design_file.color_value == color_style.color_value
+          design_file.update(color_value: new_color)
+        end
       end
     rescue => e
       # Log the error
