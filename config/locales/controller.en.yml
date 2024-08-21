@@ -9,3 +9,7 @@ en:
     '201': created
     '200': success
     '302': deleted
+  controller:
+    color_style:
+      update:
+        success: "Color style updated successfully"
