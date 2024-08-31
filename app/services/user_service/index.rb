@@ -118,5 +118,35 @@ class UserService::Index
     @records = User.none if records.blank? || records.is_a?(Class)
     @records = records.page(params.dig(:pagination_page) || 1).per(params.dig(:pagination_limit) || 20)
   end
+
+  def upload_profile_photo(userId, photo)
+    user = User.find_by(id: userId)
+    raise ActiveRecord::RecordNotFound, 'User not found' unless user
+
+    raise ActiveRecord::RecordInvalid, 'Invalid photo format' unless ['image/jpeg', 'image/png'].include?(photo.content_type)
+    raise ActiveRecord::RecordInvalid, 'Photo exceeds maximum size limit' if photo.size > 5.megabytes
+
+    blob = ActiveStorageBlob.create!(
+      filename: photo.original_filename,
+      content_type: photo.content_type,
+      byte_size: photo.size,
+      checksum: photo.checksum
+    )
+
+    attachment = ActiveStorageAttachment.create!(
+      name: 'profile_photo',
+      record_type: 'User',
+      record_id: user.id,
+      blob_id: blob.id
+    )
+
+    user.update!(profile_photo_id: attachment.id)
+
+    attachment
+  rescue ActiveRecord::RecordInvalid => e
+    raise e
+  rescue ActiveRecord::RecordNotFound => e
+    raise e
+  end
 end
 # rubocop:enable Style/ClassAndModuleChildren

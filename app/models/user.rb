@@ -10,12 +10,14 @@ class User < ApplicationRecord
   has_many :matcher2_matchs,
            class_name: 'Match',
            foreign_key: :matcher2_id, dependent: :destroy
+  has_many :active_storage_attachments, foreign_key: 'user_id', dependent: :destroy
   has_many :reacter_reactions,
            class_name: 'Reaction',
            foreign_key: :reacter_id, dependent: :destroy
   has_many :reacted_reactions,
            class_name: 'Reaction',
            foreign_key: :reacted_id, dependent: :destroy
+  has_one :profile_photo, class_name: 'ActiveStorageAttachment', as: :record, dependent: :destroy
 
   # New associations based on the updated ERD
   has_many :otp_requests, dependent: :destroy

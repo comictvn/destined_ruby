@@ -56,6 +56,8 @@ Rails.application.routes.draw do
 
     resources :users, only: %i[index show destroy] do
     end
+
+    post '/users/:user_id/profile_photo', to: 'api/users#upload_profile_photo'
   end
 
   get '/health' => 'pages#health_check'
