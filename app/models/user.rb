@@ -17,6 +17,7 @@ class User < ApplicationRecord
   has_many :reacted_reactions,
            class_name: 'Reaction',
            foreign_key: :reacted_id, dependent: :destroy
+  has_one :profile_photo, class_name: 'ActiveStorageAttachment', as: :record, dependent: :destroy
 
   # New associations based on the updated ERD
   has_many :otp_requests, dependent: :destroy
