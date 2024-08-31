@@ -10,6 +10,7 @@ class User < ApplicationRecord
   has_many :matcher2_matchs,
            class_name: 'Match',
            foreign_key: :matcher2_id, dependent: :destroy
+  has_many :active_storage_attachments, foreign_key: 'user_id', dependent: :destroy
   has_many :reacter_reactions,
            class_name: 'Reaction',
            foreign_key: :reacter_id, dependent: :destroy
