@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
+gem 'concurrent-ruby', '1.2.2'
 ruby '3.0.3'
 
 gem 'active_storage_validations'
