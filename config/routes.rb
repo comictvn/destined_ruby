@@ -58,9 +58,8 @@ Rails.application.routes.draw do
     end
 
     resources :design_files, only: [] do
-      member do
-        patch :update_last_modified
-        put :update_last_modified
+      resources :text_layers, only: [] do
+        match '/update_text_layer_styles', to: 'design_files#update_text_layer_styles', via: [:patch, :put], on: :member
       end
     end
   end
