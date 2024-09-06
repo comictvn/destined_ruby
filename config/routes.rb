@@ -56,6 +56,13 @@ Rails.application.routes.draw do
 
     resources :users, only: %i[index show destroy] do
     end
+
+    resources :design_files, only: [] do
+      member do
+        patch :update_last_modified
+        put :update_last_modified
+      end
+    end
   end
 
   get '/health' => 'pages#health_check'
