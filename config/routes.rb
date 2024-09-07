@@ -56,6 +56,8 @@ Rails.application.routes.draw do
 
     resources :users, only: %i[index show destroy] do
     end
+
+    post '/libraries/publish', to: 'libraries#publish'
   end
 
   get '/health' => 'pages#health_check'
