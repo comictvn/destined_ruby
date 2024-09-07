@@ -1,4 +1,4 @@
-module Api
+module Chanels
   module Chanels
     class MessagesController < ApplicationController
       before_action :doorkeeper_authorize!, only: %i[index destroy]
@@ -14,7 +14,7 @@ module Api
 
         raise ActiveRecord::RecordNotFound if @message.blank?
 
-        authorize @message, policy_class: Api::Chanels::MessagesPolicy
+        authorize @message, policy_class: Chanels::MessagesPolicy
 
         if @message.destroy
           head :ok, message: I18n.t('common.200')
