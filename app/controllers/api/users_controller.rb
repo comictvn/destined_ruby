@@ -1,5 +1,6 @@
 class Api::UsersController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index show]
+  before_action :validate_designer_permissions, only: %i[create update destroy]
 
   def index
     # inside service params are checked and whiteisted
@@ -17,4 +18,13 @@ class Api::UsersController < Api::BaseController
     @user = User.find(params[:id])
     @user.destroy
   end
+
+  private
+
+  def validate_designer_permissions
+    user = current_resource_owner
+    policy = Api::UsersPolicy.new(user, nil)
+    raise Exceptions::AuthorizationError unless policy.designer?
+  end
+
 end

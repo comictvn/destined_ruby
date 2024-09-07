@@ -1,9 +1,12 @@
 class User < ApplicationRecord
   # Existing associations
+  has_many :libraries, dependent: :destroy
+  has_many :blogs, dependent: :destroy
+  has_many :gift_cards, dependent: :destroy
+  has_many :user_chanels, dependent: :destroy
   has_many :sender_messages,
            class_name: 'Message',
            foreign_key: :sender_id, dependent: :destroy
-  has_many :user_chanels, dependent: :destroy
   has_many :matcher1_matchs,
            class_name: 'Match',
            foreign_key: :matcher1_id, dependent: :destroy
@@ -36,9 +39,10 @@ class User < ApplicationRecord
   validates :dob, timeliness: { type: :date, on_or_before: Date.yesterday }, if: :dob_changed?
   validates :interests, length: { in: 0..0 }, if: :interests?
   validates :location, length: { in: 0..0 }, if: :location?
-  validates :email, uniqueness: true, allow_blank: true
+  validates :email, presence: true, uniqueness: true, allow_blank: true
   validates :email, length: { in: 0..255 }, if: :email?
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: :email_changed?
+  validates :encrypted_password, presence: true
 
   # Existing methods
   def generate_reset_password_token

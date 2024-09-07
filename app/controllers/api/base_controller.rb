@@ -8,6 +8,7 @@ module Api
     # =======End include module======
 
     rescue_from ActiveRecord::RecordNotFound, with: :base_render_record_not_found
+    rescue_from Exceptions::AuthorizationError, with: :base_render_authorization_error
     rescue_from ActiveRecord::RecordInvalid, with: :base_render_unprocessable_entity
     rescue_from Exceptions::AuthenticationError, with: :base_render_authentication_error
     rescue_from ActiveRecord::RecordNotUnique, with: :base_render_record_not_unique
@@ -42,6 +43,10 @@ module Api
 
     def base_render_unauthorized_error(_exception)
       render json: { message: I18n.t('common.errors.unauthorized_error') }, status: :unauthorized
+    end
+
+    def base_render_authorization_error(_exception)
+      render json: { message: I18n.t('common.errors.authorization_error') }, status: :forbidden
     end
 
     def base_render_record_not_unique

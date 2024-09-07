@@ -3,6 +3,10 @@ class Api::UsersPolicy < ApplicationPolicy
     (user.is_a?(User) && record.id == user&.id)
   end
 
+  def designer?
+    user.role.in?(['Education', 'Professional', 'Organization'])
+  end
+
   class Scope < Scope
     def resolve
       if user.is_a?(User)

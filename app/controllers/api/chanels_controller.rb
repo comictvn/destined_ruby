@@ -1,4 +1,5 @@
-class Api::ChanelsController < Api::BaseController
+module Api
+class ChanelsController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index show destroy]
 
   def index
@@ -22,4 +23,5 @@ class Api::ChanelsController < Api::BaseController
       head :unprocessable_entity
     end
   end
+end
 end
