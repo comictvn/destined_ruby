@@ -56,6 +56,11 @@ Rails.application.routes.draw do
 
     resources :users, only: %i[index show destroy] do
     end
+
+    post 'design_files/:design_id/text_layers/:text_layer_id/undo_style_changes',
+         to: 'design_files#undo_text_layer_style_changes',
+         as: 'undo_text_layer_style_changes'
+
   end
 
   get '/health' => 'pages#health_check'
