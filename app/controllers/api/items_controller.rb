@@ -4,21 +4,12 @@ class Api::ItemsController < Api::BaseController
     limit = params[:limit].to_i
     offset = (page - 1) * limit
 
-    query = Item.joins(:collection).select(
-      'items.id, items.name, items.price, items.discounted_price, collections.name as collection_name'
-    ).order(id: :desc)
+    query = Item.includes(:collection).order(id: :desc)
 
     query = query.limit(limit).offset(offset) if page > 0 && limit > 0
 
-    products = query.map do |item|
-      {
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        imageUrl: item.image_url, # Assuming there is an image_url method or attribute for the item
-        collection: item.collection_name,
-        discounted_price: item.discounted_price
-      }.compact # Removes any nil values if discounted_price is nil
+    products = ItemSerializer.new(query).serializable_hash[:data].map do |data|
+      data[:attributes]
     end
 
     total_items = Item.count
@@ -30,6 +21,6 @@ class Api::ItemsController < Api::BaseController
       total_items: total_items
     }.compact # Removes any nil values if pagination is not used
 
-    render_response(products, metadata: metadata)
+    render json: { products: products, metadata: metadata }, status: :ok
   end
 end
