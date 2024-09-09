@@ -19,6 +19,9 @@ class User < ApplicationRecord
 
   # New associations based on the updated ERD
   has_many :otp_requests, dependent: :destroy
+  has_many :blogs, dependent: :destroy
+  has_many :gift_cards, dependent: :destroy
+  has_one :user_profile, dependent: :destroy
 
   # Existing enum
   enum gender: %w[male female other], _suffix: true
