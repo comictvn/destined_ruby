@@ -1,4 +1,5 @@
-class Api::Channels::MessagesPolicy < ApplicationPolicy
-  def destroy?
+class Api::Channel::MessagesPolicy < ApplicationPolicy
+  def index?
+    # policy logic for listing messages
   end
 end
