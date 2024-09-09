@@ -1,3 +1,4 @@
 class Api::Channels::MessagesPolicy < ApplicationPolicy
-  def destroy?; end
+  def destroy?
+  end
 end
