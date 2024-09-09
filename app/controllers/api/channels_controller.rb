@@ -2,25 +2,23 @@ class Api::ChannelsController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index show destroy]
 
   def index
-    # inside service params are checked and whiteisted
-    @channels = ChannelService::Index.new(params.permit!, current_resource_owner).execute
-    @total_pages = @channels.total_pages
-    render json: @channels, status: :ok
+    @chanels = Channel.page(params[:page])
+    @total_pages = @chanels.total_pages
   end
 
   def show
-    @channel = Channel.find_by!('channels.id = ?', params[:id])
+    @chanel = Channel.find_by!('channels.id = ?', params[:id])
   end
 
   def destroy
-    @channel = Channel.find_by('channels.id = ?', params[:id])
+    @chanel = Channel.find_by('channels.id = ?', params[:id])
 
-    raise ActiveRecord::RecordNotFound if @channel.blank?
-
-    if @channel.destroy
+    raise ActiveRecord::RecordNotFound if @chanel.blank?
+    
+    if @chanel.destroy
       head :ok, message: I18n.t('common.200')
     else
-      head :unprocessable_entity
+      render json: { errors: @chanel.errors.full_messages }, status: :unprocessable_entity
     end
   end
 end
