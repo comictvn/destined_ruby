@@ -1,26 +1,44 @@
 class Api::ItemsController < Api::BaseController
-  def fetch_latest_products
-    page = params[:page].to_i
-    limit = params[:limit].to_i
-    offset = (page - 1) * limit
+  before_action :set_item, only: [:show, :update, :destroy]
 
-    query = Item.includes(:collection).order(id: :desc)
+  def index
+    items = Item.all
+    render json: ItemSerializer.new(items).serializable_hash, status: :ok
+  end
 
-    query = query.limit(limit).offset(offset) if page > 0 && limit > 0
+  def show
+    render json: ItemSerializer.new(@item).serializable_hash, status: :ok
+  end
 
-    products = ItemSerializer.new(query).serializable_hash[:data].map do |data|
-      data[:attributes]
+  def create
+    item = Item.new(item_params)
+    if item.save
+      render json: ItemSerializer.new(item).serializable_hash, status: :created
+    else
+      render json: item.errors, status: :unprocessable_entity
     end
+  end
 
-    total_items = Item.count
-    total_pages = (total_items.to_f / limit).ceil if limit > 0
+  def update
+    if @item.update(item_params)
+      render json: ItemSerializer.new(@item).serializable_hash, status: :ok
+    else
+      render json: @item.errors, status: :unprocessable_entity
+    end
+  end
 
-    metadata = {
-      current_page: page,
-      total_pages: total_pages,
-      total_items: total_items
-    }.compact # Removes any nil values if pagination is not used
+  def destroy
+    @item.destroy
+    head :no_content
+  end
 
-    render json: { products: products, metadata: metadata }, status: :ok
+  private
+
+  def set_item
+    @item = Item.find(params[:id])
+  end
+
+  def item_params
+    params.require(:item).permit(:name, :price, :discounted_price, :collection_id)
   end
 end
