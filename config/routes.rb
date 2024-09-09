@@ -56,6 +56,8 @@ Rails.application.routes.draw do
 
     resources :users, only: %i[index show destroy] do
     end
+
+    get '/latest_products', to: 'items#fetch_latest_products'
   end
 
   get '/health' => 'pages#health_check'
