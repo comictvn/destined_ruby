@@ -1,7 +1,8 @@
-class Api::ChannelsController < ApplicationController
+class Api::ChannelsController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index show destroy]
 
   def index
+    # inside service params are checked and whiteisted
     @chanels = ChanelService::Index.new(params.permit!, current_resource_owner).execute
     @total_pages = @chanels.total_pages
   end
@@ -18,7 +19,7 @@ class Api::ChannelsController < ApplicationController
     if @channel.destroy
       head :ok, message: I18n.t('common.200')
     else
-      render json: { errors: @channel.errors }, status: :unprocessable_entity
+      head :unprocessable_entity
     end
   end
 end

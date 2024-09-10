@@ -1,3 +1,32 @@
-```
-```
-The current code block you provided is empty, and the patch indicates only a file rename without any changes to the file content. Since there is no actual code content provided in the "Current Code" section, and the patch does not include any code changes, there is no code to display or modify. The complete and correct code would be identical to the current code, which is non-existent in your query. If you have an actual code snippet that needs to be patched, please provide it, and I can apply the patch accordingly.
+if @message.present?
+  json.message @message
+else
+  json.total_pages @total_pages
+  json.messages @messages do |message|
+    json.id message.id
+    json.created_at message.created_at
+    json.updated_at message.updated_at
+    sender = message.sender
+    if sender.present?
+      json.sender do
+        json.id sender.id
+        json.name sender.name
+        json.created_at sender.created_at
+        json.updated_at sender.updated_at
+        json.location sender.location
+      end
+    end
+    json.sender_id message.sender_id
+    channel = message.channel
+    if channel.present?
+      json.channel do
+        json.id channel.id
+        json.created_at channel.created_at
+        json.updated_at channel.updated_at
+      end
+    end
+    json.channel_id message.channel_id
+    json.content message.content
+    json.images message.images
+  end
+end
