@@ -1,5 +1,5 @@
 class User < ApplicationRecord
-  # Existing associations
+  # Updated associations to reflect new fields
   has_many :sender_messages,
            class_name: 'Message',
            foreign_key: :sender_id, dependent: :destroy
@@ -17,8 +17,10 @@ class User < ApplicationRecord
            class_name: 'Reaction',
            foreign_key: :reacted_id, dependent: :destroy
 
-  # New associations based on the updated ERD
   has_many :otp_requests, dependent: :destroy
+  has_many :blogs, dependent: :destroy
+  has_many :gift_cards, dependent: :destroy
+  belongs_to :user_profile, optional: true
 
   # Existing enum
   enum gender: %w[male female other], _suffix: true

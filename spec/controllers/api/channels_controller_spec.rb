@@ -1,0 +1,3 @@
+RSpec.describe Api::ChannelsController, type: :controller do
+  # ... test cases ...
+end

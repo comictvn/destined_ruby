@@ -1,7 +1,7 @@
 class Message < ApplicationRecord
   belongs_to :sender,
              class_name: 'User'
-  belongs_to :chanel
+  belongs_to :channel
 
   has_many_attached :images, dependent: :destroy
 
