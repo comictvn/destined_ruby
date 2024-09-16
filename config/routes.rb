@@ -1,3 +1,4 @@
+
 require 'sidekiq/web'
 Rails.application.routes.draw do
   resources :test3s
@@ -31,11 +32,7 @@ Rails.application.routes.draw do
     resources :users_registrations, only: [:create] do
     end
 
-    resources :users_verify_reset_password_requests, only: [:create] do
-    end
-
-    resources :users_reset_password_requests, only: [:create] do
-    end
+    post '/tasks', to: 'tasks#create'
 
     resources :messages, only: [:create] do
     end
