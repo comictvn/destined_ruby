@@ -1,3 +1,4 @@
+
 # typed: ignore
 module Api
   class BaseController < ActionController::API
@@ -11,8 +12,13 @@ module Api
     rescue_from ActiveRecord::RecordInvalid, with: :base_render_unprocessable_entity
     rescue_from Exceptions::AuthenticationError, with: :base_render_authentication_error
     rescue_from ActiveRecord::RecordNotUnique, with: :base_render_record_not_unique
+    rescue_from Exceptions::InvalidColorCodeFormatError, with: :render_custom_error
     rescue_from Pundit::NotAuthorizedError, with: :base_render_unauthorized_error
     rescue_from Exceptions::BadRequest, with: :base_render_bad_request
+    rescue_from Exceptions::ColorStyleAccessDeniedError, with: :base_render_color_style_access_denied
+    rescue_from Exceptions::InvalidColorStyleInputError, with: :base_render_invalid_color_style_input
+    rescue_from Exceptions::DesignFileNotFoundError, with: :base_render_design_file_not_found
+    rescue_from Exceptions::AccessDeniedError, with: :base_render_access_denied
 
     def render_response(data, metadata: {}, **kwargs)
       render(json: { data: data, metadata: metadata }, **kwargs)
@@ -44,8 +50,29 @@ module Api
       render json: { message: I18n.t('common.errors.unauthorized_error') }, status: :unauthorized
     end
 
+    def base_render_design_file_not_found(_exception)
+      render json: { message: I18n.t('common.errors.design_file_not_found') }, status: :not_found
+    end
+
+    def base_render_access_denied(_exception)
+      render json: { message: I18n.t('common.errors.access_denied') }, status: :forbidden
+    end
+
     def base_render_record_not_unique
       render json: { message: I18n.t('common.errors.record_not_uniq_error') }, status: :forbidden
+    end
+
+    def base_render_color_style_access_denied(_exception)
+      render json: { message: I18n.t('common.errors.color_style_access_denied') }, status: :forbidden
+    end
+
+    def base_render_invalid_color_style_input(_exception)
+      render json: { message: I18n.t('common.errors.color_style_invalid_input') }, status: :unprocessable_entity
+    end
+
+    def render_custom_error(exception)
+      message = I18n.t("common.errors.#{exception.class.name.underscore}", default: exception.message)
+      render json: { error: message }, status: :unprocessable_entity
     end
 
     def custom_token_initialize_values(resource, client)

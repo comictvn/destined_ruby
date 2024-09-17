@@ -1,27 +1,53 @@
+
 ---
 ja:
   activerecord:
     errors:
+      models:
+        color_style:
+          attributes:
+            name:
+              blank: '名前を入力してください'
+            color_code:
+              blank: 'カラーコードを入力してください'
+              invalid_group_naming: 'グループの命名規則に従っていません'
+              group_already_exists: '指定されたデザインファイルIDでグループが既に存在します'
+              group_creation_failed: 'グループの作成に失敗しました'
+              invalid: 'カラーコードの形式が不正です'
+            design_file_id:
+              blank: 'デザインファイルIDを入力してください'
+        user:
+          attributes:
+            email:
+              blank: 'メールアドレスを入力してください'
+              taken: 'このメールアドレスは既に使用されています'
+              invalid: '有効なメールアドレスを入力してください'
+            password:
+              blank: 'パスワードを入力してください'
+              too_short: 'パスワードは%{count}文字以上で入力してください'
+              too_long: 'パスワードは%{count}文字以内で入力してください'
+            password_confirmation:
+              confirmation: 'パスワードが一致しません'
       messages:
-        blank: を入力してください
-        taken: はすでに存在します
-        too_long: は%{count}文字以内で入力してください
-        too_short: は%{count}文字以上で入力してください
-        wrong_length: は%{count}文字で入力してください
-        in: は%{count}の範囲に含めてください
-        greater_than: は%{count}より大きい値にしてください
-        greater_than_or_equal_to: は%{count}以上の値にしてください
-        less_than: は%{count}より小さい値にしてください
-        less_than_or_equal_to: は%{count}以下の値にしてください
-        other_than: は%{count}以外の値にしてください
-        not_an_integer: は整数で入力してください
-        file_content_type_invalid: のContent Typeが不正です
-        file_size_out_of_range: の容量 %{file_size} が許容範囲外です
-        file_limit_out_of_range: の数が許容範囲外です
-        date_in_past: 今日の日付より前である必要があります
-        date_in_future: 今日の日付より後である必要があります
-        datetime_in_past: 今日の日付と時刻より前でなければなりません
-        datetime_in_future: 今日の日付と時刻より後である必要があります
-        invalid: は不正な値です
-        date_type: は有効な日付である必要があります
-        datetime_type: は有効な日時である必要があります
+        blank: 'を入力してください'
+        taken: 'はすでに存在します'
+        too_long: 'は%{count}文字以内で入力してください'
+        too_short: 'は%{count}文字以上で入力してください'
+        wrong_length: 'は%{count}文字で入力してください'
+        in: 'は%{count}の範囲に含めてください'
+        greater_than: 'は%{count}より大きい値にしてください'
+        greater_than_or_equal_to: 'は%{count}以上の値にしてください'
+        less_than: 'は%{count}より小さい値にしてください'
+        less_than_or_equal_to: 'は%{count}以下の値にしてください'
+        other_than: 'は%{count}以外の値にしてください'
+        not_an_integer: 'は整数で入力してください'
+        file_content_type_invalid: 'のContent Typeが不正です'
+        file_size_out_of_range: 'の容量 %{file_size} が許容範囲外です'
+        file_limit_out_of_range: 'の数が許容範囲外です'
+        date_in_past: '今日の日付より前である必要があります'
+        date_in_future: '今日の日付より後である必要があります'
+        datetime_in_past: '今日の日付と時刻より前でなければなりません'
+        datetime_in_future: '今日の日付と時刻より後である必要があります'
+        invalid: 'は不正な値です'
+        date_type: 'は有効な日付である必要があります'
+        datetime_type: 'は有効な日時である必要があります'

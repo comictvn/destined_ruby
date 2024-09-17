@@ -1,3 +1,4 @@
+
 ---
 ja:
   common:
@@ -9,3 +10,17 @@ ja:
     '201': 作成されました
     '200': 成功
     '302': 削除されました
+  design_files:
+    apply_color_style_to_layer:
+      success: "レイヤーにカラースタイルが正常に適用されました。"
+      color_style_not_found: "カラースタイルが見つかりません。"
+      layer_not_found_or_mismatch: "レイヤーが見つからないか、デザインファイルと一致しません。"
+    color_styles:
+      list:
+        success: "カラースタイルが正常にリストされました。"
+        not_found: "デザインファイルが見つからないか、アクセスが拒否されました。"
+  layers:
+    apply_color_style_to_layer:
+      success: "レイヤーにカラースタイルが正常に適用されました。"
+      layer_not_found_or_mismatch: "レイヤーが見つからないか、デザインファイルと一致しません。"
+      color_style_not_found: "カラースタイルが見つかりません。"
