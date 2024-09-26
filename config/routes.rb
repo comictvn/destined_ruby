@@ -1,3 +1,4 @@
+
 require 'sidekiq/web'
 Rails.application.routes.draw do
   resources :test3s
@@ -56,6 +57,14 @@ Rails.application.routes.draw do
 
     resources :users, only: %i[index show destroy] do
     end
+
+    resources :design_files, only: [] do
+      get ':fileId/color-styles', to: 'design_files#list_color_styles', on: :collection
+      post ':fileId/color-styles', to: 'design_files#create_color_style'
+      patch '/layers/:layerId/color-styles/:colorStyleId', to: 'design_files#apply_color_style_to_layer' # Patch integrated here
+      get ':fileId/layers/:layerId/color-style-icon', to: 'design_files#display_color_styles_icon'
+    end
+
   end
 
   get '/health' => 'pages#health_check'

@@ -1,6 +1,9 @@
+
 ---
 ja:
   common:
+    layer_not_eligible: レイヤーはカラースタイルに適していません
+    display_color_styles_icon: カラースタイルアイコンを表示
     '404': 見つかりません
     '403': アクセスが禁止されました
     '401': 認証に失敗しました
@@ -8,4 +11,20 @@ ja:
     '422': 処理できません
     '201': 作成されました
     '200': 成功
+    display_color_styles_icon_success: カラースタイルアイコンが正常に表示されました
+    display_color_styles_icon_eligible: カラースタイルアイコンが表示可能です
     '302': 削除されました
+  design_files:
+    color_styles:
+      success: カラースタイルが正常に取得されました
+      not_found: デザインファイルが見つかりません
+      unauthorized: このデザインファイルへのアクセスは許可されていません
+    layers:
+      display_color_styles_icon:
+        success: "カラースタイルアイコンが表示されます。"
+        ineligible: "レイヤーはカラースタイルアイコンを表示する資格がありません。"
+      apply_color_style: # No changes needed as the keys and texts are already correct.
+  layer_not_eligible: レイヤーはカラースタイルに適していません
+  layers:
+    display_color_styles_icon: カラースタイルアイコンを表示する
+    display_color_styles_icon_eligible: カラースタイルアイコンを表示することができます

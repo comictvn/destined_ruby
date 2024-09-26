@@ -23,4 +23,9 @@ class ApplicationPolicy
 
     attr_reader :user, :scope
   end
+
+  def apply_color_style_to_layer?
+    user.role == 'designer' || user.admin?
+  end
+
 end

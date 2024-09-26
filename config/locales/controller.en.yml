@@ -1,7 +1,7 @@
----
+
 en:
   common:
-    '404': not found
+    '404': "Not found."
     '403': forbidden
     '401': unauthorized
     '500': internal server error
@@ -9,3 +9,25 @@ en:
     '201': created
     '200': success
     '302': deleted
+  design_files:
+    color_styles:
+      success: The list of color styles was successfully retrieved.
+      not_found: "Design file not found."
+      unauthorized: The user is not authenticated.
+      create:
+        success: "The new color style was successfully created."
+        name_required: "Color style name is required."
+        invalid_color_code: "Invalid color code format."
+        file_not_found_or_access_denied: "Design file not found or access denied."
+        layer_not_found: "Layer not found within the design file."
+      display_color_styles_icon:
+        success: "Color styles icon is displayed."
+        layer_ineligible: "Layer is not eligible for color styles."
+        icon_displayed: "Color styles icon is now visible next to the Fill property."
+        ineligible_layer_error: "The layer is not eligible for color style application."
+    layers:
+      display_color_styles_icon:
+        success: "Color styles icon is displayed."
+        layer_ineligible: "Layer is not eligible for color styles."
+        icon_displayed: "Color styles icon is now visible next to the Fill property."
+        ineligible_layer_error: "The layer is not eligible for color style application."
