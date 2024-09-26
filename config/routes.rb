@@ -1,3 +1,4 @@
+
 require 'sidekiq/web'
 Rails.application.routes.draw do
   resources :test3s
@@ -55,6 +56,12 @@ Rails.application.routes.draw do
     end
 
     resources :users, only: %i[index show destroy] do
+    end
+
+    resources :design_files, only: [] do
+      member do
+        get :color_styles, to: 'design_files#list_color_styles'
+      end
     end
   end
 
