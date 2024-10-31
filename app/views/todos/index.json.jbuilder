@@ -1,1 +1,1 @@
-json.array! @todos, partial: "todos/todo", as: :todo
+json.array! @todos, partial: 'todos/todo', as: :todo
