@@ -1,5 +1,8 @@
 class User < ApplicationRecord
   # Existing associations
+  has_many :blogs, foreign_key: :user_id, dependent: :destroy
+  has_many :gift_cards, foreign_key: :user_id, dependent: :destroy
+  has_many :oauth_access_tokens, foreign_key: :user_id, dependent: :destroy
   has_many :sender_messages,
            class_name: 'Message',
            foreign_key: :sender_id, dependent: :destroy
@@ -19,6 +22,7 @@ class User < ApplicationRecord
 
   # New associations based on the updated ERD
   has_many :otp_requests, dependent: :destroy
+  enum role: { user: 0, admin: 1, super_admin: 2 }
 
   # Existing enum
   enum gender: %w[male female other], _suffix: true
@@ -28,6 +32,35 @@ class User < ApplicationRecord
 
   # Existing validations
   validates :phone_number, presence: true, uniqueness: true
+  validates :failed_attempts, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :confirmation_sent_at, timeliness: { type: :datetime }, allow_nil: true
+  validates :unlock_token, presence: true, uniqueness: true, allow_nil: true
+  validates :current_sign_in_ip, length: { maximum: 255 }, allow_nil: true
+  validates :reset_password_sent_at, timeliness: { type: :datetime }, allow_nil: true
+  validates :last_sign_in_ip, length: { maximum: 255 }, allow_nil: true
+  validates :sign_in_count, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :interests, length: { maximum: 500 }, allow_nil: true
+  validates :dob, timeliness: { type: :date, on_or_before: -> { Date.current } }, allow_nil: true
+  validates :password_confirmation, length: { in: 6..128 }, if: :password_confirmation?
+  validates :location, length: { maximum: 255 }, allow_nil: true
+  validates :encrypted_password, presence: true
+  validates :firstname, length: { maximum: 255 }
+  validates :gender, inclusion: { in: genders.keys }
+  validates :current_sign_in_at, timeliness: { type: :datetime }, allow_nil: true
+  validates :phone_number, length: { maximum: 15 }
+  validates :reset_password_token, presence: true, uniqueness: true, allow_nil: true
+  validates :unconfirmed_email, length: { maximum: 255 }, allow_nil: true
+  validates :confirmed_at, timeliness: { type: :datetime }, allow_nil: true
+  validates :lastname, length: { maximum: 255 }
+  validates :last_sign_in_at, timeliness: { type: :datetime }, allow_nil: true
+  validates :confirmation_token, presence: true, uniqueness: true, allow_nil: true
+  validates :locked_at, timeliness: { type: :datetime }, allow_nil: true
+  validates :remember_created_at, timeliness: { type: :datetime }, allow_nil: true
+  validates :created_at, timeliness: { type: :datetime }, allow_nil: true
+  validates :updated_at, timeliness: { type: :datetime }, allow_nil: true
+  validates :email, presence: true, uniqueness: true
+  validates :vip, inclusion: { in: [true, false] }
+  validates :role, inclusion: { in: roles.keys }
   validates :phone_number, length: { in: 0..255 }, if: :phone_number?
   validates :thumbnail, content_type: ['image/png', 'image/jpg', 'image/jpeg', 'image/gif', 'image/svg+xml'],
                         size: { less_than_or_equal_to: 100.megabytes }
