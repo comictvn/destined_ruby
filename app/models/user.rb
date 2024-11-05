@@ -74,6 +74,17 @@ class User < ApplicationRecord
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, if: :email_changed?
 
   # Existing methods
+  def reset_failed_attempts!
+    self.failed_attempts = 0
+    save(validate: false)
+  end
+
+  def increment_failed_attempts!
+    self.failed_attempts += 1
+    self.locked_at = Time.now.utc if failed_attempts >= Devise.maximum_attempts
+    save(validate: false)
+  end
+
   def generate_reset_password_token
     raw, enc = Devise.token_generator.generate(self.class, :reset_password_token)
     self.reset_password_token   = enc
@@ -91,6 +102,8 @@ class User < ApplicationRecord
         user.reset_failed_attempts!
         return user
       end
+
+      user.increment_failed_attempts! if user
 
       # We will show the error message in TokensController
       return user if user&.access_locked?

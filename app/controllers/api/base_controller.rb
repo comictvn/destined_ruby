@@ -22,6 +22,27 @@ module Api
       render(json: { error: error, message: message }, status: status, **kwargs)
     end
 
+    def custom_token_initialize_values(resource)
+      # Generate a secure session token
+      token = CustomAccessToken.create(
+        application_id: nil, # Assuming no specific client application is associated
+        resource_owner: resource,
+        scopes: resource.class.name.pluralize.downcase,
+        expires_in: Doorkeeper.configuration.access_token_expires_in.seconds
+      )
+
+      # Update the sign-in information in the user record
+      resource.update!(
+        current_sign_in_at: Time.current,
+        last_sign_in_at: resource.current_sign_in_at || Time.current,
+        current_sign_in_ip: request.remote_ip,
+        last_sign_in_ip: resource.current_sign_in_ip || request.remote_ip,
+        sign_in_count: resource.sign_in_count.to_i + 1
+      )
+
+      token.token
+    end
+
     private
 
     def base_render_record_not_found(_exception)
