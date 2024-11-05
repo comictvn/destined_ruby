@@ -1,4 +1,4 @@
-class Api::Channels::MessagesController < Api::BaseController
+class Api::Chanels::MessagesController < Api::BaseController
   before_action :doorkeeper_authorize!, only: %i[index destroy]
 
   def index
