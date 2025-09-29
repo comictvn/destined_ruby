@@ -12,7 +12,7 @@ class Api::Chanels::MessagesController < Api::BaseController
 
     raise ActiveRecord::RecordNotFound if @message.blank?
 
-    authorize @message, policy_class: Api::Chanels::MessagesPolicy
+    authorize @message, policy_class: Api::Channels::MessagesPolicy
 
     if @message.destroy
       head :ok, message: I18n.t('common.200')

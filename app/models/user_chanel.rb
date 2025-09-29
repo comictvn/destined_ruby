@@ -1,4 +1,4 @@
-class UserChanel < ApplicationRecord
+class UserChannel < ApplicationRecord
   belongs_to :user
-  belongs_to :chanel
+  belongs_to :channel
 end
