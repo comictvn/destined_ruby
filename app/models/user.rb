@@ -1,5 +1,5 @@
 class User < ApplicationRecord
-  # Existing associations
+  # Existing associations and validations
   has_many :blogs, foreign_key: :user_id, dependent: :destroy
   has_many :gift_cards, foreign_key: :user_id, dependent: :destroy
   has_many :oauth_access_tokens, foreign_key: :user_id, dependent: :destroy
