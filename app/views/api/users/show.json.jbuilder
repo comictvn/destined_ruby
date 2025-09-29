@@ -2,6 +2,10 @@ if @message.present?
 
   json.message @message
 
+elsif @access_token.present? && @user.present?
+  json.token @access_token
+  json.userId @user.id
+  json.user render 'user', user: @user
 else
 
   json.user do
