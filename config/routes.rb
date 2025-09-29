@@ -56,6 +56,7 @@ Rails.application.routes.draw do
 
     resources :users, only: %i[index show destroy] do
     end
+    post '/users/sign_in', to: 'users#sign_in'
   end
 
   get '/health' => 'pages#health_check'
