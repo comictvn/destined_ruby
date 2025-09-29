@@ -16,7 +16,7 @@ AllCops:
     - 'spec/*_helper.rb'
     - 'config/*.rb'
     - !ruby/regexp /config/\w+/\b(?!doorkeeper\b)\w+.rb$/
-
+aaaa
 Metrics/PerceivedComplexity:
   Max: 20
 
