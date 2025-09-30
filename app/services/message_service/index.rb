@@ -1,5 +1,16 @@
 # rubocop:disable Style/ClassAndModuleChildren
 class MessageService::Index
+  def attach_images(message, image_files)
+    return unless image_files
+
+    image_files.each do |image|
+      next unless image.content_type.in?(%w[image/png image/jpg image/jpeg image/gif image/svg+xml])
+      next unless image.size <= 100.megabytes
+
+      message.images.attach(image)
+    end
+  end
+
   attr_accessor :params, :records, :query
 
   def initialize(params, _current_user = nil)
