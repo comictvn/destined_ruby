@@ -10,7 +10,7 @@
 
 ## Requirements
  
-- Docker 19.x
+- Docker 20.x
 
 If you run the project locally, the followings are required.
 
