@@ -1,4 +1,4 @@
----
+
 en:
   common:
     errors:
@@ -24,4 +24,8 @@ en:
       failed_to_sign_up: Failed to sign up
     passwords:
       old_password_mismatch: Incorrect current password
-      not_found_in_database: Invalid email or password
+      not_found_in_d
+  message:
+    create:
+      success: "Message created successfully."
+      error: "Failed to create message."
