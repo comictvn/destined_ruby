@@ -1,3 +1,4 @@
+
 ---
 ja:
   common:
@@ -23,3 +24,10 @@ ja:
     passwords:
       old_password_mismatch: 現在のパスワードが正しくありません
       not_found_in_database: Eメールまたはパスワードが違います
+  force_update_app_versions:
+    success:
+      list_retrieved: 強制アップデートが必要なアプリバージョンのリストを取得しました
+    errors:
+      unauthorized: 認証されていません
+      no_versions_found: 強制アップデートが必要なアプリバージョンが見つかりませんでした
+      server_error: サーバーエラーが発生しました。後ほど再度お試しください
